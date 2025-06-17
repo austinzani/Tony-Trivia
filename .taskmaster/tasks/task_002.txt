@@ -1,0 +1,119 @@
+# Task ID: 2
+# Title: Implement Supabase Integration
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Set up Supabase integration for authentication, database, and real-time functionality.
+# Details:
+1. Create a Supabase project
+2. Set up Supabase client in the React application
+3. Configure authentication settings in Supabase dashboard
+4. Implement Row Level Security (RLS) policies
+5. Set up real-time subscriptions
+6. Create necessary database tables (profiles, game_rooms, teams, team_members, game_rounds, questions, team_answers, team_point_usage, game_state)
+7. Generate and test REST and GraphQL endpoints
+
+# Test Strategy:
+Write unit tests for Supabase client initialization and basic CRUD operations. Test real-time subscriptions by simulating data changes.
+
+# Subtasks:
+## 1. Create Supabase Project and Configure Client [pending]
+### Dependencies: None
+### Description: Set up a new Supabase project and integrate the client into the React application
+### Details:
+1. Create a new Supabase project from the dashboard
+2. Note the project URL and anon key
+3. Install Supabase client libraries: `npm install @supabase/supabase-js`
+4. Create a client configuration file (e.g., `lib/supabase.js`) that exports the Supabase client instance
+5. Add environment variables for SUPABASE_URL and SUPABASE_ANON_KEY
+6. Configure the client to use these environment variables
+
+## 2. Create Database Schema and Tables [pending]
+### Dependencies: 2.1
+### Description: Design and implement the database schema with all required tables for the application
+### Details:
+Create the following tables with appropriate columns and relationships:
+1. profiles (id, user_id, display_name, avatar_url, created_at)
+2. game_rooms (id, name, created_by, created_at, settings)
+3. teams (id, room_id, name, created_at)
+4. team_members (id, team_id, user_id, role, joined_at)
+5. game_rounds (id, room_id, round_number, status, started_at, ended_at)
+6. questions (id, round_id, question_text, options, correct_answer, points)
+7. team_answers (id, team_id, question_id, answer, is_correct, points_earned)
+8. team_point_usage (id, team_id, round_id, points_used, reason)
+9. game_state (id, room_id, current_round, status, last_updated)
+
+## 3. Implement Authentication Flow [pending]
+### Dependencies: 2.1
+### Description: Set up authentication methods and user session management
+### Details:
+1. Configure authentication providers in Supabase dashboard (email/password, OAuth providers)
+2. Create sign-up, sign-in, and sign-out functionality in the application
+3. Implement session persistence and refresh
+4. Create protected routes that require authentication
+5. Set up user profile creation on sign-up
+6. Add password reset functionality
+7. Handle authentication errors and user feedback
+
+## 4. Configure Row Level Security Policies [pending]
+### Dependencies: 2.2, 2.3
+### Description: Implement RLS policies to secure data access based on user roles and permissions
+### Details:
+For each table, implement appropriate RLS policies:
+1. profiles: Users can read any profile but only update their own
+2. game_rooms: Creators can update rooms, participants can read
+3. teams: Team members can read/update their team data
+4. team_members: Users can read team members, only admins can add/remove
+5. game_rounds: Game admins can create/update, participants can read
+6. questions: Game admins can create, participants can read during active rounds
+7. team_answers: Team members can create answers for their team
+8. team_point_usage: Team members can read, team admins can create
+9. game_state: Game admins can update, participants can read
+
+## 5. Set Up Real-time Subscriptions [pending]
+### Dependencies: 2.2, 2.4
+### Description: Configure real-time functionality for live updates across the application
+### Details:
+1. Enable real-time functionality in Supabase dashboard
+2. Implement real-time subscriptions for:
+   - Game state changes
+   - Team updates
+   - Round status changes
+   - New questions
+   - Team answers
+   - Score updates
+3. Create React hooks for managing subscriptions
+4. Handle subscription events to update UI in real-time
+5. Implement error handling and reconnection logic
+
+## 6. Create and Configure Edge Functions [pending]
+### Dependencies: 2.2, 2.4
+### Description: Implement serverless edge functions for complex game logic and operations
+### Details:
+1. Set up Supabase CLI for local development of edge functions
+2. Create edge functions for:
+   - Starting a new game round
+   - Calculating and updating team scores
+   - Validating team answers
+   - Managing game state transitions
+   - Handling team point usage
+3. Deploy functions to Supabase
+4. Create client-side utilities to invoke edge functions
+5. Implement error handling and logging
+
+## 7. Set Up Storage and Generate API Endpoints [pending]
+### Dependencies: 2.2, 2.4, 2.6
+### Description: Configure storage buckets and generate/test REST and GraphQL endpoints
+### Details:
+1. Create storage buckets for:
+   - User avatars
+   - Game assets
+   - Question media
+2. Configure appropriate bucket permissions
+3. Generate REST endpoints for all tables
+4. Set up GraphQL schema and endpoints
+5. Create API documentation
+6. Implement client-side utilities for storage operations
+7. Test all endpoints for CRUD operations
+8. Create Postman/Insomnia collection for API testing
+

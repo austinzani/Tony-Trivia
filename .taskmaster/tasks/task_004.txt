@@ -1,0 +1,19 @@
+# Task ID: 4
+# Title: Develop Game Room Management
+# Status: pending
+# Dependencies: 2, 3
+# Priority: high
+# Description: Create functionality for creating, joining, and managing game rooms.
+# Details:
+1. Implement room creation logic for hosts
+2. Generate unique 6-character game codes
+3. Create interface for setting room parameters (max teams, round types, time limits)
+4. Implement question set pre-loading and dynamic addition
+5. Add room privacy settings (public/private)
+6. Create room joining functionality
+7. Display room info before joining
+8. Implement room capacity limits
+9. Show current participants and game status
+
+# Test Strategy:
+Write unit tests for room creation, joining, and management functions. Perform integration tests to ensure proper interaction between frontend and backend.

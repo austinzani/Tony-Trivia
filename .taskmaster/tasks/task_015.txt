@@ -1,0 +1,16 @@
+# Task ID: 15
+# Title: Add Support for Media Questions
+# Status: pending
+# Dependencies: 6
+# Priority: medium
+# Description: Implement support for image and audio questions in the gameplay.
+# Details:
+1. Set up Supabase Storage for media file uploads
+2. Implement image upload and display functionality
+3. Add audio upload and playback support
+4. Create UI for hosts to add media questions
+5. Optimize media loading and caching for performance
+6. Ensure proper rendering of media questions on all devices
+
+# Test Strategy:
+Write unit tests for media handling functions. Conduct integration tests for media upload and display. Perform cross-device testing to ensure compatibility.

@@ -1,0 +1,91 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Structure & Naming Conventions
+
+## Folder Structure Rules
+
+### Feature-Based Organization
+- Use feature-based organization under `src/features/`
+- Each feature contains: `components/`, `hooks/`, `services/`, `types/`, `index.ts`
+- Shared resources go in `src/shared/` with subfolders: `components/`, `hooks/`, `services/`, `utils/`, `constants/`
+- Global types in `src/types/`, app setup in `src/app/`
+
+### Example Structure
+```
+src/
+├── app/                    # App setup, providers, routing
+├── features/              # Feature-based modules
+│   ├── auth/
+│   ├── game-room/
+│   ├── teams/
+│   ├── trivia/
+│   └── leaderboard/
+├── shared/               # Shared utilities and components
+│   ├── components/
+│   ├── hooks/
+│   ├── services/
+│   ├── utils/
+│   └── constants/
+├── types/                # Global TypeScript types
+└── styles/              # Global styles and Tailwind config
+```
+
+## Naming Conventions
+
+### File Naming Rules
+- **Components**: PascalCase (e.g., `GameRoom.tsx`, `AnswerSubmissionForm.tsx`)
+- **Hooks**: camelCase with `use` prefix (e.g., `useGameState.ts`, `useRealtimeSubscription.ts`)
+- **Services**: camelCase (e.g., `authService.ts`, `gameRoomService.ts`)
+- **Types**: PascalCase (e.g., `GameRoom.ts`, `TeamMember.ts`)
+- **Non-component files**: kebab-case (e.g., `game-utils.ts`, `supabase-client.ts`)
+
+### Directory Naming
+- Use kebab-case for all directory names
+- Keep directory names descriptive but concise
+- Group related functionality together
+
+## File Organization Patterns
+
+### Feature Module Structure
+Each feature should export its public API through `index.ts`:
+```typescript
+// features/game-room/index.ts
+export { GameRoom } from './components/GameRoom';
+export { useGameRoom } from './hooks/useGameRoom';
+export type { GameRoomData } from './types/GameRoom';
+```
+
+### Component File Organization
+```
+ComponentName/
+├── ComponentName.tsx        # Main component
+├── ComponentName.types.ts   # TypeScript interfaces (if complex)
+├── ComponentName.test.tsx   # Tests
+└── index.ts                # Re-export for clean imports
+```
+
+## Import/Export Guidelines
+
+### Import Order
+```typescript
+// 1. React and external libraries
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+// 2. Internal shared utilities
+import { Button } from '@/shared/components/ui';
+import { useGameStore } from '@/shared/stores';
+
+// 3. Feature-specific imports
+import { GameRoomCard } from './components';
+import type { GameRoom } from './types';
+```
+
+### Export Patterns
+- Use named exports for components and utilities
+- Use default exports sparingly (mainly for pages)
+- Create barrel exports (`index.ts`) for clean imports
+- Re-export types from feature index files

@@ -1,0 +1,698 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Project Repository and Development Environment",
+        "description": "Initialize the project repository and set up the development environment with the required tools and dependencies.",
+        "details": "1. Create a new Git repository\n2. Initialize project with Vite and React 18+ using TypeScript\n3. Set up ESLint and Prettier for code quality\n4. Install and configure Tailwind CSS\n5. Set up React Router v6\n6. Install and configure Zustand for state management\n7. Set up React Query (TanStack Query) for data fetching\n8. Install and configure React Hook Form with Zod validation\n9. Set up Framer Motion for animations\n10. Create basic folder structure (components, pages, hooks, utils, etc.)",
+        "testStrategy": "Verify that all tools and dependencies are correctly installed and configured by running the development server and checking for any errors.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Git Repository and Create React App with TypeScript",
+            "description": "Create a new Git repository and initialize the React project using Vite with TypeScript support.",
+            "dependencies": [],
+            "details": "1. Create a new Git repository on GitHub/GitLab\n2. Clone the repository locally\n3. Use Vite to create a new React project with TypeScript: `npm create vite@latest my-app --template react-ts`\n4. Initialize Git in the project directory if not already done\n5. Make initial commit with the base project",
+            "status": "pending",
+            "testStrategy": "Verify the project builds and runs with `npm run dev`, and check that TypeScript compilation works without errors."
+          },
+          {
+            "id": 2,
+            "title": "Configure Code Quality Tools and CSS Framework",
+            "description": "Set up ESLint, Prettier, and Tailwind CSS for code quality and styling.",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Install ESLint: `npm install eslint --save-dev`\n2. Set up ESLint config with `npx eslint --init`\n3. Install Prettier: `npm install prettier eslint-config-prettier --save-dev`\n4. Create Prettier config file (.prettierrc)\n5. Install Tailwind CSS: `npm install -D tailwindcss postcss autoprefixer`\n6. Initialize Tailwind: `npx tailwindcss init -p`\n7. Configure Tailwind in tailwind.config.js and add directives to index.css",
+            "status": "pending",
+            "testStrategy": "Run ESLint to verify configuration, check Prettier formatting on a test file, and verify Tailwind classes work in a test component."
+          },
+          {
+            "id": 3,
+            "title": "Set Up Routing and State Management",
+            "description": "Install and configure React Router for navigation and Zustand for state management.",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Install React Router: `npm install react-router-dom`\n2. Create basic router setup in main.tsx\n3. Set up a basic routes configuration\n4. Install Zustand: `npm install zustand`\n5. Create a basic store setup with Zustand\n6. Implement a sample store for authentication or app state",
+            "status": "pending",
+            "testStrategy": "Create a simple test route and verify navigation works. Create a test component that uses the Zustand store and verify state updates correctly."
+          },
+          {
+            "id": 4,
+            "title": "Configure Data Fetching and Form Handling",
+            "description": "Set up React Query for data fetching and React Hook Form with Zod for form validation.",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Install React Query: `npm install @tanstack/react-query`\n2. Set up React Query provider in main.tsx\n3. Create a basic query hook\n4. Install React Hook Form and Zod: `npm install react-hook-form zod @hookform/resolvers`\n5. Create a sample form with validation using React Hook Form and Zod",
+            "status": "pending",
+            "testStrategy": "Create a test query and verify data fetching works. Create a test form and verify validation works correctly."
+          },
+          {
+            "id": 5,
+            "title": "Set Up Animation Library and Environment Variables",
+            "description": "Install Framer Motion for animations and configure environment variables for the project.",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Install Framer Motion: `npm install framer-motion`\n2. Create a sample animation component\n3. Create .env and .env.example files\n4. Configure environment variables for development and production\n5. Add environment variables to .gitignore\n6. Document required environment variables in README.md",
+            "status": "pending",
+            "testStrategy": "Create a test animation and verify it works correctly. Verify environment variables are accessible in the application."
+          },
+          {
+            "id": 6,
+            "title": "Create Project Structure and Configure Supabase Client",
+            "description": "Set up the project folder structure and configure Supabase client for backend integration.",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "details": "1. Create folder structure:\n   - src/components\n   - src/pages\n   - src/hooks\n   - src/utils\n   - src/types\n   - src/services\n   - src/assets\n2. Install Supabase client: `npm install @supabase/supabase-js`\n3. Create a Supabase client configuration file\n4. Set up authentication helpers with Supabase\n5. Create README with project setup instructions\n6. Update package.json with appropriate scripts",
+            "status": "pending",
+            "testStrategy": "Verify Supabase client connects correctly. Check that the project structure is complete and follows best practices."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Implement Supabase Integration",
+        "description": "Set up Supabase integration for authentication, database, and real-time functionality.",
+        "details": "1. Create a Supabase project\n2. Set up Supabase client in the React application\n3. Configure authentication settings in Supabase dashboard\n4. Implement Row Level Security (RLS) policies\n5. Set up real-time subscriptions\n6. Create necessary database tables (profiles, game_rooms, teams, team_members, game_rounds, questions, team_answers, team_point_usage, game_state)\n7. Generate and test REST and GraphQL endpoints",
+        "testStrategy": "Write unit tests for Supabase client initialization and basic CRUD operations. Test real-time subscriptions by simulating data changes.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Supabase Project and Configure Client",
+            "description": "Set up a new Supabase project and integrate the client into the React application",
+            "dependencies": [],
+            "details": "1. Create a new Supabase project from the dashboard\n2. Note the project URL and anon key\n3. Install Supabase client libraries: `npm install @supabase/supabase-js`\n4. Create a client configuration file (e.g., `lib/supabase.js`) that exports the Supabase client instance\n5. Add environment variables for SUPABASE_URL and SUPABASE_ANON_KEY\n6. Configure the client to use these environment variables",
+            "status": "pending",
+            "testStrategy": "Verify client connection by making a simple query to the public schema"
+          },
+          {
+            "id": 2,
+            "title": "Create Database Schema and Tables",
+            "description": "Design and implement the database schema with all required tables for the application",
+            "dependencies": [
+              1
+            ],
+            "details": "Create the following tables with appropriate columns and relationships:\n1. profiles (id, user_id, display_name, avatar_url, created_at)\n2. game_rooms (id, name, created_by, created_at, settings)\n3. teams (id, room_id, name, created_at)\n4. team_members (id, team_id, user_id, role, joined_at)\n5. game_rounds (id, room_id, round_number, status, started_at, ended_at)\n6. questions (id, round_id, question_text, options, correct_answer, points)\n7. team_answers (id, team_id, question_id, answer, is_correct, points_earned)\n8. team_point_usage (id, team_id, round_id, points_used, reason)\n9. game_state (id, room_id, current_round, status, last_updated)",
+            "status": "pending",
+            "testStrategy": "Verify table creation by querying table information from Supabase"
+          },
+          {
+            "id": 3,
+            "title": "Implement Authentication Flow",
+            "description": "Set up authentication methods and user session management",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Configure authentication providers in Supabase dashboard (email/password, OAuth providers)\n2. Create sign-up, sign-in, and sign-out functionality in the application\n3. Implement session persistence and refresh\n4. Create protected routes that require authentication\n5. Set up user profile creation on sign-up\n6. Add password reset functionality\n7. Handle authentication errors and user feedback",
+            "status": "pending",
+            "testStrategy": "Test the complete authentication flow including sign-up, sign-in, session persistence, and sign-out"
+          },
+          {
+            "id": 4,
+            "title": "Configure Row Level Security Policies",
+            "description": "Implement RLS policies to secure data access based on user roles and permissions",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "For each table, implement appropriate RLS policies:\n1. profiles: Users can read any profile but only update their own\n2. game_rooms: Creators can update rooms, participants can read\n3. teams: Team members can read/update their team data\n4. team_members: Users can read team members, only admins can add/remove\n5. game_rounds: Game admins can create/update, participants can read\n6. questions: Game admins can create, participants can read during active rounds\n7. team_answers: Team members can create answers for their team\n8. team_point_usage: Team members can read, team admins can create\n9. game_state: Game admins can update, participants can read",
+            "status": "pending",
+            "testStrategy": "Test policies by attempting authorized and unauthorized operations on each table"
+          },
+          {
+            "id": 5,
+            "title": "Set Up Real-time Subscriptions",
+            "description": "Configure real-time functionality for live updates across the application",
+            "dependencies": [
+              2,
+              4
+            ],
+            "details": "1. Enable real-time functionality in Supabase dashboard\n2. Implement real-time subscriptions for:\n   - Game state changes\n   - Team updates\n   - Round status changes\n   - New questions\n   - Team answers\n   - Score updates\n3. Create React hooks for managing subscriptions\n4. Handle subscription events to update UI in real-time\n5. Implement error handling and reconnection logic",
+            "status": "pending",
+            "testStrategy": "Test real-time updates by making changes in one client and verifying they appear in another"
+          },
+          {
+            "id": 6,
+            "title": "Create and Configure Edge Functions",
+            "description": "Implement serverless edge functions for complex game logic and operations",
+            "dependencies": [
+              2,
+              4
+            ],
+            "details": "1. Set up Supabase CLI for local development of edge functions\n2. Create edge functions for:\n   - Starting a new game round\n   - Calculating and updating team scores\n   - Validating team answers\n   - Managing game state transitions\n   - Handling team point usage\n3. Deploy functions to Supabase\n4. Create client-side utilities to invoke edge functions\n5. Implement error handling and logging",
+            "status": "pending",
+            "testStrategy": "Test each function individually with various inputs and verify the expected database changes"
+          },
+          {
+            "id": 7,
+            "title": "Set Up Storage and Generate API Endpoints",
+            "description": "Configure storage buckets and generate/test REST and GraphQL endpoints",
+            "dependencies": [
+              2,
+              4,
+              6
+            ],
+            "details": "1. Create storage buckets for:\n   - User avatars\n   - Game assets\n   - Question media\n2. Configure appropriate bucket permissions\n3. Generate REST endpoints for all tables\n4. Set up GraphQL schema and endpoints\n5. Create API documentation\n6. Implement client-side utilities for storage operations\n7. Test all endpoints for CRUD operations\n8. Create Postman/Insomnia collection for API testing",
+            "status": "pending",
+            "testStrategy": "Create comprehensive tests for all API endpoints and storage operations, verifying correct data access and manipulation"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Implement Authentication System",
+        "description": "Create a robust authentication system for both registered and guest users.",
+        "details": "1. Implement sign up functionality using Supabase Auth\n2. Create login form and logic\n3. Implement email verification process\n4. Add password reset functionality\n5. Create profile management page (username, avatar, stats)\n6. Implement guest user authentication with temporary session-based identity\n7. Add option to convert guest account to registered account",
+        "testStrategy": "Write unit tests for all authentication flows. Manually test each authentication scenario, including edge cases like invalid inputs and network errors.",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Develop Game Room Management",
+        "description": "Create functionality for creating, joining, and managing game rooms.",
+        "details": "1. Implement room creation logic for hosts\n2. Generate unique 6-character game codes\n3. Create interface for setting room parameters (max teams, round types, time limits)\n4. Implement question set pre-loading and dynamic addition\n5. Add room privacy settings (public/private)\n6. Create room joining functionality\n7. Display room info before joining\n8. Implement room capacity limits\n9. Show current participants and game status",
+        "testStrategy": "Write unit tests for room creation, joining, and management functions. Perform integration tests to ensure proper interaction between frontend and backend.",
+        "priority": "high",
+        "dependencies": [
+          2,
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Implement Team Formation & Management",
+        "description": "Develop features for creating and managing teams within game rooms.",
+        "details": "1. Implement team creation within game rooms\n2. Support configurable team sizes (1-6 players)\n3. Add team naming functionality with profanity filtering\n4. Implement team captain designation\n5. Create interface for joining existing teams or creating new ones\n6. Add functionality to leave/kick team members (captain only)\n7. Implement real-time team member status tracking (online/offline)",
+        "testStrategy": "Write unit tests for team creation, joining, and management functions. Perform user acceptance testing to ensure smooth team formation process.",
+        "priority": "high",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Develop Core Gameplay Engine",
+        "description": "Create the main gameplay engine to handle question flow, scoring, and game progression.",
+        "details": "1. Implement question display logic\n2. Support multiple question types (text, image, audio, video)\n3. Create timed answer submission with visual countdown\n4. Implement answer submission locking/unlocking per round\n5. Develop Last Call Trivia scoring system (1,3,5 then 2,4,6)\n6. Prevent duplicate point value usage per round\n7. Implement real-time score calculation and updates\n8. Support special round types (wager, picture, bonus)",
+        "testStrategy": "Write comprehensive unit tests for all gameplay logic. Conduct thorough playtesting to ensure smooth gameplay flow and correct scoring.",
+        "priority": "high",
+        "dependencies": [
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Game State Management",
+            "description": "Create a central game state manager to track the current round, active questions, player scores, and game progression.",
+            "dependencies": [],
+            "details": "Develop a GameState class that maintains the complete game state including current round number, available point values, selected point values, player/team scores, and game phase (pre-game, question selection, question display, answer submission, scoring, etc.). Implement methods for state transitions and ensure proper event emission when state changes.",
+            "status": "pending",
+            "testStrategy": "Unit test state transitions and verify that game progression follows the expected flow. Test edge cases like game reset and round transitions."
+          },
+          {
+            "id": 2,
+            "title": "Develop Round Management System",
+            "description": "Implement the round structure following Last Call Trivia format with point values 1,3,5 for first round and 2,4,6 for second round.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create a RoundManager class that handles round initialization, tracks available point values per round, prevents duplicate point value usage, and manages transitions between rounds. Implement methods to validate point selection based on round rules and track used point values per player/team.",
+            "status": "pending",
+            "testStrategy": "Test round initialization with correct point values. Verify point selection validation prevents duplicates and enforces round-specific values."
+          },
+          {
+            "id": 3,
+            "title": "Build Question Display System",
+            "description": "Create a system to display questions of different types (text, image, audio, video) with appropriate rendering for each type.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement a QuestionDisplay component that can render different question types. Create specialized renderers for each media type that handle loading, displaying, and error states. Support question text formatting and media embedding. Ensure accessibility for all question types.",
+            "status": "pending",
+            "testStrategy": "Test rendering of each question type. Verify media loading states and error handling. Test accessibility compliance."
+          },
+          {
+            "id": 4,
+            "title": "Implement Timer Functionality",
+            "description": "Create a countdown timer system with visual feedback for timed answer submissions.",
+            "dependencies": [
+              1
+            ],
+            "details": "Develop a Timer class that handles countdown functionality with configurable durations. Implement visual countdown display with color changes as time runs low. Add sound effects for time warnings and expiration. Ensure timer events trigger appropriate game state changes when time expires.",
+            "status": "pending",
+            "testStrategy": "Test timer initialization, pausing, resuming, and expiration. Verify visual feedback changes at appropriate thresholds. Test timer event handling."
+          },
+          {
+            "id": 5,
+            "title": "Create Answer Submission System",
+            "description": "Implement the answer submission mechanism with point value selection and submission locking/unlocking per round.",
+            "dependencies": [
+              2,
+              3,
+              4
+            ],
+            "details": "Build an AnswerSubmission component that allows players to select point values and submit answers. Implement validation to ensure point values follow round rules. Add locking mechanism to prevent changes after submission. Include visual feedback for submission status and locked/unlocked state.",
+            "status": "pending",
+            "testStrategy": "Test submission flow with valid and invalid inputs. Verify locking behavior prevents changes after submission. Test validation of point value selection against round rules."
+          },
+          {
+            "id": 6,
+            "title": "Develop Scoring Logic",
+            "description": "Implement the scoring system to calculate and update scores based on correct answers and selected point values.",
+            "dependencies": [
+              2,
+              5
+            ],
+            "details": "Create a ScoreManager class that calculates scores based on answer correctness and selected point values. Implement methods to update player/team scores in real-time. Add support for special scoring rules in different round types. Ensure score updates trigger appropriate UI updates.",
+            "status": "pending",
+            "testStrategy": "Unit test score calculation with various scenarios including correct/incorrect answers and different point values. Test score update propagation to the UI."
+          },
+          {
+            "id": 7,
+            "title": "Implement Special Round Types",
+            "description": "Add support for special round types including wager rounds, picture rounds, and bonus rounds with their unique rules.",
+            "dependencies": [
+              2,
+              6
+            ],
+            "details": "Extend the RoundManager to support special round types. Implement specialized components for each round type with their unique interfaces and rules. For wager rounds, add betting validation. For picture rounds, optimize image display. For bonus rounds, implement special scoring rules.",
+            "status": "pending",
+            "testStrategy": "Test each special round type individually. Verify unique rules are enforced correctly. Test transitions between regular and special rounds."
+          },
+          {
+            "id": 8,
+            "title": "Create Game Progression Controller",
+            "description": "Implement the overall game flow controller to manage progression through questions, rounds, and game completion.",
+            "dependencies": [
+              1,
+              2,
+              3,
+              5,
+              6,
+              7
+            ],
+            "details": "Develop a GameController class that orchestrates the entire gameplay flow. Implement methods to advance through questions, handle round transitions, and determine game completion. Add support for game configuration options like number of rounds, questions per round, and time limits. Include error handling for unexpected states.",
+            "status": "pending",
+            "testStrategy": "Test complete game flows from start to finish. Verify correct progression through questions and rounds. Test edge cases like skipping questions and early game termination."
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Create Host Controls Interface",
+        "description": "Develop a comprehensive interface for hosts to control the game flow and manage answers.",
+        "details": "1. Implement controls to advance to next question/round\n2. Add functionality to lock/unlock team answers\n3. Create interface for reviewing and approving/rejecting answers\n4. Implement score override functionality\n5. Add pause/resume game controls\n6. Develop real-time notifications for answer submissions",
+        "testStrategy": "Conduct usability testing with potential hosts to ensure intuitive controls. Write integration tests to verify proper interaction between host controls and gameplay engine.",
+        "priority": "high",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement Answer Review System",
+        "description": "Create a system for hosts to review and validate team answers efficiently.",
+        "details": "1. Develop organized grid view for all team answers\n2. Implement one-click approve/reject functionality\n3. Add bulk action capabilities for answer review\n4. Create interface for adding scoring notes\n5. Implement real-time answer submission notifications\n6. Develop team feedback system (pending, approved, rejected statuses)\n7. Display correct answers after review\n8. Show point awards and running totals to teams",
+        "testStrategy": "Write unit tests for answer review logic. Conduct usability testing with hosts to ensure efficient review process. Test real-time updates for teams.",
+        "priority": "high",
+        "dependencies": [
+          6,
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Develop Leaderboard & Results System",
+        "description": "Create a real-time leaderboard and comprehensive results display system.",
+        "details": "1. Implement real-time score updates during gameplay\n2. Create team rankings with tie-breaking logic\n3. Develop round-by-round score history display\n4. Implement final results calculation and winner announcement\n5. Create persistent storage for game history (registered users)\n6. Develop detailed game statistics and performance metrics\n7. Implement personal and team achievement tracking",
+        "testStrategy": "Write unit tests for leaderboard calculations and statistics. Perform integration tests to ensure real-time updates are reflected accurately. Conduct user acceptance testing for result displays.",
+        "priority": "medium",
+        "dependencies": [
+          6,
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Implement Real-time Communication System",
+        "description": "Develop a robust real-time communication system using Supabase Realtime subscriptions.",
+        "details": "1. Implement room-level updates for game state changes\n2. Create team-level updates for answer submissions\n3. Develop host-only updates for review notifications\n4. Implement presence tracking for online users\n5. Create connection management with automatic reconnection\n6. Optimize real-time updates for low latency (<200ms for WebSocket events)\n7. Implement efficient data synchronization strategies",
+        "testStrategy": "Write unit tests for real-time event handling. Conduct stress tests to ensure system can handle multiple concurrent connections. Measure and optimize latency for real-time updates.",
+        "priority": "high",
+        "dependencies": [
+          2,
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set up Supabase Realtime client and connection management",
+            "description": "Implement the core WebSocket connection to Supabase Realtime with automatic reconnection logic and connection state management.",
+            "dependencies": [],
+            "details": "Create a service that initializes the Supabase Realtime client, handles connection events (connected, disconnected, error), implements exponential backoff for reconnection attempts, and provides a connection status API. Implement connection monitoring to detect network changes and trigger reconnection when needed.",
+            "status": "pending",
+            "testStrategy": "Test connection establishment, reconnection after simulated network failures, and proper event emission for connection state changes."
+          },
+          {
+            "id": 2,
+            "title": "Implement channel subscription management",
+            "description": "Create a system to manage channel subscriptions for different contexts (rooms, teams, host-only) with proper lifecycle management.",
+            "dependencies": [
+              1
+            ],
+            "details": "Develop a ChannelManager class that handles subscription creation, cleanup, and resubscription after reconnection. Implement methods for subscribing to room channels, team channels, and host-only channels. Create a registry to track active subscriptions and their callback handlers.",
+            "status": "pending",
+            "testStrategy": "Test channel subscription, unsubscription, and automatic resubscription after connection loss. Verify proper event routing to registered callbacks."
+          },
+          {
+            "id": 3,
+            "title": "Implement room-level and team-level updates",
+            "description": "Create handlers for room-level game state changes and team-level answer submissions using Supabase Realtime.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement subscription to room:* channels for game state updates. Create handlers for team:* channels to process answer submissions. Develop data transformation functions to convert raw WebSocket payloads into application-specific data structures. Implement broadcast methods for sending updates to rooms and teams.",
+            "status": "pending",
+            "testStrategy": "Test event broadcasting and receiving for both room and team channels. Verify correct data transformation and event handling."
+          },
+          {
+            "id": 4,
+            "title": "Develop host-only notification system",
+            "description": "Create a specialized channel for host-only communications including review notifications and administrative actions.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement host:* channel subscriptions with authentication checks. Create notification handlers for review requests, game control events, and administrative actions. Develop a queue system for handling notifications when a host reconnects after disconnection.",
+            "status": "pending",
+            "testStrategy": "Test host notification delivery, authentication requirements, and notification queuing during disconnection periods."
+          },
+          {
+            "id": 5,
+            "title": "Implement presence tracking for online users",
+            "description": "Develop a system to track and display online users using Supabase Realtime presence features.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement Presence API integration to track users joining and leaving. Create presence state synchronization across clients. Develop UI components to display online status. Implement heartbeat mechanism to maintain accurate presence information. Create hooks or observables for components to react to presence changes.",
+            "status": "pending",
+            "testStrategy": "Test presence detection for users joining/leaving, proper UI updates, and resilience to network disruptions."
+          },
+          {
+            "id": 6,
+            "title": "Optimize performance and implement data synchronization",
+            "description": "Optimize the real-time system for low latency and implement efficient data synchronization strategies.",
+            "dependencies": [
+              3,
+              4,
+              5
+            ],
+            "details": "Implement debouncing and throttling for high-frequency events. Create a delta-based synchronization system to minimize payload sizes. Develop a conflict resolution strategy for concurrent updates. Implement performance monitoring to track latency and optimize critical paths. Add caching layer for frequently accessed data to reduce unnecessary updates.",
+            "status": "pending",
+            "testStrategy": "Benchmark WebSocket event latency under various network conditions. Test synchronization with simulated concurrent updates. Verify payload sizes remain optimized for different update scenarios."
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Develop Mobile Responsive Design",
+        "description": "Ensure the application is fully responsive and functional on mobile devices.",
+        "details": "1. Implement responsive design using Tailwind CSS\n2. Create mobile-specific layouts for game rooms and gameplay\n3. Optimize touch interactions for mobile users\n4. Ensure proper rendering of question types on smaller screens\n5. Adapt host controls for mobile usage\n6. Test and optimize performance on various mobile devices",
+        "testStrategy": "Conduct cross-device testing on various screen sizes and orientations. Perform usability testing on both Android and iOS devices. Use browser developer tools to simulate different device sizes.",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Implement Basic Chat Functionality",
+        "description": "Add a simple chat system for communication within game rooms.",
+        "details": "1. Create chat UI component\n2. Implement real-time message sending and receiving using Supabase Realtime\n3. Add user identification in chat messages\n4. Implement basic moderation features (e.g., profanity filter)\n5. Ensure chat history persistence within game sessions",
+        "testStrategy": "Write unit tests for chat functionality. Conduct integration tests to ensure proper real-time communication. Test chat system under various network conditions.",
+        "priority": "low",
+        "dependencies": [
+          4,
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Develop Game History and Statistics",
+        "description": "Create a system for storing and displaying game history and player statistics.",
+        "details": "1. Design and implement database schema for game history\n2. Create API endpoints for retrieving game history and statistics\n3. Develop UI for displaying personal game history\n4. Implement team performance statistics\n5. Create global leaderboards for registered users\n6. Add filtering and sorting options for game history",
+        "testStrategy": "Write unit tests for statistics calculations. Perform integration tests to ensure proper data retrieval and display. Conduct user acceptance testing for the statistics interface.",
+        "priority": "low",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "Implement Advanced Host Controls",
+        "description": "Enhance host controls with additional features for game management.",
+        "details": "1. Implement question set management interface\n2. Add ability to edit questions on-the-fly\n3. Create custom round creation functionality\n4. Implement advanced scoring options (e.g., bonus points, penalties)\n5. Add timer controls for timed rounds\n6. Develop host dashboard for monitoring game progress",
+        "testStrategy": "Conduct usability testing with experienced hosts. Write integration tests for new host control features. Perform stress testing to ensure stability under various game scenarios.",
+        "priority": "medium",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Add Support for Media Questions",
+        "description": "Implement support for image and audio questions in the gameplay.",
+        "details": "1. Set up Supabase Storage for media file uploads\n2. Implement image upload and display functionality\n3. Add audio upload and playback support\n4. Create UI for hosts to add media questions\n5. Optimize media loading and caching for performance\n6. Ensure proper rendering of media questions on all devices",
+        "testStrategy": "Write unit tests for media handling functions. Conduct integration tests for media upload and display. Perform cross-device testing to ensure compatibility.",
+        "priority": "medium",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "Implement Scheduled Games Feature",
+        "description": "Add functionality to schedule games in advance and manage upcoming games.",
+        "details": "1. Create database schema for scheduled games\n2. Implement UI for hosts to schedule games\n3. Develop system for sending game reminders\n4. Create a calendar view for upcoming scheduled games\n5. Implement automatic game start for scheduled games\n6. Add functionality for users to RSVP to scheduled games",
+        "testStrategy": "Write unit tests for scheduling logic. Conduct integration tests for reminder system. Perform user acceptance testing for the scheduling interface.",
+        "priority": "low",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Develop Social Features",
+        "description": "Implement social features such as reactions and achievements.",
+        "details": "1. Design and implement achievement system\n2. Create UI for displaying user achievements\n3. Implement real-time reactions during gameplay\n4. Add friend system for registered users\n5. Create social sharing functionality for game results\n6. Implement notifications for social interactions",
+        "testStrategy": "Write unit tests for achievement and reaction logic. Conduct user acceptance testing for social features. Perform integration tests to ensure proper interaction with existing game systems.",
+        "priority": "low",
+        "dependencies": [
+          3,
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Optimize Performance and Scalability",
+        "description": "Enhance the application's performance to meet specified targets and ensure scalability.",
+        "details": "1. Optimize database queries for <100ms average response time\n2. Implement caching strategies for frequently accessed data\n3. Optimize React components for efficient rendering\n4. Implement code splitting and lazy loading for improved initial load time\n5. Set up monitoring and logging for performance metrics\n6. Conduct load testing to ensure support for 100+ simultaneous games and 1000+ concurrent connections\n7. Optimize WebSocket usage for minimal latency",
+        "testStrategy": "Conduct comprehensive performance testing using tools like Lighthouse and WebPageTest. Perform load testing with tools like Apache JMeter. Monitor real-world performance using analytics tools.",
+        "priority": "high",
+        "dependencies": [
+          2,
+          6,
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Implement Error Handling and Edge Cases",
+        "description": "Develop robust error handling and address various edge cases in the application.",
+        "details": "1. Implement global error boundary in React application\n2. Create user-friendly error messages for common scenarios\n3. Develop handling for network connectivity issues\n4. Implement game state synchronization mechanisms\n5. Address race conditions in answer submissions\n6. Create fallback mechanisms for host disconnection scenarios\n7. Implement proper error logging and monitoring",
+        "testStrategy": "Write unit tests for error handling functions. Conduct integration tests simulating various error scenarios. Perform chaos engineering tests to ensure system resilience.",
+        "priority": "high",
+        "dependencies": [
+          6,
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Enhance Security Measures",
+        "description": "Implement additional security features to protect user data and prevent abuse.",
+        "details": "1. Implement input validation and sanitization across all user inputs\n2. Set up rate limiting for answer submissions and API requests\n3. Enhance profanity filtering for team names and chat\n4. Implement CSRF protection using Supabase's built-in security features\n5. Set up secure headers (Content Security Policy, X-Frame-Options, etc.)\n6. Conduct security audit of database access patterns\n7. Implement encryption for sensitive data at rest",
+        "testStrategy": "Conduct penetration testing to identify vulnerabilities. Perform security code review. Use automated security scanning tools. Test all security measures with various attack scenarios.",
+        "priority": "high",
+        "dependencies": [
+          2,
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 21,
+        "title": "Develop Custom Question Set Feature",
+        "description": "Create functionality for hosts to create and manage custom question sets.",
+        "details": "1. Design database schema for custom question sets\n2. Implement UI for creating and editing question sets\n3. Add import/export functionality for question sets\n4. Create tagging system for organizing questions\n5. Implement search and filter functionality for question sets\n6. Add option to share question sets between hosts",
+        "testStrategy": "Write unit tests for question set management functions. Conduct user acceptance testing with hosts. Perform integration tests to ensure proper interaction with the gameplay engine.",
+        "priority": "medium",
+        "dependencies": [
+          6,
+          14
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 22,
+        "title": "Implement Tournament Brackets",
+        "description": "Develop a system for creating and managing tournament-style gameplay.",
+        "details": "1. Design database schema for tournament structures\n2. Implement UI for creating and managing tournaments\n3. Develop automatic bracket generation based on team count\n4. Create system for tracking tournament progress\n5. Implement tournament-specific leaderboards\n6. Add support for different tournament styles (single elimination, double elimination, round-robin)",
+        "testStrategy": "Write unit tests for tournament logic and bracket generation. Conduct integration tests to ensure proper interaction with existing game systems. Perform user acceptance testing for tournament management.",
+        "priority": "low",
+        "dependencies": [
+          4,
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 23,
+        "title": "Integrate External Trivia APIs",
+        "description": "Add support for fetching questions from external trivia APIs to expand question variety.",
+        "details": "1. Research and select suitable external trivia APIs\n2. Implement API integration for fetching questions\n3. Create mapping function to convert API responses to internal question format\n4. Add option for hosts to use external questions in games\n5. Implement caching mechanism for fetched questions\n6. Create fallback mechanism for API failures",
+        "testStrategy": "Write unit tests for API integration and mapping functions. Conduct integration tests with mock API responses. Perform error handling tests for various API failure scenarios.",
+        "priority": "low",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 24,
+        "title": "Develop Advanced Analytics Dashboard",
+        "description": "Create a comprehensive analytics dashboard for hosts and administrators.",
+        "details": "1. Design and implement database schema for detailed analytics\n2. Create data aggregation and analysis functions\n3. Implement UI for displaying various analytics metrics\n4. Add filtering and date range selection for analytics\n5. Create visualization components for key metrics\n6. Implement export functionality for analytics data",
+        "testStrategy": "Write unit tests for data aggregation and analysis functions. Conduct user acceptance testing with hosts and administrators. Perform integration tests to ensure accurate data representation.",
+        "priority": "low",
+        "dependencies": [
+          9,
+          13
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 25,
+        "title": "Prepare for Mobile App Development",
+        "description": "Lay the groundwork for future development of native mobile apps.",
+        "details": "1. Evaluate React Native as a potential framework for mobile app development\n2. Identify components and features that need to be adapted for mobile\n3. Create a plan for sharing code between web and mobile versions\n4. Research platform-specific requirements (iOS App Store, Google Play Store)\n5. Develop a prototype of key features in React Native\n6. Create a roadmap for full mobile app development",
+        "testStrategy": "Conduct feasibility study of mobile app development. Create and test proof-of-concept for key features in React Native. Perform cross-platform testing of the prototype.",
+        "priority": "low",
+        "dependencies": [
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 26,
+        "title": "Implement Complete Database Schema",
+        "description": "Create a comprehensive database schema with all tables, constraints, indexes, and Row Level Security (RLS) policies as specified in the API specification and development setup guide.",
+        "details": "1. Review API specification and development setup guide to identify all required database entities\n2. Design and implement the following tables:\n   - users/profiles (extending Supabase Auth)\n   - game_rooms (with configuration options)\n   - teams (with metadata and scoring)\n   - team_members (linking users to teams)\n   - questions (with categories, difficulty levels, and media)\n   - game_rounds (with round-specific settings)\n   - team_answers (tracking submissions and scores)\n   - team_point_usage (for power-ups and special features)\n   - game_state (for real-time state management)\n   - achievements (for social features)\n   - tournament_brackets (for tournament functionality)\n3. Implement appropriate foreign key constraints between related tables\n4. Create necessary indexes for performance optimization:\n   - Index user_id in team_members for quick team lookups\n   - Index game_room_id in teams for efficient filtering\n   - Index team_id in team_answers for quick scoring calculations\n5. Implement Row Level Security (RLS) policies:\n   - Restrict user access to only their own profile data\n   - Limit game room access to participants and hosts\n   - Restrict question visibility based on game state\n   - Control team management permissions based on roles\n6. Create database functions and triggers for:\n   - Automatic score calculations\n   - Team membership validation\n   - Game state transitions\n7. Document the complete schema with entity relationship diagrams\n8. Implement database migrations for version control",
+        "testStrategy": "1. Write SQL scripts to validate table creation and relationships\n2. Test all foreign key constraints by attempting invalid operations\n3. Verify indexes are properly created and used in query plans\n4. Test RLS policies by attempting unauthorized access from different user contexts\n5. Benchmark query performance for common operations and optimize as needed\n6. Create test data sets to validate schema functionality\n7. Verify database functions and triggers with various input scenarios\n8. Test migration scripts for both forward and rollback operations\n9. Conduct security review of RLS policies to ensure proper data isolation\n10. Perform load testing to ensure schema performs well under expected usage patterns",
+        "status": "pending",
+        "dependencies": [
+          2
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 27,
+        "title": "Implement API Endpoints According to Specification",
+        "description": "Develop and deploy all API endpoints as specified in the API specification, including authentication, game management, and Edge Functions for complex business logic.",
+        "details": "1. Review the complete API specification document to understand all required endpoints\n2. Implement authentication endpoints:\n   - User registration and login\n   - Session management\n   - Password reset\n   - Guest authentication\n\n3. Implement game room management endpoints:\n   - Create/read/update/delete game rooms\n   - Configure game settings\n   - Manage room access and permissions\n\n4. Implement team management endpoints:\n   - Create/join/leave teams\n   - Update team information\n   - Manage team members\n\n5. Implement game flow control endpoints:\n   - Start/pause/resume/end game\n   - Round management\n   - Timer controls\n\n6. Implement answer submission and review endpoints:\n   - Submit team answers\n   - Host review interface\n   - Score adjustment\n\n7. Implement scoring and leaderboard endpoints:\n   - Calculate and update scores\n   - Generate leaderboards\n   - Track game history\n\n8. Develop Edge Functions for complex business logic:\n   - Custom scoring algorithms\n   - Advanced filtering\n   - Data aggregation and statistics\n   - Automated game progression\n\n9. Ensure all endpoints follow RESTful design principles\n10. Implement proper error handling and status codes\n11. Add request validation and sanitization\n12. Document all endpoints with OpenAPI/Swagger\n13. Optimize database queries for performance\n14. Implement rate limiting to prevent abuse",
+        "testStrategy": "1. Create comprehensive unit tests for each endpoint using a testing framework like Jest\n2. Develop integration tests that verify the interaction between endpoints\n3. Set up automated API tests using tools like Postman or Insomnia\n4. Create test scenarios for each endpoint covering:\n   - Happy path (expected inputs and outputs)\n   - Error cases (invalid inputs, unauthorized access)\n   - Edge cases (boundary conditions, unusual inputs)\n5. Test authentication flows with various user types\n6. Verify proper implementation of rate limiting\n7. Conduct load testing to ensure endpoints can handle expected traffic\n8. Test Edge Functions independently and as part of the API flow\n9. Verify all endpoints against the API specification document\n10. Create a test environment with sample data for manual testing\n11. Implement logging for debugging during testing\n12. Test API performance under various network conditions",
+        "status": "pending",
+        "dependencies": [
+          2,
+          3,
+          5,
+          10,
+          26
+        ],
+        "priority": "medium",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-06-17T14:08:45.878Z",
+      "updated": "2025-06-17T14:12:27.124Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

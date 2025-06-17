@@ -1,0 +1,330 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Component Architecture Guidelines
+
+## Component Types & Patterns
+
+### Presentational Components
+- Pure UI components with no business logic
+- Accept all data via props
+- Focus on how things look
+- Highly reusable across features
+
+```typescript
+interface ButtonProps {
+  variant: 'primary' | 'secondary' | 'danger';
+  size: 'sm' | 'md' | 'lg';
+  children: ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}
+
+export function Button({ variant, size, children, onClick, disabled }: ButtonProps) {
+  return (
+    <button
+      className={clsx(
+        'rounded font-medium transition-colors',
+        {
+          'px-3 py-1.5 text-sm': size === 'sm',
+          'px-4 py-2': size === 'md',
+          'px-6 py-3 text-lg': size === 'lg'
+        },
+        {
+          'bg-blue-500 text-white hover:bg-blue-600': variant === 'primary',
+          'bg-gray-200 text-gray-800 hover:bg-gray-300': variant === 'secondary',
+          'bg-red-500 text-white hover:bg-red-600': variant === 'danger'
+        },
+        { 'opacity-50 cursor-not-allowed': disabled }
+      )}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {children}
+    </button>
+  );
+}
+```
+
+### Container Components
+- Handle business logic and data fetching
+- Pass data to presentational components
+- Manage local state and side effects
+- Connect to global state and services
+
+```typescript
+export function GameRoomContainer() {
+  const { data: gameRoom, isLoading, error } = useGameRoom();
+  const { joinTeam, leaveTeam } = useTeamActions();
+  const currentUser = useAuthStore((state) => state.user);
+  
+  if (isLoading) return <GameRoomSkeleton />;
+  if (error) return <ErrorMessage error={error} />;
+  if (!gameRoom) return <GameRoomNotFound />;
+  
+  return (
+    <GameRoomView
+      gameRoom={gameRoom}
+      currentUser={currentUser}
+      onJoinTeam={joinTeam}
+      onLeaveTeam={leaveTeam}
+    />
+  );
+}
+```
+
+### Feature Components
+- Domain-specific components that combine UI and logic
+- Handle feature-specific workflows
+- Can contain both presentation and business logic
+
+```typescript
+export function AnswerSubmissionForm({ questionId, timeLimit }: Props) {
+  const { submitAnswer, isSubmitting } = useAnswerSubmission();
+  const { availablePoints } = useTeamPointValues();
+  
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(answerSchema)
+  });
+  
+  const onSubmit = async (data: AnswerFormData) => {
+    await submitAnswer({
+      questionId,
+      answer: data.answer,
+      pointValue: data.pointValue
+    });
+  };
+  
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Form implementation */}
+    </form>
+  );
+}
+```
+
+## Component Organization
+
+### Shared vs Feature Components
+
+#### Shared Components (src/shared/components/)
+- **UI Primitives**: Button, Input, Modal, Tooltip, Badge
+- **Layout**: Header, Sidebar, Footer, Container, Grid
+- **Feedback**: Loading, Error, Toast, Skeleton
+- **Navigation**: Link, Breadcrumb, Pagination
+
+#### Feature Components (src/features/*/components/)
+- **Domain-specific**: QuestionCard, TeamList, GameBoard, Leaderboard
+- **Workflows**: AnswerSubmissionFlow, TeamFormationWizard
+- **Feature UI**: GameRoomHeader, TeamMemberCard
+
+### Component File Structure
+
+#### Simple Components
+```
+Button.tsx              # Component implementation
+Button.types.ts         # TypeScript interfaces (if complex)
+index.ts               # Re-export
+```
+
+#### Complex Components
+```
+GameRoom/
+├── GameRoom.tsx           # Main component
+├── GameRoom.types.ts      # TypeScript interfaces
+├── GameRoom.test.tsx      # Unit tests
+├── components/            # Sub-components
+│   ├── GameRoomHeader.tsx
+│   ├── PlayerList.tsx
+│   └── index.ts
+└── index.ts              # Public exports
+```
+
+## Composition Patterns
+
+### Compound Components
+Use for complex UI patterns with multiple related parts:
+
+```typescript
+// Usage
+<Modal>
+  <Modal.Header>
+    <Modal.Title>Join Team</Modal.Title>
+    <Modal.CloseButton />
+  </Modal.Header>
+  <Modal.Body>
+    <TeamSelectionForm />
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={onCancel}>Cancel</Button>
+    <Button variant="primary" onClick={onConfirm}>Join</Button>
+  </Modal.Footer>
+</Modal>
+
+// Implementation
+const Modal = ({ children }: { children: ReactNode }) => (
+  <div className="modal-backdrop">
+    <div className="modal-content">
+      {children}
+    </div>
+  </div>
+);
+
+Modal.Header = ({ children }: { children: ReactNode }) => (
+  <div className="modal-header">{children}</div>
+);
+
+Modal.Body = ({ children }: { children: ReactNode }) => (
+  <div className="modal-body">{children}</div>
+);
+
+Modal.Footer = ({ children }: { children: ReactNode }) => (
+  <div className="modal-footer">{children}</div>
+);
+```
+
+### Render Props & Children Functions
+For flexible, reusable logic:
+
+```typescript
+interface RenderProps {
+  data: GameData;
+  isLoading: boolean;
+  error: Error | null;
+}
+
+interface DataFetcherProps {
+  children: (props: RenderProps) => ReactNode;
+  gameId: string;
+}
+
+export function DataFetcher({ children, gameId }: DataFetcherProps) {
+  const { data, isLoading, error } = useGameData(gameId);
+  
+  return <>{children({ data, isLoading, error })}</>;
+}
+
+// Usage
+<DataFetcher gameId={gameId}>
+  {({ data, isLoading, error }) => (
+    <div>
+      {isLoading && <LoadingSpinner />}
+      {error && <ErrorMessage error={error} />}
+      {data && <GameDisplay data={data} />}
+    </div>
+  )}
+</DataFetcher>
+```
+
+## Component Props Guidelines
+
+### Props Interface Design
+```typescript
+// Good: Clear, specific interface
+interface GameCardProps {
+  game: Game;
+  isActive: boolean;
+  onJoin: (gameId: string) => void;
+  onLeave: (gameId: string) => void;
+  className?: string;
+}
+
+// Avoid: Generic or unclear props
+interface GameCardProps {
+  data: any;
+  handler: () => void;
+  style?: object;
+}
+```
+
+### Optional vs Required Props
+- Make props required by default
+- Use optional props for customization and styling
+- Provide sensible defaults for optional props
+- Use TypeScript to enforce proper prop usage
+
+### Children and Composition
+- Use `children` prop for content composition
+- Use render props for logic composition
+- Prefer composition over complex prop APIs
+- Keep component APIs simple and focused
+
+## Performance Considerations
+
+### Memoization
+```typescript
+// Memoize expensive components
+export const GameBoard = memo(({ game, teams }: GameBoardProps) => {
+  // Component implementation
+});
+
+// Memoize with custom comparison
+export const TeamCard = memo(({ team }: TeamCardProps) => {
+  // Component implementation
+}, (prevProps, nextProps) => {
+  return prevProps.team.id === nextProps.team.id && 
+         prevProps.team.score === nextProps.team.score;
+});
+```
+
+### Callback Stability
+```typescript
+// Use useCallback for stable function references
+export function GameRoom({ gameId }: { gameId: string }) {
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  
+  const handleTeamSelect = useCallback((teamId: string) => {
+    setSelectedTeam(teamId);
+  }, []);
+  
+  return (
+    <TeamList teams={teams} onTeamSelect={handleTeamSelect} />
+  );
+}
+```
+
+## Error Handling in Components
+
+### Error Boundaries
+Implement error boundaries for component trees:
+
+```typescript
+export function FeatureErrorBoundary({ children }: { children: ReactNode }) {
+  return (
+    <ErrorBoundary
+      fallback={<FeatureErrorFallback />}
+      onError={(error, errorInfo) => {
+        console.error('Feature error:', error, errorInfo);
+        // Log to monitoring service
+      }}
+    >
+      {children}
+    </ErrorBoundary>
+  );
+}
+```
+
+### Graceful Degradation
+Handle errors gracefully within components:
+
+```typescript
+export function GameData({ gameId }: { gameId: string }) {
+  const { data, error, isLoading } = useGameData(gameId);
+  
+  if (isLoading) return <GameDataSkeleton />;
+  
+  if (error) {
+    return (
+      <ErrorMessage 
+        title="Unable to load game data"
+        message="Please try refreshing the page"
+        onRetry={() => window.location.reload()}
+      />
+    );
+  }
+  
+  return <GameDisplay data={data} />;
+}
+```

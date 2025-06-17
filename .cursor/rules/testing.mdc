@@ -1,0 +1,655 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Testing Guidelines
+
+## Testing Strategy
+
+### Test Types and Priorities
+1. **Unit Tests**: Component logic, utilities, pure functions
+2. **Integration Tests**: Feature workflows, API interactions
+3. **E2E Tests**: Critical user journeys, game flows
+
+### Testing Pyramid
+- **70% Unit Tests**: Fast, isolated, component testing
+- **20% Integration Tests**: Feature testing with mocked services
+- **10% E2E Tests**: Full user workflows
+
+## Unit Testing with React Testing Library
+
+### Component Testing Patterns
+Test user interactions, not implementation details:
+
+```typescript
+// GameRoom.test.tsx
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { GameRoom } from './GameRoom';
+import { mockGameRoomData } from '../../../test-utils/mockData';
+
+// Test setup utilities
+function renderGameRoom(props: Partial<GameRoomProps> = {}) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false }
+    }
+  });
+
+  const defaultProps = {
+    roomId: 'test-room-1',
+    ...props
+  };
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <GameRoom {...defaultProps} />
+    </QueryClientProvider>
+  );
+}
+
+describe('GameRoom', () => {
+  beforeEach(() => {
+    // Reset mocks
+    jest.clearAllMocks();
+  });
+
+  it('should display game room information', async () => {
+    // Pre-populate React Query cache
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(['game-rooms', 'test-room-1'], mockGameRoomData);
+
+    renderGameRoom();
+
+    await waitFor(() => {
+      expect(screen.getByText(mockGameRoomData.name)).toBeInTheDocument();
+      expect(screen.getByText('Host: John Doe')).toBeInTheDocument();
+    });
+  });
+
+  it('should allow joining a team', async () => {
+    const user = userEvent.setup();
+    const mockJoinTeam = jest.fn();
+    
+    renderGameRoom();
+
+    const joinButton = screen.getByRole('button', { name: /join team/i });
+    await user.click(joinButton);
+
+    expect(mockJoinTeam).toHaveBeenCalledWith('team-1');
+  });
+
+  it('should show loading state while fetching data', () => {
+    renderGameRoom();
+    
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    expect(screen.getByText('Loading game room...')).toBeInTheDocument();
+  });
+
+  it('should show error state when fetch fails', async () => {
+    // Mock API error
+    const mockError = new Error('Failed to fetch game room');
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    renderGameRoom();
+
+    await waitFor(() => {
+      expect(screen.getByText('Error loading game room')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+    });
+  });
+});
+```
+
+### Hook Testing
+Test custom hooks in isolation:
+
+```typescript
+// useGameRoom.test.ts
+import { renderHook, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useGameRoom } from './useGameRoom';
+import { gameRoomService } from '../services/gameRoomService';
+
+// Mock the service
+jest.mock('../services/gameRoomService');
+const mockGameRoomService = gameRoomService as jest.Mocked<typeof gameRoomService>;
+
+// Test wrapper
+function createQueryWrapper() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false }
+    }
+  });
+
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+}
+
+describe('useGameRoom', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should fetch game room data successfully', async () => {
+    const mockData = { id: 'room-1', name: 'Test Room' };
+    mockGameRoomService.getGameRoom.mockResolvedValue(mockData);
+
+    const { result } = renderHook(() => useGameRoom('room-1'), {
+      wrapper: createQueryWrapper()
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(result.current.data).toEqual(mockData);
+    expect(mockGameRoomService.getGameRoom).toHaveBeenCalledWith('room-1');
+  });
+
+  it('should handle errors gracefully', async () => {
+    const mockError = new Error('Network error');
+    mockGameRoomService.getGameRoom.mockRejectedValue(mockError);
+
+    const { result } = renderHook(() => useGameRoom('room-1'), {
+      wrapper: createQueryWrapper()
+    });
+
+    await waitFor(() => {
+      expect(result.current.isError).toBe(true);
+    });
+
+    expect(result.current.error).toEqual(mockError);
+  });
+
+  it('should not fetch when roomId is empty', () => {
+    renderHook(() => useGameRoom(''), {
+      wrapper: createQueryWrapper()
+    });
+
+    expect(mockGameRoomService.getGameRoom).not.toHaveBeenCalled();
+  });
+});
+```
+
+## Mocking Strategies
+
+### Service Layer Mocking
+Mock external dependencies at the service layer:
+
+```typescript
+// test-utils/mockSupabase.ts
+export const mockSupabase = {
+  from: jest.fn(() => ({
+    select: jest.fn().mockReturnThis(),
+    insert: jest.fn().mockReturnThis(),
+    update: jest.fn().mockReturnThis(),
+    delete: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    single: jest.fn(),
+    order: jest.fn().mockReturnThis()
+  })),
+  auth: {
+    getSession: jest.fn(),
+    onAuthStateChange: jest.fn(() => ({
+      data: { subscription: { unsubscribe: jest.fn() } }
+    }))
+  },
+  channel: jest.fn(() => ({
+    on: jest.fn().mockReturnThis(),
+    subscribe: jest.fn(),
+    unsubscribe: jest.fn(),
+    send: jest.fn()
+  })),
+  realtime: {
+    onOpen: jest.fn(),
+    onClose: jest.fn()
+  }
+};
+
+// Mock Supabase client
+jest.mock('../services/supabase', () => ({
+  supabase: mockSupabase
+}));
+```
+
+### Real-time Mocking
+Mock WebSocket subscriptions for testing:
+
+```typescript
+// test-utils/mockRealtime.ts
+export class MockRealtimeChannel {
+  private listeners: Map<string, Function[]> = new Map();
+
+  on(event: string, callback: Function) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, []);
+    }
+    this.listeners.get(event)!.push(callback);
+    return this;
+  }
+
+  emit(event: string, payload: any) {
+    const callbacks = this.listeners.get(event) || [];
+    callbacks.forEach(callback => callback(payload));
+  }
+
+  subscribe() {
+    return Promise.resolve();
+  }
+
+  unsubscribe() {
+    this.listeners.clear();
+  }
+}
+
+// Usage in tests
+describe('useGameRoomRealtime', () => {
+  it('should update game state when receiving real-time updates', async () => {
+    const mockChannel = new MockRealtimeChannel();
+    jest.spyOn(supabase, 'channel').mockReturnValue(mockChannel as any);
+
+    const { result } = renderHook(() => useGameRoomRealtime('room-1'));
+
+    // Simulate real-time update
+    mockChannel.emit('postgres_changes', {
+      new: { id: 'room-1', status: 'active' }
+    });
+
+    await waitFor(() => {
+      // Verify state was updated
+    });
+  });
+});
+```
+
+## Form Testing
+
+### Form Validation Testing
+Test form validation and submission:
+
+```typescript
+// AnswerSubmissionForm.test.tsx
+describe('AnswerSubmissionForm', () => {
+  it('should validate required fields', async () => {
+    const user = userEvent.setup();
+    const mockSubmit = jest.fn();
+
+    render(<AnswerSubmissionForm onSubmit={mockSubmit} />);
+
+    const submitButton = screen.getByRole('button', { name: /submit/i });
+    await user.click(submitButton);
+
+    expect(screen.getByText('Answer is required')).toBeInTheDocument();
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
+  it('should submit valid form data', async () => {
+    const user = userEvent.setup();
+    const mockSubmit = jest.fn();
+
+    render(<AnswerSubmissionForm onSubmit={mockSubmit} />);
+
+    const answerInput = screen.getByLabelText(/your answer/i);
+    const pointSelect = screen.getByLabelText(/point value/i);
+    const submitButton = screen.getByRole('button', { name: /submit/i });
+
+    await user.type(answerInput, 'Paris');
+    await user.selectOptions(pointSelect, '5');
+    await user.click(submitButton);
+
+    expect(mockSubmit).toHaveBeenCalledWith({
+      answer: 'Paris',
+      pointValue: 5
+    });
+  });
+
+  it('should show loading state during submission', async () => {
+    const user = userEvent.setup();
+    const mockSubmit = jest.fn(() => new Promise(resolve => setTimeout(resolve, 100)));
+
+    render(<AnswerSubmissionForm onSubmit={mockSubmit} />);
+
+    const answerInput = screen.getByLabelText(/your answer/i);
+    const submitButton = screen.getByRole('button', { name: /submit/i });
+
+    await user.type(answerInput, 'Test Answer');
+    await user.click(submitButton);
+
+    expect(screen.getByText('Submitting...')).toBeInTheDocument();
+    expect(submitButton).toBeDisabled();
+  });
+});
+```
+
+## Integration Testing
+
+### Feature Workflow Testing
+Test complete feature workflows:
+
+```typescript
+// features/game-room/GameRoom.integration.test.tsx
+describe('GameRoom Integration', () => {
+  it('should complete join team workflow', async () => {
+    const user = userEvent.setup();
+    
+    // Setup mocks
+    mockGameRoomService.getGameRoom.mockResolvedValue(mockGameRoomData);
+    mockTeamService.joinTeam.mockResolvedValue(mockTeamData);
+
+    render(<GameRoomContainer roomId="room-1" />);
+
+    // Wait for data to load
+    await waitFor(() => {
+      expect(screen.getByText(mockGameRoomData.name)).toBeInTheDocument();
+    });
+
+    // Find and click join team button
+    const joinButton = screen.getByRole('button', { name: /join team alpha/i });
+    await user.click(joinButton);
+
+    // Verify confirmation modal appears
+    expect(screen.getByText('Confirm Join Team')).toBeInTheDocument();
+
+    // Confirm join
+    const confirmButton = screen.getByRole('button', { name: /confirm/i });
+    await user.click(confirmButton);
+
+    // Verify success state
+    await waitFor(() => {
+      expect(screen.getByText('Successfully joined Team Alpha')).toBeInTheDocument();
+    });
+
+    expect(mockTeamService.joinTeam).toHaveBeenCalledWith('team-alpha', 'user-1');
+  });
+
+  it('should handle team full scenario', async () => {
+    const user = userEvent.setup();
+    
+    // Mock team full error
+    mockTeamService.joinTeam.mockRejectedValue(new Error('Team is full'));
+
+    render(<GameRoomContainer roomId="room-1" />);
+
+    const joinButton = screen.getByRole('button', { name: /join team alpha/i });
+    await user.click(joinButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Team is full')).toBeInTheDocument();
+    });
+  });
+});
+```
+
+## E2E Testing with Playwright
+
+### Critical User Journey Testing
+```typescript
+// e2e/game-flow.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Complete Game Flow', () => {
+  test('host can create and manage a game', async ({ page }) => {
+    // Navigate to app
+    await page.goto('/');
+
+    // Login as host
+    await page.fill('[data-testid="email"]', 'host@example.com');
+    await page.fill('[data-testid="password"]', 'password');
+    await page.click('[data-testid="login-button"]');
+
+    // Create new game room
+    await page.click('[data-testid="create-game-button"]');
+    await page.fill('[data-testid="room-name"]', 'Test Trivia Game');
+    await page.fill('[data-testid="max-teams"]', '4');
+    await page.click('[data-testid="create-room-button"]');
+
+    // Verify room created and code displayed
+    await expect(page.locator('[data-testid="room-code"]')).toBeVisible();
+    const roomCode = await page.textContent('[data-testid="room-code"]');
+
+    // Start game
+    await page.click('[data-testid="start-game-button"]');
+
+    // Verify game started
+    await expect(page.locator('[data-testid="game-status"]')).toContainText('Active');
+  });
+
+  test('player can join game and submit answers', async ({ page }) => {
+    // Navigate to join page
+    await page.goto('/join');
+
+    // Enter room code
+    await page.fill('[data-testid="room-code-input"]', 'ABCD12');
+    await page.click('[data-testid="join-room-button"]');
+
+    // Create team
+    await page.click('[data-testid="create-team-button"]');
+    await page.fill('[data-testid="team-name"]', 'Team Awesome');
+    await page.click('[data-testid="create-team-submit"]');
+
+    // Wait for game to start
+    await expect(page.locator('[data-testid="game-status"]')).toContainText('Active');
+
+    // Submit answer
+    await page.fill('[data-testid="answer-input"]', 'Paris');
+    await page.selectOption('[data-testid="point-select"]', '5');
+    await page.click('[data-testid="submit-answer"]');
+
+    // Verify answer submitted
+    await expect(page.locator('[data-testid="answer-status"]')).toContainText('Submitted');
+  });
+});
+```
+
+### Visual Regression Testing
+```typescript
+// e2e/visual.spec.ts
+test('visual regression tests', async ({ page }) => {
+  await page.goto('/game-room/test-room');
+  
+  // Wait for content to load
+  await page.waitForSelector('[data-testid="game-room-content"]');
+  
+  // Take screenshot
+  await expect(page).toHaveScreenshot('game-room.png');
+  
+  // Test different states
+  await page.click('[data-testid="start-game-button"]');
+  await expect(page).toHaveScreenshot('game-room-active.png');
+});
+```
+
+## Test Utilities and Setup
+
+### Test Data Factory
+Create reusable test data:
+
+```typescript
+// test-utils/factories.ts
+export const createMockGameRoom = (overrides: Partial<GameRoom> = {}): GameRoom => ({
+  id: 'room-1',
+  code: 'ABCD12',
+  name: 'Test Game Room',
+  host_id: 'host-1',
+  status: 'lobby',
+  max_teams: 4,
+  created_at: '2024-01-01T00:00:00Z',
+  ...overrides
+});
+
+export const createMockTeam = (overrides: Partial<Team> = {}): Team => ({
+  id: 'team-1',
+  room_id: 'room-1',
+  name: 'Team Alpha',
+  captain_id: 'user-1',
+  members: [],
+  created_at: '2024-01-01T00:00:00Z',
+  ...overrides
+});
+
+export const createMockUser = (overrides: Partial<User> = {}): User => ({
+  id: 'user-1',
+  username: 'testuser',
+  email: 'test@example.com',
+  ...overrides
+});
+```
+
+### Custom Render Utilities
+Create wrapped render functions:
+
+```typescript
+// test-utils/render.tsx
+import { render, RenderOptions } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from '../contexts/AuthContext';
+
+interface CustomRenderOptions extends RenderOptions {
+  initialEntries?: string[];
+  user?: User | null;
+}
+
+export function renderWithProviders(
+  ui: React.ReactElement,
+  options: CustomRenderOptions = {}
+) {
+  const { initialEntries = ['/'], user = null, ...renderOptions } = options;
+
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false }
+    }
+  });
+
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return (
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider initialUser={user}>
+            {children}
+          </AuthProvider>
+        </QueryClientProvider>
+      </BrowserRouter>
+    );
+  }
+
+  return render(ui, { wrapper: Wrapper, ...renderOptions });
+}
+
+// Export everything from testing library
+export * from '@testing-library/react';
+export { renderWithProviders as render };
+```
+
+### Global Test Setup
+Configure Jest and testing environment:
+
+```typescript
+// jest.setup.ts
+import '@testing-library/jest-dom';
+import { configure } from '@testing-library/react';
+
+// Configure testing library
+configure({ testIdAttribute: 'data-testid' });
+
+// Mock IntersectionObserver
+global.IntersectionObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn()
+}));
+
+// Mock ResizeObserver
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn()
+}));
+
+// Suppress console errors in tests
+const originalError = console.error;
+console.error = (...args) => {
+  if (args[0]?.includes('Warning:')) return;
+  originalError.call(console, ...args);
+};
+
+// Setup fetch mock
+global.fetch = jest.fn();
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+```
+
+## Performance Testing
+
+### Component Performance Testing
+Test for performance regressions:
+
+```typescript
+// performance/GameRoom.perf.test.tsx
+import { render } from '@testing-library/react';
+import { GameRoom } from '../GameRoom';
+
+describe('GameRoom Performance', () => {
+  it('should render large team list efficiently', () => {
+    const manyTeams = Array.from({ length: 100 }, (_, i) => 
+      createMockTeam({ id: `team-${i}`, name: `Team ${i}` })
+    );
+
+    const startTime = performance.now();
+    
+    render(<GameRoom roomId="room-1" teams={manyTeams} />);
+    
+    const endTime = performance.now();
+    const renderTime = endTime - startTime;
+
+    // Should render in under 100ms
+    expect(renderTime).toBeLessThan(100);
+  });
+});
+```
+
+## Accessibility Testing
+
+### A11y Testing with jest-axe
+```typescript
+// a11y/GameRoom.a11y.test.tsx
+import { render } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import { GameRoom } from '../GameRoom';
+
+expect.extend(toHaveNoViolations);
+
+describe('GameRoom Accessibility', () => {
+  it('should have no accessibility violations', async () => {
+    const { container } = render(<GameRoom roomId="room-1" />);
+    
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+
+  it('should have proper keyboard navigation', async () => {
+    const user = userEvent.setup();
+    render(<GameRoom roomId="room-1" />);
+
+    // Test tab navigation
+    await user.tab();
+    expect(screen.getByRole('button', { name: /join team/i })).toHaveFocus();
+
+    await user.tab();
+    expect(screen.getByRole('button', { name: /create team/i })).toHaveFocus();
+  });
+});
+```

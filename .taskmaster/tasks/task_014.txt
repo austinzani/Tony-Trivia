@@ -1,0 +1,16 @@
+# Task ID: 14
+# Title: Implement Advanced Host Controls
+# Status: pending
+# Dependencies: 7
+# Priority: medium
+# Description: Enhance host controls with additional features for game management.
+# Details:
+1. Implement question set management interface
+2. Add ability to edit questions on-the-fly
+3. Create custom round creation functionality
+4. Implement advanced scoring options (e.g., bonus points, penalties)
+5. Add timer controls for timed rounds
+6. Develop host dashboard for monitoring game progress
+
+# Test Strategy:
+Conduct usability testing with experienced hosts. Write integration tests for new host control features. Perform stress testing to ensure stability under various game scenarios.

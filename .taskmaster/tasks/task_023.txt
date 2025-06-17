@@ -1,0 +1,16 @@
+# Task ID: 23
+# Title: Integrate External Trivia APIs
+# Status: pending
+# Dependencies: 6
+# Priority: low
+# Description: Add support for fetching questions from external trivia APIs to expand question variety.
+# Details:
+1. Research and select suitable external trivia APIs
+2. Implement API integration for fetching questions
+3. Create mapping function to convert API responses to internal question format
+4. Add option for hosts to use external questions in games
+5. Implement caching mechanism for fetched questions
+6. Create fallback mechanism for API failures
+
+# Test Strategy:
+Write unit tests for API integration and mapping functions. Conduct integration tests with mock API responses. Perform error handling tests for various API failure scenarios.

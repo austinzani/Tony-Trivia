@@ -1,0 +1,477 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Data Fetching Guidelines
+
+## React Query Architecture
+
+### Query Key Organization
+Organize query keys hierarchically for easy invalidation and management:
+
+```typescript
+export const queryKeys = {
+  // Top-level entities
+  gameRooms: ['game-rooms'] as const,
+  gameRoom: (id: string) => ['game-rooms', id] as const,
+  gameRoomTeams: (roomId: string) => ['game-rooms', roomId, 'teams'] as const,
+  
+  teams: ['teams'] as const,
+  team: (id: string) => ['teams', id] as const,
+  teamMembers: (teamId: string) => ['teams', teamId, 'members'] as const,
+  
+  questions: ['questions'] as const,
+  roundQuestions: (roundId: string) => ['questions', 'round', roundId] as const,
+  
+  answers: ['answers'] as const,
+  teamAnswers: (teamId: string) => ['answers', 'team', teamId] as const,
+  questionAnswers: (questionId: string) => ['answers', 'question', questionId] as const,
+  
+  leaderboard: (roomId: string) => ['leaderboard', roomId] as const,
+  
+  // User-specific data
+  userGames: (userId: string) => ['user-games', userId] as const,
+  userStats: (userId: string) => ['user-stats', userId] as const
+};
+```
+
+### Service Layer Pattern
+Keep all Supabase calls in dedicated service modules:
+
+```typescript
+// services/gameRoomService.ts
+export const gameRoomService = {
+  getGameRoom: async (id: string): Promise<GameRoom> => {
+    const { data, error } = await supabase
+      .from('game_rooms')
+      .select(`
+        *,
+        teams (
+          *,
+          team_members (*)
+        )
+      `)
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  createGameRoom: async (data: CreateGameRoomData): Promise<GameRoom> => {
+    const { data: gameRoom, error } = await supabase
+      .from('game_rooms')
+      .insert(data)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return gameRoom;
+  },
+
+  updateGameRoom: async (id: string, updates: Partial<GameRoom>): Promise<GameRoom> => {
+    const { data, error } = await supabase
+      .from('game_rooms')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  deleteGameRoom: async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from('game_rooms')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  }
+};
+```
+
+## Custom Hooks Patterns
+
+### Query Hooks
+Create focused hooks for each data fetching need:
+
+```typescript
+// hooks/useGameRoom.ts
+export function useGameRoom(roomId: string) {
+  return useQuery({
+    queryKey: queryKeys.gameRoom(roomId),
+    queryFn: () => gameRoomService.getGameRoom(roomId),
+    enabled: !!roomId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount, error) => {
+      // Don't retry on 404 or auth errors
+      if (error.message.includes('404') || error.message.includes('auth')) {
+        return false;
+      }
+      return failureCount < 3;
+    }
+  });
+}
+
+// hooks/useGameRooms.ts
+export function useGameRooms(filters?: GameRoomFilters) {
+  return useQuery({
+    queryKey: [...queryKeys.gameRooms, filters],
+    queryFn: () => gameRoomService.getGameRooms(filters),
+    keepPreviousData: true, // For pagination
+    staleTime: 2 * 60 * 1000 // 2 minutes
+  });
+}
+```
+
+### Mutation Hooks
+Handle data modifications with proper optimistic updates:
+
+```typescript
+// hooks/useCreateGameRoom.ts
+export function useCreateGameRoom() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: gameRoomService.createGameRoom,
+    onMutate: async (newGameRoom) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.gameRooms });
+      
+      // Snapshot previous value
+      const previousGameRooms = queryClient.getQueryData(queryKeys.gameRooms);
+      
+      // Optimistically update
+      queryClient.setQueryData(queryKeys.gameRooms, (old: GameRoom[] = []) => [
+        ...old,
+        { ...newGameRoom, id: 'temp-id', createdAt: new Date().toISOString() }
+      ]);
+      
+      return { previousGameRooms };
+    },
+    onError: (err, newGameRoom, context) => {
+      // Rollback on error
+      if (context?.previousGameRooms) {
+        queryClient.setQueryData(queryKeys.gameRooms, context.previousGameRooms);
+      }
+    },
+    onSuccess: (data) => {
+      // Update the specific game room cache
+      queryClient.setQueryData(queryKeys.gameRoom(data.id), data);
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency
+      queryClient.invalidateQueries({ queryKey: queryKeys.gameRooms });
+    }
+  });
+}
+
+// hooks/useJoinTeam.ts
+export function useJoinTeam() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ teamId, userId }: { teamId: string; userId: string }) =>
+      teamService.joinTeam(teamId, userId),
+    onSuccess: (data, { teamId }) => {
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.teamMembers(teamId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.gameRoomTeams(data.roomId) });
+    }
+  });
+}
+```
+
+## Caching Strategy
+
+### Cache Configuration
+```typescript
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Default stale time based on data volatility
+      staleTime: 5 * 60 * 1000, // 5 minutes for game data
+      cacheTime: 10 * 60 * 1000, // 10 minutes cache retention
+      
+      // Retry configuration
+      retry: (failureCount, error: any) => {
+        // Don't retry on client errors (4xx)
+        if (error?.status >= 400 && error?.status < 500) {
+          return false;
+        }
+        return failureCount < 3;
+      },
+      
+      // Background refetch settings
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+      refetchOnMount: true
+    },
+    mutations: {
+      retry: 1 // Single retry for mutations
+    }
+  }
+});
+```
+
+### Cache Invalidation Patterns
+```typescript
+// Invalidate related data after mutations
+export function useSubmitAnswer() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: answerService.submitAnswer,
+    onSuccess: (data) => {
+      // Invalidate multiple related queries
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.questionAnswers(data.questionId) 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.teamAnswers(data.teamId) 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.leaderboard(data.roomId) 
+      });
+    }
+  });
+}
+
+// Selective invalidation with query filters
+export function useUpdateGameRoom() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: gameRoomService.updateGameRoom,
+    onSuccess: (data) => {
+      // Update specific cache entry
+      queryClient.setQueryData(queryKeys.gameRoom(data.id), data);
+      
+      // Invalidate list queries that might include this room
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.gameRooms,
+        exact: false 
+      });
+    }
+  });
+}
+```
+
+## Real-time Integration
+
+### Combining React Query with Real-time Updates
+```typescript
+// hooks/useGameRoomRealtime.ts
+export function useGameRoomRealtime(roomId: string) {
+  const queryClient = useQueryClient();
+  
+  useEffect(() => {
+    if (!roomId) return;
+    
+    const subscription = supabase
+      .channel(`game-room:${roomId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'game_rooms',
+        filter: `id=eq.${roomId}`
+      }, (payload) => {
+        // Update React Query cache with real-time data
+        queryClient.setQueryData(queryKeys.gameRoom(roomId), payload.new);
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'teams',
+        filter: `room_id=eq.${roomId}`
+      }, () => {
+        // Invalidate teams when team data changes
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.gameRoomTeams(roomId) 
+        });
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [roomId, queryClient]);
+}
+
+// Usage in component
+export function GameRoom({ roomId }: { roomId: string }) {
+  const { data: gameRoom, isLoading, error } = useGameRoom(roomId);
+  
+  // Enable real-time updates
+  useGameRoomRealtime(roomId);
+  
+  if (isLoading) return <GameRoomSkeleton />;
+  if (error) return <ErrorMessage error={error} />;
+  
+  return <GameRoomView gameRoom={gameRoom} />;
+}
+```
+
+## Error Handling
+
+### Global Error Handling
+```typescript
+// utils/queryErrorHandler.ts
+export function handleQueryError(error: any) {
+  if (error?.message?.includes('auth')) {
+    // Redirect to login
+    window.location.href = '/login';
+    return;
+  }
+  
+  if (error?.status === 403) {
+    // Show permission error
+    toast.error('You do not have permission to access this resource');
+    return;
+  }
+  
+  // Log error for monitoring
+  console.error('Query error:', error);
+  
+  // Show generic error message
+  toast.error('Something went wrong. Please try again.');
+}
+
+// Use in query hooks
+export function useGameRoom(roomId: string) {
+  return useQuery({
+    queryKey: queryKeys.gameRoom(roomId),
+    queryFn: () => gameRoomService.getGameRoom(roomId),
+    onError: handleQueryError,
+    enabled: !!roomId
+  });
+}
+```
+
+### Component-Level Error Boundaries
+```typescript
+// components/QueryErrorBoundary.tsx
+export function QueryErrorBoundary({ 
+  children, 
+  fallback: Fallback = DefaultErrorFallback 
+}: {
+  children: ReactNode;
+  fallback?: ComponentType<{ error: Error; retry: () => void }>;
+}) {
+  return (
+    <ErrorBoundary
+      fallbackRender={({ error, resetErrorBoundary }) => (
+        <Fallback error={error} retry={resetErrorBoundary} />
+      )}
+      onError={(error, errorInfo) => {
+        console.error('Query error boundary:', error, errorInfo);
+        // Log to monitoring service
+      }}
+    >
+      {children}
+    </ErrorBoundary>
+  );
+}
+```
+
+## Performance Optimization
+
+### Background Fetching
+```typescript
+// Prefetch data for better UX
+export function useGameRoomsPrefetch() {
+  const queryClient = useQueryClient();
+  
+  const prefetchGameRoom = useCallback((roomId: string) => {
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.gameRoom(roomId),
+      queryFn: () => gameRoomService.getGameRoom(roomId),
+      staleTime: 10 * 60 * 1000 // Don't prefetch if data is fresh
+    });
+  }, [queryClient]);
+  
+  return { prefetchGameRoom };
+}
+
+// Use on hover or other predictable user actions
+export function GameRoomCard({ room }: { room: GameRoom }) {
+  const { prefetchGameRoom } = useGameRoomsPrefetch();
+  
+  return (
+    <div 
+      onMouseEnter={() => prefetchGameRoom(room.id)}
+      className="game-room-card"
+    >
+      {/* Card content */}
+    </div>
+  );
+}
+```
+
+### Infinite Queries for Lists
+```typescript
+// hooks/useGameRoomsInfinite.ts
+export function useGameRoomsInfinite(filters?: GameRoomFilters) {
+  return useInfiniteQuery({
+    queryKey: [...queryKeys.gameRooms, 'infinite', filters],
+    queryFn: ({ pageParam = 0 }) => 
+      gameRoomService.getGameRooms({
+        ...filters,
+        offset: pageParam,
+        limit: 10
+      }),
+    getNextPageParam: (lastPage, pages) => {
+      if (lastPage.length < 10) return undefined;
+      return pages.length * 10;
+    },
+    keepPreviousData: true
+  });
+}
+```
+
+## Testing Patterns
+
+### Mocking React Query in Tests
+```typescript
+// test-utils/mockQueryClient.ts
+export function createMockQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        cacheTime: Infinity
+      }
+    }
+  });
+}
+
+// tests/GameRoom.test.tsx
+describe('GameRoom', () => {
+  let queryClient: QueryClient;
+  
+  beforeEach(() => {
+    queryClient = createMockQueryClient();
+  });
+  
+  it('should display game room data', async () => {
+    // Pre-populate cache
+    queryClient.setQueryData(
+      queryKeys.gameRoom('room-1'),
+      mockGameRoomData
+    );
+    
+    render(
+      <QueryClientProvider client={queryClient}>
+        <GameRoom roomId="room-1" />
+      </QueryClientProvider>
+    );
+    
+    await waitFor(() => {
+      expect(screen.getByText(mockGameRoomData.name)).toBeInTheDocument();
+    });
+  });
+});
+```

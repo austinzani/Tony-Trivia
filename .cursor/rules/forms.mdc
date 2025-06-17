@@ -1,0 +1,427 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Forms & Validation Guidelines
+
+## React Hook Form + Zod Pattern
+
+### Schema-First Approach
+Always define the Zod schema first, then infer the TypeScript type:
+
+```typescript
+// 1. Define schema
+const answerSubmissionSchema = z.object({
+  answer: z.string().min(1, 'Answer is required').max(500, 'Answer too long'),
+  pointValue: z.number().min(1).max(6),
+  confidence: z.enum(['low', 'medium', 'high']).optional()
+});
+
+// 2. Infer TypeScript type
+type AnswerSubmissionForm = z.infer<typeof answerSubmissionSchema>;
+
+// 3. Use in component
+export function AnswerSubmissionForm({ onSubmit }: Props) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+    setValue
+  } = useForm<AnswerSubmissionForm>({
+    resolver: zodResolver(answerSubmissionSchema),
+    defaultValues: {
+      answer: '',
+      pointValue: 1
+    }
+  });
+
+  const onFormSubmit = async (data: AnswerSubmissionForm) => {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      // Handle submission errors
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+      {/* Form fields */}
+    </form>
+  );
+}
+```
+
+## Form Field Patterns
+
+### Input Field with Validation
+```typescript
+<div className="space-y-1">
+  <label htmlFor="answer" className="block text-sm font-medium">
+    Your Answer *
+  </label>
+  <input
+    id="answer"
+    {...register('answer')}
+    placeholder="Enter your answer"
+    className={clsx(
+      'w-full px-3 py-2 border rounded-md',
+      errors.answer 
+        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+        : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+    )}
+    aria-invalid={errors.answer ? 'true' : 'false'}
+    aria-describedby={errors.answer ? 'answer-error' : undefined}
+  />
+  {errors.answer && (
+    <p id="answer-error" className="text-red-600 text-sm">
+      {errors.answer.message}
+    </p>
+  )}
+</div>
+```
+
+### Select Field Pattern
+```typescript
+<div className="space-y-1">
+  <label htmlFor="pointValue" className="block text-sm font-medium">
+    Point Value *
+  </label>
+  <select
+    id="pointValue"
+    {...register('pointValue', { valueAsNumber: true })}
+    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500"
+  >
+    <option value={1}>1 Point</option>
+    <option value={3}>3 Points</option>
+    <option value={5}>5 Points</option>
+  </select>
+  {errors.pointValue && (
+    <p className="text-red-600 text-sm">{errors.pointValue.message}</p>
+  )}
+</div>
+```
+
+### Checkbox and Radio Patterns
+```typescript
+// Checkbox
+<div className="flex items-center space-x-2">
+  <input
+    id="confirmSubmission"
+    type="checkbox"
+    {...register('confirmSubmission')}
+    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+  />
+  <label htmlFor="confirmSubmission" className="text-sm">
+    I confirm this is my final answer
+  </label>
+</div>
+
+// Radio Group
+<fieldset className="space-y-2">
+  <legend className="text-sm font-medium">Confidence Level</legend>
+  {['low', 'medium', 'high'].map((level) => (
+    <div key={level} className="flex items-center space-x-2">
+      <input
+        id={`confidence-${level}`}
+        type="radio"
+        value={level}
+        {...register('confidence')}
+        className="border-gray-300 text-blue-600 focus:ring-blue-500"
+      />
+      <label htmlFor={`confidence-${level}`} className="text-sm capitalize">
+        {level}
+      </label>
+    </div>
+  ))}
+</fieldset>
+```
+
+## Complex Form Patterns
+
+### Multi-Step Forms
+```typescript
+const createTeamSchema = z.object({
+  step1: z.object({
+    teamName: z.string().min(1, 'Team name required').max(30),
+    description: z.string().optional()
+  }),
+  step2: z.object({
+    maxMembers: z.number().min(1).max(6),
+    isPrivate: z.boolean()
+  })
+});
+
+export function CreateTeamWizard() {
+  const [currentStep, setCurrentStep] = useState(1);
+  const methods = useForm<CreateTeamForm>({
+    resolver: zodResolver(createTeamSchema),
+    mode: 'onChange'
+  });
+
+  const { trigger, getValues } = methods;
+
+  const nextStep = async () => {
+    const isValid = await trigger(`step${currentStep}` as keyof CreateTeamForm);
+    if (isValid) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  return (
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)}>
+        {currentStep === 1 && <Step1 />}
+        {currentStep === 2 && <Step2 />}
+        
+        <div className="flex justify-between mt-6">
+          {currentStep > 1 && (
+            <button type="button" onClick={() => setCurrentStep(prev => prev - 1)}>
+              Previous
+            </button>
+          )}
+          {currentStep < 2 && (
+            <button type="button" onClick={nextStep}>
+              Next
+            </button>
+          )}
+          {currentStep === 2 && (
+            <button type="submit">Create Team</button>
+          )}
+        </div>
+      </form>
+    </FormProvider>
+  );
+}
+```
+
+### Dynamic Form Fields
+```typescript
+const gameSettingsSchema = z.object({
+  rounds: z.array(z.object({
+    name: z.string().min(1, 'Round name required'),
+    questionCount: z.number().min(1).max(10),
+    timeLimit: z.number().min(30).max(300)
+  })).min(1, 'At least one round required')
+});
+
+export function GameSettingsForm() {
+  const { register, control, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(gameSettingsSchema),
+    defaultValues: {
+      rounds: [{ name: 'Round 1', questionCount: 5, timeLimit: 60 }]
+    }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'rounds'
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {fields.map((field, index) => (
+        <div key={field.id} className="border p-4 rounded space-y-3">
+          <div className="flex justify-between items-center">
+            <h3>Round {index + 1}</h3>
+            {fields.length > 1 && (
+              <button
+                type="button"
+                onClick={() => remove(index)}
+                className="text-red-600 hover:text-red-800"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+          
+          <input
+            {...register(`rounds.${index}.name`)}
+            placeholder="Round name"
+          />
+          
+          <input
+            type="number"
+            {...register(`rounds.${index}.questionCount`, { valueAsNumber: true })}
+            placeholder="Question count"
+          />
+          
+          <input
+            type="number"
+            {...register(`rounds.${index}.timeLimit`, { valueAsNumber: true })}
+            placeholder="Time limit (seconds)"
+          />
+          
+          {errors.rounds?.[index] && (
+            <div className="text-red-600 text-sm">
+              {Object.values(errors.rounds[index] || {}).map(error => (
+                <p key={error.message}>{error.message}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+      
+      <button
+        type="button"
+        onClick={() => append({ name: `Round ${fields.length + 1}`, questionCount: 5, timeLimit: 60 })}
+      >
+        Add Round
+      </button>
+      
+      <button type="submit">Save Settings</button>
+    </form>
+  );
+}
+```
+
+## Validation Patterns
+
+### Custom Validation Rules
+```typescript
+const teamJoinSchema = z.object({
+  teamCode: z.string()
+    .min(1, 'Team code required')
+    .refine(async (code) => {
+      // Custom async validation
+      const exists = await checkTeamCodeExists(code);
+      return exists;
+    }, 'Invalid team code'),
+    
+  playerName: z.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(20, 'Name too long')
+    .regex(/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces')
+});
+```
+
+### Conditional Validation
+```typescript
+const gameCreateSchema = z.object({
+  gameType: z.enum(['standard', 'custom']),
+  customQuestions: z.array(z.string()).optional()
+}).refine((data) => {
+  if (data.gameType === 'custom') {
+    return data.customQuestions && data.customQuestions.length > 0;
+  }
+  return true;
+}, {
+  message: 'Custom questions required for custom game type',
+  path: ['customQuestions']
+});
+```
+
+## Form State Management
+
+### Loading States
+```typescript
+export function GameCreateForm() {
+  const { register, handleSubmit, formState: { isSubmitting, errors } } = useForm();
+  
+  const onSubmit = async (data: FormData) => {
+    try {
+      await createGame(data);
+      // Success handling
+    } catch (error) {
+      // Error handling
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {/* Form fields */}
+      
+      <button 
+        type="submit" 
+        disabled={isSubmitting}
+        className={clsx(
+          'px-4 py-2 rounded',
+          isSubmitting 
+            ? 'bg-gray-400 cursor-not-allowed' 
+            : 'bg-blue-500 hover:bg-blue-600'
+        )}
+      >
+        {isSubmitting ? (
+          <span className="flex items-center">
+            <LoadingSpinner className="mr-2" />
+            Creating Game...
+          </span>
+        ) : (
+          'Create Game'
+        )}
+      </button>
+    </form>
+  );
+}
+```
+
+### Form Reset and Default Values
+```typescript
+export function EditGameForm({ game }: { game: Game }) {
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: {
+      name: game.name,
+      description: game.description,
+      maxTeams: game.maxTeams
+    }
+  });
+
+  // Reset form when game data changes
+  useEffect(() => {
+    reset({
+      name: game.name,
+      description: game.description,
+      maxTeams: game.maxTeams
+    });
+  }, [game, reset]);
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {/* Form implementation */}
+    </form>
+  );
+}
+```
+
+## Accessibility Guidelines
+
+### Form Accessibility
+- Always associate labels with form controls
+- Use proper input types (email, tel, url, etc.)
+- Provide clear error messages
+- Use ARIA attributes for complex forms
+- Ensure keyboard navigation works properly
+- Use fieldsets for related form groups
+
+### Error Message Patterns
+```typescript
+// Accessible error message pattern
+{errors.fieldName && (
+  <div role="alert" className="text-red-600 text-sm mt-1">
+    <span className="sr-only">Error:</span>
+    {errors.fieldName.message}
+  </div>
+)}
+
+// Form with validation summary
+{Object.keys(errors).length > 0 && (
+  <div role="alert" className="bg-red-50 border border-red-200 rounded p-4 mb-4">
+    <h3 className="text-red-800 font-medium">Please fix the following errors:</h3>
+    <ul className="mt-2 text-red-600 text-sm list-disc list-inside">
+      {Object.entries(errors).map(([field, error]) => (
+        <li key={field}>{error.message}</li>
+      ))}
+    </ul>
+  </div>
+)}
+```
+
+## Performance Optimization
+
+### Form Optimization Tips
+- Use `mode: 'onBlur'` for better performance on large forms
+- Implement debounced validation for async checks
+- Use `useCallback` for form submission handlers
+- Consider splitting large forms into smaller components
+- Use `useFieldArray` for dynamic lists instead of state arrays

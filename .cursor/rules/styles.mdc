@@ -1,0 +1,93 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Styling Guidelines
+
+## Tailwind Usage Rules
+
+### Inline vs Component Abstraction
+- **Simple components**: Use inline Tailwind classes for straightforward styling
+- **Complex/repeated patterns**: Extract to reusable components when you see the same pattern 3+ times
+- Use `clsx` or `cn` utility for conditional classes
+- Always follow mobile-first responsive design
+
+### Example Patterns
+```tsx
+// Good: Simple inline utilities
+<button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+  Submit Answer
+</button>
+
+// Good: Component abstraction for complex patterns
+const AnswerCard = ({ children, isSelected }: AnswerCardProps) => (
+  <div className={clsx(
+    "p-4 border rounded-lg transition-colors",
+    isSelected ? "border-blue-500 bg-blue-50" : "border-gray-200"
+  )}>
+    {children}
+  </div>
+);
+```
+
+## Style Organization
+
+### File Structure
+- Global styles in `src/styles/globals.css`
+- Component-specific utility classes in `src/styles/components.css`
+- Custom utilities in `src/styles/utilities.css`
+
+### Responsive Design Rules
+- Always consider mobile experience first
+- Use Tailwind responsive prefixes in order: `sm:`, `md:`, `lg:`, `xl:`, `2xl:`
+- Test on multiple screen sizes throughout development
+- Ensure touch targets are minimum 44px on mobile
+
+## Animation Guidelines
+
+### Performance-First Animations
+- Use Framer Motion for complex animations and page transitions
+- Use Tailwind transition utilities for simple hover/focus states
+- Prefer transform and opacity changes for better performance
+- Keep animations under 300ms for snappy feel, 500ms max for complex transitions
+
+### Animation Patterns
+```tsx
+// Tailwind transitions for simple states
+<button className="transition-colors duration-200 hover:bg-blue-600">
+
+// Framer Motion for complex animations
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.3 }}
+>
+```
+
+## Color and Theme Guidelines
+
+### Consistent Color Usage
+- Use semantic color names (primary, secondary, success, error, warning)
+- Maintain consistent color palette across components
+- Ensure WCAG AA color contrast ratios (4.5:1 for normal text, 3:1 for large text)
+- Don't rely on color alone to convey information
+
+### Dark Mode Considerations
+- Use Tailwind's dark mode utilities when implementing themes
+- Test all components in both light and dark modes
+- Ensure proper contrast in both themes
+
+## Typography Rules
+
+### Consistent Typography Scale
+- Use Tailwind's typography scale consistently
+- Maintain proper heading hierarchy (h1 → h6)
+- Use appropriate line heights for readability
+- Ensure proper font weights for emphasis without overuse
+
+### Text Accessibility
+- Minimum font size of 16px for body text
+- Proper contrast ratios for all text
+- Use relative units (rem/em) when appropriate
+- Provide adequate spacing between text elements

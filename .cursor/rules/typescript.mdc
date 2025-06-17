@@ -1,0 +1,560 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# TypeScript Best Practices
+
+## Type Safety Rules
+
+### Always Type Component Props
+Never use implicit any for component props:
+
+```typescript
+// ❌ Bad: No prop typing
+export function GameCard(props) {
+  return <div>{props.name}</div>;
+}
+
+// ✅ Good: Explicit prop interface
+interface GameCardProps {
+  game: Game;
+  isActive: boolean;
+  onJoin: (gameId: string) => void;
+  className?: string;
+}
+
+export function GameCard({ game, isActive, onJoin, className }: GameCardProps) {
+  return (
+    <div className={clsx('game-card', className, { 'active': isActive })}>
+      <h3>{game.name}</h3>
+      <button onClick={() => onJoin(game.id)}>Join Game</button>
+    </div>
+  );
+}
+```
+
+### Avoid 'any' - Use Proper Types
+Use unknown, proper types, or type guards instead of any:
+
+```typescript
+// ❌ Bad: Using any
+function processApiResponse(response: any) {
+  return response.data.results;
+}
+
+// ✅ Good: Use unknown and type guards
+function processApiResponse(response: unknown): GameRoom[] {
+  if (!isValidApiResponse(response)) {
+    throw new Error('Invalid API response');
+  }
+  return response.data.results;
+}
+
+function isValidApiResponse(response: unknown): response is ApiResponse<GameRoom[]> {
+  return (
+    typeof response === 'object' &&
+    response !== null &&
+    'data' in response &&
+    typeof (response as any).data === 'object' &&
+    'results' in (response as any).data &&
+    Array.isArray((response as any).data.results)
+  );
+}
+```
+
+### Use Utility Types Effectively
+Leverage TypeScript's built-in utility types:
+
+```typescript
+// Original interface
+interface GameRoom {
+  id: string;
+  name: string;
+  description: string;
+  hostId: string;
+  maxTeams: number;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+// Utility type examples
+type CreateGameRoomData = Omit<GameRoom, 'id' | 'createdAt'>;
+type UpdateGameRoomData = Partial<Pick<GameRoom, 'name' | 'description' | 'maxTeams'>>;
+type GameRoomSummary = Pick<GameRoom, 'id' | 'name' | 'isActive'>;
+
+// Function signatures
+export function createGameRoom(data: CreateGameRoomData): Promise<GameRoom>;
+export function updateGameRoom(id: string, updates: UpdateGameRoomData): Promise<GameRoom>;
+export function getGameRoomSummaries(): Promise<GameRoomSummary[]>;
+```
+
+## Type Organization
+
+### Global Types Structure
+Organize types by domain and complexity:
+
+```typescript
+// types/base.ts - Base/primitive types
+export type UUID = string;
+export type Timestamp = string; // ISO string
+export type GamePhase = 'lobby' | 'active' | 'reviewing' | 'finished';
+export type UserRole = 'host' | 'player' | 'guest';
+
+// types/database.ts - Database entity types
+export interface GameRoom {
+  id: UUID;
+  code: string;
+  name: string;
+  host_id: UUID;
+  status: GamePhase;
+  settings: GameSettings;
+  created_at: Timestamp;
+  started_at?: Timestamp;
+  ended_at?: Timestamp;
+}
+
+export interface Team {
+  id: UUID;
+  room_id: UUID;
+  name: string;
+  captain_id?: UUID;
+  created_at: Timestamp;
+}
+
+// types/api.ts - API request/response types
+export interface CreateGameRoomRequest {
+  name: string;
+  description?: string;
+  maxTeams: number;
+  settings: GameSettings;
+}
+
+export interface ApiResponse<T> {
+  data: T;
+  error?: string;
+  meta?: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+}
+
+// types/ui.ts - UI-specific types
+export interface TableColumn<T> {
+  key: keyof T;
+  label: string;
+  sortable?: boolean;
+  render?: (value: T[keyof T], row: T) => ReactNode;
+}
+
+export interface FormField {
+  name: string;
+  label: string;
+  type: 'text' | 'email' | 'password' | 'number' | 'select';
+  required?: boolean;
+  validation?: ValidationRule[];
+}
+```
+
+### Feature-Specific Types
+Keep domain types close to their usage:
+
+```typescript
+// features/game-room/types/GameRoom.ts
+export interface GameRoomState {
+  currentRoom: GameRoom | null;
+  teams: Team[];
+  currentQuestion: Question | null;
+  timeRemaining: number;
+  leaderboard: LeaderboardEntry[];
+}
+
+export interface GameRoomActions {
+  joinRoom: (code: string) => Promise<void>;
+  leaveRoom: () => void;
+  startGame: () => Promise<void>;
+  submitAnswer: (answer: string, pointValue: number) => Promise<void>;
+}
+
+// Combine for store typing
+export interface GameRoomStore extends GameRoomState {
+  actions: GameRoomActions;
+}
+```
+
+## Advanced TypeScript Patterns
+
+### Discriminated Unions for Game Events
+Use discriminated unions for type-safe event handling:
+
+```typescript
+// Event type definitions
+interface GameStartedEvent {
+  type: 'game_started';
+  payload: {
+    roomId: string;
+    startedAt: string;
+  };
+}
+
+interface QuestionPresentedEvent {
+  type: 'question_presented';
+  payload: {
+    question: Question;
+    timeLimit: number;
+  };
+}
+
+interface AnswerSubmittedEvent {
+  type: 'answer_submitted';
+  payload: {
+    teamId: string;
+    answer: string;
+    pointValue: number;
+  };
+}
+
+// Union type
+type GameEvent = GameStartedEvent | QuestionPresentedEvent | AnswerSubmittedEvent;
+
+// Type-safe event handler
+export function handleGameEvent(event: GameEvent) {
+  switch (event.type) {
+    case 'game_started':
+      // TypeScript knows payload has roomId and startedAt
+      console.log(`Game ${event.payload.roomId} started at ${event.payload.startedAt}`);
+      break;
+    case 'question_presented':
+      // TypeScript knows payload has question and timeLimit
+      console.log(`Question: ${event.payload.question.text}`);
+      break;
+    case 'answer_submitted':
+      // TypeScript knows payload has teamId, answer, and pointValue
+      console.log(`Team ${event.payload.teamId} submitted: ${event.payload.answer}`);
+      break;
+    default:
+      // TypeScript ensures exhaustiveness
+      const _exhaustiveCheck: never = event;
+      return _exhaustiveCheck;
+  }
+}
+```
+
+### Generic Types for Reusability
+Create generic types for common patterns:
+
+```typescript
+// Generic API response wrapper
+export interface ApiResult<TData, TError = string> {
+  data?: TData;
+  error?: TError;
+  loading: boolean;
+}
+
+// Generic form state
+export interface FormState<TValues> {
+  values: TValues;
+  errors: Partial<Record<keyof TValues, string>>;
+  touched: Partial<Record<keyof TValues, boolean>>;
+  isSubmitting: boolean;
+}
+
+// Generic list operations
+export interface ListOperations<TItem> {
+  items: TItem[];
+  add: (item: TItem) => void;
+  remove: (id: string) => void;
+  update: (id: string, updates: Partial<TItem>) => void;
+  clear: () => void;
+}
+
+// Usage
+const useTeamList = (): ListOperations<Team> => {
+  // Implementation
+};
+```
+
+### Conditional Types for Complex Logic
+Use conditional types for advanced type transformations:
+
+```typescript
+// Convert database types to API types
+type ToApiType<T> = {
+  [K in keyof T]: T[K] extends Date
+    ? string  // Convert Date to ISO string
+    : T[K] extends UUID
+    ? string  // Ensure UUID is string
+    : T[K];
+};
+
+// Make certain fields optional for create operations
+type CreateData<T, TOptional extends keyof T = never> = Omit<T, 'id' | 'created_at' | 'updated_at'> & 
+  Partial<Pick<T, TOptional>>;
+
+// Usage
+type CreateGameRoomData = CreateData<GameRoom, 'description'>;
+// Results in: { name: string; host_id: string; max_teams: number; description?: string; }
+```
+
+## Type Guards and Runtime Validation
+
+### Custom Type Guards
+Create type guards for runtime type checking:
+
+```typescript
+// Type guard functions
+export function isGameRoom(value: unknown): value is GameRoom {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as GameRoom).id === 'string' &&
+    typeof (value as GameRoom).name === 'string' &&
+    typeof (value as GameRoom).host_id === 'string' &&
+    ['lobby', 'active', 'reviewing', 'finished'].includes((value as GameRoom).status)
+  );
+}
+
+export function isTeamArray(value: unknown): value is Team[] {
+  return Array.isArray(value) && value.every(isTeam);
+}
+
+function isTeam(value: unknown): value is Team {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as Team).id === 'string' &&
+    typeof (value as Team).name === 'string' &&
+    typeof (value as Team).room_id === 'string'
+  );
+}
+
+// Usage in API calls
+export async function fetchGameRoom(id: string): Promise<GameRoom> {
+  const response = await supabase
+    .from('game_rooms')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (response.error) {
+    throw new Error(response.error.message);
+  }
+
+  if (!isGameRoom(response.data)) {
+    throw new Error('Invalid game room data received');
+  }
+
+  return response.data;
+}
+```
+
+### Zod Integration for Runtime Validation
+Combine Zod schemas with TypeScript types:
+
+```typescript
+import { z } from 'zod';
+
+// Zod schema
+const gameRoomSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(50),
+  host_id: z.string().uuid(),
+  status: z.enum(['lobby', 'active', 'reviewing', 'finished']),
+  max_teams: z.number().min(2).max(20),
+  created_at: z.string().datetime()
+});
+
+// TypeScript type inferred from schema
+export type GameRoom = z.infer<typeof gameRoomSchema>;
+
+// Validation function
+export function validateGameRoom(data: unknown): GameRoom {
+  return gameRoomSchema.parse(data);
+}
+
+// Safe parsing with error handling
+export function safeParseGameRoom(data: unknown): { success: true; data: GameRoom } | { success: false; error: string } {
+  const result = gameRoomSchema.safeParse(data);
+  
+  if (result.success) {
+    return { success: true, data: result.data };
+  } else {
+    return { 
+      success: false, 
+      error: result.error.issues.map(issue => issue.message).join(', ')
+    };
+  }
+}
+```
+
+## Error Handling with Types
+
+### Typed Error Classes
+Create specific error types for different failure modes:
+
+```typescript
+// Base error class
+abstract class AppError extends Error {
+  abstract readonly code: string;
+  abstract readonly statusCode: number;
+  
+  constructor(message: string, public readonly details?: unknown) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+// Specific error types
+export class ValidationError extends AppError {
+  readonly code = 'VALIDATION_ERROR';
+  readonly statusCode = 400;
+}
+
+export class NotFoundError extends AppError {
+  readonly code = 'NOT_FOUND';
+  readonly statusCode = 404;
+}
+
+export class AuthorizationError extends AppError {
+  readonly code = 'AUTHORIZATION_ERROR';
+  readonly statusCode = 403;
+}
+
+export class GameStateError extends AppError {
+  readonly code = 'GAME_STATE_ERROR';
+  readonly statusCode = 409;
+}
+
+// Type-safe error handling
+export function handleApiError(error: unknown): AppError {
+  if (error instanceof AppError) {
+    return error;
+  }
+  
+  if (error instanceof Error) {
+    return new ValidationError(error.message);
+  }
+  
+  return new ValidationError('An unknown error occurred');
+}
+```
+
+### Result Type Pattern
+Use Result types for explicit error handling:
+
+```typescript
+// Result type definition
+export type Result<T, E = Error> = 
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+// Utility functions
+export function success<T>(data: T): Result<T, never> {
+  return { success: true, data };
+}
+
+export function failure<E>(error: E): Result<never, E> {
+  return { success: false, error };
+}
+
+// Usage in service functions
+export async function createGameRoom(data: CreateGameRoomData): Promise<Result<GameRoom, string>> {
+  try {
+    const { data: gameRoom, error } = await supabase
+      .from('game_rooms')
+      .insert(data)
+      .select()
+      .single();
+
+    if (error) {
+      return failure(error.message);
+    }
+
+    return success(gameRoom);
+  } catch (error) {
+    return failure('Failed to create game room');
+  }
+}
+
+// Type-safe handling
+export async function handleGameRoomCreation() {
+  const result = await createGameRoom({ name: 'Test Game', max_teams: 4 });
+  
+  if (result.success) {
+    // TypeScript knows result.data is GameRoom
+    console.log(`Created game room: ${result.data.name}`);
+  } else {
+    // TypeScript knows result.error is string
+    console.error(`Error: ${result.error}`);
+  }
+}
+```
+
+## Configuration and Constants
+
+### Strongly Typed Configuration
+Use const assertions and type safety for configuration:
+
+```typescript
+// Configuration with const assertion
+export const GAME_CONFIG = {
+  ROUND_TYPES: ['standard', 'picture', 'wager'] as const,
+  POINT_VALUES: {
+    ROUND_1: [1, 3, 5] as const,
+    ROUND_2: [2, 4, 6] as const
+  },
+  TIME_LIMITS: {
+    DEFAULT_QUESTION: 60,
+    WAGER_ROUND: 120,
+    PICTURE_ROUND: 90
+  },
+  TEAM_LIMITS: {
+    MIN_MEMBERS: 1,
+    MAX_MEMBERS: 6,
+    MAX_TEAMS_PER_ROOM: 20
+  }
+} as const;
+
+// Extract types from configuration
+export type RoundType = typeof GAME_CONFIG.ROUND_TYPES[number];
+export type PointValue = typeof GAME_CONFIG.POINT_VALUES.ROUND_1[number] | 
+                         typeof GAME_CONFIG.POINT_VALUES.ROUND_2[number];
+
+// Validation helpers
+export function isValidRoundType(value: string): value is RoundType {
+  return GAME_CONFIG.ROUND_TYPES.includes(value as RoundType);
+}
+
+export function isValidPointValue(value: number, roundType: 'ROUND_1' | 'ROUND_2'): value is PointValue {
+  return GAME_CONFIG.POINT_VALUES[roundType].includes(value as any);
+}
+```
+
+## Performance with Types
+
+### Optimizing Type Checking
+Use techniques to improve TypeScript compilation performance:
+
+```typescript
+// Use type-only imports when possible
+import type { GameRoom } from './types/GameRoom';
+import type { Team } from './types/Team';
+
+// Use interface merging sparingly
+interface GameState {
+  rooms: GameRoom[];
+}
+
+interface GameState {
+  teams: Team[];
+}
+
+// Prefer type aliases for unions
+type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+type GamePhase = 'lobby' | 'active' | 'reviewing' | 'finished';
+
+// Use mapped types for repetitive patterns
+type OptionalFields<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
+```

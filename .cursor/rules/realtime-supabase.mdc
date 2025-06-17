@@ -1,0 +1,593 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Real-time & Supabase Integration Guidelines
+
+## Subscription Management
+
+### Custom Real-time Hooks
+Create reusable hooks for managing Supabase subscriptions:
+
+```typescript
+// hooks/useRealtimeSubscription.ts
+export function useRealtimeSubscription(
+  table: string,
+  filter?: string,
+  callback?: (payload: RealtimePostgresChangesPayload<any>) => void
+) {
+  useEffect(() => {
+    if (!table) return;
+    
+    const subscription = supabase
+      .channel(`realtime:${table}${filter ? `:${filter}` : ''}`)
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table, filter },
+        callback || (() => {})
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [table, filter, callback]);
+}
+
+// Game-specific real-time hook
+export function useGameRoomRealtime(roomId: string) {
+  const queryClient = useQueryClient();
+  
+  useEffect(() => {
+    if (!roomId) return;
+    
+    const subscription = supabase
+      .channel(`game-room:${roomId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'game_rooms',
+        filter: `id=eq.${roomId}`
+      }, (payload) => {
+        queryClient.setQueryData(queryKeys.gameRoom(roomId), payload.new);
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'teams',
+        filter: `room_id=eq.${roomId}`
+      }, () => {
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.gameRoomTeams(roomId) 
+        });
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'team_answers',
+        filter: `team_id=in.(SELECT id FROM teams WHERE room_id = '${roomId}')`
+      }, () => {
+        queryClient.invalidateQueries({ 
+          queryKey: queryKeys.leaderboard(roomId) 
+        });
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [roomId, queryClient]);
+}
+```
+
+### Broadcast Events for Game Actions
+Use Supabase broadcast for immediate game state updates:
+
+```typescript
+// services/gameEventService.ts
+export const gameEventService = {
+  // Host events
+  startGame: (roomId: string) => {
+    return supabase.channel(`game-room:${roomId}`)
+      .send({
+        type: 'broadcast',
+        event: 'game_started',
+        payload: { roomId, timestamp: Date.now() }
+      });
+  },
+
+  presentQuestion: (roomId: string, question: Question) => {
+    return supabase.channel(`game-room:${roomId}`)
+      .send({
+        type: 'broadcast',
+        event: 'question_presented',
+        payload: { question, timestamp: Date.now() }
+      });
+  },
+
+  lockAnswers: (roomId: string) => {
+    return supabase.channel(`game-room:${roomId}`)
+      .send({
+        type: 'broadcast',
+        event: 'answers_locked',
+        payload: { roomId, timestamp: Date.now() }
+      });
+  },
+
+  // Team events
+  submitAnswer: (roomId: string, teamId: string, answer: TeamAnswer) => {
+    return supabase.channel(`game-room:${roomId}`)
+      .send({
+        type: 'broadcast',
+        event: 'answer_submitted',
+        payload: { teamId, answer, timestamp: Date.now() }
+      });
+  }
+};
+
+// Hook for listening to game events
+export function useGameEvents(roomId: string) {
+  const [gameState, setGameState] = useState<GameState>('lobby');
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  
+  useEffect(() => {
+    if (!roomId) return;
+    
+    const subscription = supabase
+      .channel(`game-room:${roomId}`)
+      .on('broadcast', { event: 'game_started' }, () => {
+        setGameState('active');
+      })
+      .on('broadcast', { event: 'question_presented' }, ({ payload }) => {
+        setCurrentQuestion(payload.question);
+      })
+      .on('broadcast', { event: 'answers_locked' }, () => {
+        setGameState('reviewing');
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [roomId]);
+  
+  return { gameState, currentQuestion };
+}
+```
+
+## Presence Tracking
+
+### Online User Tracking
+Track which users are currently active in a game room:
+
+```typescript
+// hooks/usePresence.ts
+export function usePresence(roomId: string, userId?: string) {
+  const [onlineUsers, setOnlineUsers] = useState<PresenceState>({});
+  
+  useEffect(() => {
+    if (!roomId) return;
+    
+    const channel = supabase.channel(`presence:${roomId}`)
+      .on('presence', { event: 'sync' }, () => {
+        const newState = channel.presenceState();
+        setOnlineUsers(newState);
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        console.log('User joined:', key, newPresences);
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        console.log('User left:', key, leftPresences);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED' && userId) {
+          await channel.track({
+            userId,
+            online_at: new Date().toISOString()
+          });
+        }
+      });
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [roomId, userId]);
+  
+  return { onlineUsers };
+}
+
+// Component usage
+export function OnlineIndicator({ roomId }: { roomId: string }) {
+  const { user } = useAuth();
+  const { onlineUsers } = usePresence(roomId, user?.id);
+  
+  const onlineCount = Object.keys(onlineUsers).length;
+  
+  return (
+    <div className="flex items-center space-x-2">
+      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+      <span className="text-sm text-gray-600">
+        {onlineCount} online
+      </span>
+    </div>
+  );
+}
+```
+
+## Connection Management
+
+### Connection State Monitoring
+Handle connection drops and reconnection gracefully:
+
+```typescript
+// hooks/useConnectionState.ts
+export function useConnectionState() {
+  const [isConnected, setIsConnected] = useState(true);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsConnected(true);
+      setIsReconnecting(false);
+    };
+    
+    const handleOffline = () => {
+      setIsConnected(false);
+    };
+    
+    // Monitor browser online/offline
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Monitor Supabase connection
+    supabase.realtime.onOpen(() => {
+      setIsConnected(true);
+      setIsReconnecting(false);
+    });
+    
+    supabase.realtime.onClose(() => {
+      setIsConnected(false);
+      setIsReconnecting(true);
+    });
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+  
+  return { isConnected, isReconnecting };
+}
+
+// Connection status component
+export function ConnectionStatus() {
+  const { isConnected, isReconnecting } = useConnectionState();
+  
+  if (isConnected) return null;
+  
+  return (
+    <div className="fixed top-0 left-0 right-0 bg-yellow-500 text-white p-2 text-center z-50">
+      {isReconnecting ? (
+        <span className="flex items-center justify-center">
+          <LoadingSpinner className="mr-2" />
+          Reconnecting...
+        </span>
+      ) : (
+        'Connection lost. Please check your internet connection.'
+      )}
+    </div>
+  );
+}
+```
+
+### Message Queuing for Offline Support
+Queue messages when offline and send when reconnected:
+
+```typescript
+// utils/messageQueue.ts
+class MessageQueue {
+  private queue: QueuedMessage[] = [];
+  private isProcessing = false;
+  
+  add(message: QueuedMessage) {
+    this.queue.push(message);
+    this.process();
+  }
+  
+  private async process() {
+    if (this.isProcessing || this.queue.length === 0) return;
+    
+    this.isProcessing = true;
+    
+    while (this.queue.length > 0) {
+      const message = this.queue.shift();
+      if (!message) break;
+      
+      try {
+        await this.sendMessage(message);
+      } catch (error) {
+        // Re-queue if failed
+        this.queue.unshift(message);
+        break;
+      }
+    }
+    
+    this.isProcessing = false;
+  }
+  
+  private async sendMessage(message: QueuedMessage) {
+    switch (message.type) {
+      case 'answer_submission':
+        return answerService.submitAnswer(message.payload);
+      case 'team_join':
+        return teamService.joinTeam(message.payload);
+      default:
+        throw new Error(`Unknown message type: ${message.type}`);
+    }
+  }
+}
+
+export const messageQueue = new MessageQueue();
+
+// Hook for queued operations
+export function useQueuedSubmission() {
+  const { isConnected } = useConnectionState();
+  
+  const submitAnswer = useCallback((data: AnswerSubmission) => {
+    if (isConnected) {
+      return answerService.submitAnswer(data);
+    } else {
+      messageQueue.add({
+        type: 'answer_submission',
+        payload: data,
+        timestamp: Date.now()
+      });
+      return Promise.resolve();
+    }
+  }, [isConnected]);
+  
+  return { submitAnswer };
+}
+```
+
+## Row Level Security Integration
+
+### Auth Context for RLS
+Ensure proper authentication context for Supabase RLS:
+
+```typescript
+// contexts/AuthContext.tsx
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+    
+    return () => subscription.unsubscribe();
+  }, []);
+  
+  return (
+    <AuthContext.Provider value={{ user, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// Auth-aware query hook
+export function useAuthenticatedQuery<T>(
+  queryKey: QueryKey,
+  queryFn: () => Promise<T>,
+  options?: UseQueryOptions<T>
+) {
+  const { user } = useAuth();
+  
+  return useQuery({
+    ...options,
+    queryKey: [...queryKey, user?.id],
+    queryFn,
+    enabled: !!user && (options?.enabled ?? true)
+  });
+}
+```
+
+### Permission-Based Components
+Handle different user permissions at the component level:
+
+```typescript
+// components/PermissionGuard.tsx
+interface PermissionGuardProps {
+  children: ReactNode;
+  permission: 'host' | 'team_member' | 'guest';
+  gameRoom?: GameRoom;
+  team?: Team;
+  fallback?: ReactNode;
+}
+
+export function PermissionGuard({ 
+  children, 
+  permission, 
+  gameRoom, 
+  team, 
+  fallback = null 
+}: PermissionGuardProps) {
+  const { user } = useAuth();
+  
+  const hasPermission = useMemo(() => {
+    if (!user) return permission === 'guest';
+    
+    switch (permission) {
+      case 'host':
+        return gameRoom?.host_id === user.id;
+      case 'team_member':
+        return team?.members.some(member => member.user_id === user.id);
+      case 'guest':
+        return true;
+      default:
+        return false;
+    }
+  }, [user, permission, gameRoom, team]);
+  
+  return hasPermission ? <>{children}</> : <>{fallback}</>;
+}
+
+// Usage
+<PermissionGuard 
+  permission="host" 
+  gameRoom={gameRoom}
+  fallback={<div>Only hosts can perform this action</div>}
+>
+  <StartGameButton />
+</PermissionGuard>
+```
+
+## Error Handling and Recovery
+
+### Real-time Error Handling
+Handle subscription errors and automatic recovery:
+
+```typescript
+// hooks/useRobustSubscription.ts
+export function useRobustSubscription(
+  channelName: string,
+  config: SubscriptionConfig,
+  maxRetries = 3
+) {
+  const [retryCount, setRetryCount] = useState(0);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  
+  useEffect(() => {
+    let subscription: RealtimeChannel;
+    let retryTimeout: NodeJS.Timeout;
+    
+    const subscribe = () => {
+      subscription = supabase
+        .channel(channelName)
+        .on('postgres_changes', config.postgresChanges, config.callback)
+        .subscribe((status, err) => {
+          if (status === 'SUBSCRIBED') {
+            setIsSubscribed(true);
+            setRetryCount(0);
+          } else if (status === 'CHANNEL_ERROR' && retryCount < maxRetries) {
+            setIsSubscribed(false);
+            
+            // Exponential backoff retry
+            const delay = Math.pow(2, retryCount) * 1000;
+            retryTimeout = setTimeout(() => {
+              setRetryCount(prev => prev + 1);
+              subscribe();
+            }, delay);
+          }
+        });
+    };
+    
+    subscribe();
+    
+    return () => {
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (subscription) subscription.unsubscribe();
+    };
+  }, [channelName, retryCount]);
+  
+  return { isSubscribed, retryCount };
+}
+```
+
+## Performance Best Practices
+
+### Subscription Cleanup
+Always properly clean up subscriptions to prevent memory leaks:
+
+```typescript
+// ❌ Bad: No cleanup
+export function BadGameComponent({ roomId }: { roomId: string }) {
+  useEffect(() => {
+    supabase.channel(`game:${roomId}`)
+      .on('postgres_changes', { /* config */ }, () => {})
+      .subscribe();
+  }, [roomId]);
+  
+  return <div>Game Component</div>;
+}
+
+// ✅ Good: Proper cleanup
+export function GoodGameComponent({ roomId }: { roomId: string }) {
+  useEffect(() => {
+    const subscription = supabase.channel(`game:${roomId}`)
+      .on('postgres_changes', { /* config */ }, () => {})
+      .subscribe();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [roomId]);
+  
+  return <div>Game Component</div>;
+}
+```
+
+### Selective Subscriptions
+Only subscribe to data you actually need:
+
+```typescript
+// ❌ Bad: Over-subscribing
+useEffect(() => {
+  const subscription = supabase
+    .channel('all-games')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'game_rooms' }, handleChange)
+    .subscribe();
+}, []);
+
+// ✅ Good: Specific subscriptions
+useEffect(() => {
+  if (!roomId) return;
+  
+  const subscription = supabase
+    .channel(`game-room:${roomId}`)
+    .on('postgres_changes', { 
+      event: '*', 
+      schema: 'public', 
+      table: 'game_rooms',
+      filter: `id=eq.${roomId}`
+    }, handleChange)
+    .subscribe();
+    
+  return () => subscription.unsubscribe();
+}, [roomId]);
+```
+
+### Debounced Updates
+Prevent excessive re-renders from rapid real-time updates:
+
+```typescript
+// hooks/useDebouncedRealtime.ts
+export function useDebouncedRealtime(
+  table: string,
+  filter: string,
+  delay = 300
+) {
+  const [data, setData] = useState(null);
+  const debouncedSetData = useMemo(
+    () => debounce(setData, delay),
+    [delay]
+  );
+  
+  useRealtimeSubscription(table, filter, (payload) => {
+    debouncedSetData(payload.new);
+  });
+  
+  return data;
+}
+```

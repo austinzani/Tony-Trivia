@@ -1,0 +1,16 @@
+# Task ID: 21
+# Title: Develop Custom Question Set Feature
+# Status: pending
+# Dependencies: 6, 14
+# Priority: medium
+# Description: Create functionality for hosts to create and manage custom question sets.
+# Details:
+1. Design database schema for custom question sets
+2. Implement UI for creating and editing question sets
+3. Add import/export functionality for question sets
+4. Create tagging system for organizing questions
+5. Implement search and filter functionality for question sets
+6. Add option to share question sets between hosts
+
+# Test Strategy:
+Write unit tests for question set management functions. Conduct user acceptance testing with hosts. Perform integration tests to ensure proper interaction with the gameplay engine.

@@ -1,0 +1,68 @@
+# Task ID: 6
+# Title: Develop Core Gameplay Engine
+# Status: pending
+# Dependencies: 4, 5
+# Priority: high
+# Description: Create the main gameplay engine to handle question flow, scoring, and game progression.
+# Details:
+1. Implement question display logic
+2. Support multiple question types (text, image, audio, video)
+3. Create timed answer submission with visual countdown
+4. Implement answer submission locking/unlocking per round
+5. Develop Last Call Trivia scoring system (1,3,5 then 2,4,6)
+6. Prevent duplicate point value usage per round
+7. Implement real-time score calculation and updates
+8. Support special round types (wager, picture, bonus)
+
+# Test Strategy:
+Write comprehensive unit tests for all gameplay logic. Conduct thorough playtesting to ensure smooth gameplay flow and correct scoring.
+
+# Subtasks:
+## 1. Implement Game State Management [pending]
+### Dependencies: None
+### Description: Create a central game state manager to track the current round, active questions, player scores, and game progression.
+### Details:
+Develop a GameState class that maintains the complete game state including current round number, available point values, selected point values, player/team scores, and game phase (pre-game, question selection, question display, answer submission, scoring, etc.). Implement methods for state transitions and ensure proper event emission when state changes.
+
+## 2. Develop Round Management System [pending]
+### Dependencies: 6.1
+### Description: Implement the round structure following Last Call Trivia format with point values 1,3,5 for first round and 2,4,6 for second round.
+### Details:
+Create a RoundManager class that handles round initialization, tracks available point values per round, prevents duplicate point value usage, and manages transitions between rounds. Implement methods to validate point selection based on round rules and track used point values per player/team.
+
+## 3. Build Question Display System [pending]
+### Dependencies: 6.1
+### Description: Create a system to display questions of different types (text, image, audio, video) with appropriate rendering for each type.
+### Details:
+Implement a QuestionDisplay component that can render different question types. Create specialized renderers for each media type that handle loading, displaying, and error states. Support question text formatting and media embedding. Ensure accessibility for all question types.
+
+## 4. Implement Timer Functionality [pending]
+### Dependencies: 6.1
+### Description: Create a countdown timer system with visual feedback for timed answer submissions.
+### Details:
+Develop a Timer class that handles countdown functionality with configurable durations. Implement visual countdown display with color changes as time runs low. Add sound effects for time warnings and expiration. Ensure timer events trigger appropriate game state changes when time expires.
+
+## 5. Create Answer Submission System [pending]
+### Dependencies: 6.2, 6.3, 6.4
+### Description: Implement the answer submission mechanism with point value selection and submission locking/unlocking per round.
+### Details:
+Build an AnswerSubmission component that allows players to select point values and submit answers. Implement validation to ensure point values follow round rules. Add locking mechanism to prevent changes after submission. Include visual feedback for submission status and locked/unlocked state.
+
+## 6. Develop Scoring Logic [pending]
+### Dependencies: 6.2, 6.5
+### Description: Implement the scoring system to calculate and update scores based on correct answers and selected point values.
+### Details:
+Create a ScoreManager class that calculates scores based on answer correctness and selected point values. Implement methods to update player/team scores in real-time. Add support for special scoring rules in different round types. Ensure score updates trigger appropriate UI updates.
+
+## 7. Implement Special Round Types [pending]
+### Dependencies: 6.2, 6.6
+### Description: Add support for special round types including wager rounds, picture rounds, and bonus rounds with their unique rules.
+### Details:
+Extend the RoundManager to support special round types. Implement specialized components for each round type with their unique interfaces and rules. For wager rounds, add betting validation. For picture rounds, optimize image display. For bonus rounds, implement special scoring rules.
+
+## 8. Create Game Progression Controller [pending]
+### Dependencies: 6.1, 6.2, 6.3, 6.5, 6.6, 6.7
+### Description: Implement the overall game flow controller to manage progression through questions, rounds, and game completion.
+### Details:
+Develop a GameController class that orchestrates the entire gameplay flow. Implement methods to advance through questions, handle round transitions, and determine game completion. Add support for game configuration options like number of rounds, questions per round, and time limits. Include error handling for unexpected states.
+

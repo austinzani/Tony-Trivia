@@ -1,0 +1,714 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Performance & Accessibility Guidelines
+
+## React Performance Optimization
+
+### Memoization Strategies
+Use React's memoization tools strategically:
+
+```typescript
+// Memoize expensive components
+const GameBoard = memo(({ game, teams }: GameBoardProps) => {
+  // Heavy rendering logic
+  return <div>Game board content</div>;
+});
+
+// Memoize with custom comparison
+const TeamCard = memo(({ team }: TeamCardProps) => {
+  return <div>Team: {team.name}</div>;
+}, (prevProps, nextProps) => {
+  // Only re-render if team data actually changed
+  return prevProps.team.id === nextProps.team.id && 
+         prevProps.team.score === nextProps.team.score &&
+         prevProps.team.name === nextProps.team.name;
+});
+
+// Memoize expensive calculations
+const GameStats = ({ games }: { games: Game[] }) => {
+  const stats = useMemo(() => {
+    return games.reduce((acc, game) => {
+      // Expensive calculation
+      return {
+        totalGames: acc.totalGames + 1,
+        averageScore: (acc.averageScore + game.score) / 2
+      };
+    }, { totalGames: 0, averageScore: 0 });
+  }, [games]);
+
+  return <div>Stats: {stats.totalGames} games</div>;
+};
+
+// Stable callback references
+export function GameRoom({ roomId }: { roomId: string }) {
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  
+  const handleTeamSelect = useCallback((teamId: string) => {
+    setSelectedTeam(teamId);
+  }, []); // Empty dependency array since setSelectedTeam is stable
+  
+  const handleAnswerSubmit = useCallback((answer: string, pointValue: number) => {
+    submitAnswer({ roomId, answer, pointValue });
+  }, [roomId]); // Only depends on roomId
+
+  return (
+    <div>
+      <TeamList onTeamSelect={handleTeamSelect} />
+      <AnswerForm onSubmit={handleAnswerSubmit} />
+    </div>
+  );
+}
+```
+
+### Code Splitting and Lazy Loading
+Implement strategic code splitting:
+
+```typescript
+// Route-level code splitting
+import { lazy, Suspense } from 'react';
+
+const GameRoom = lazy(() => import('../features/game-room/GameRoom'));
+const Leaderboard = lazy(() => import('../features/leaderboard/Leaderboard'));
+const GameHistory = lazy(() => import('../features/game-history/GameHistory'));
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/game/:roomId" element={
+        <Suspense fallback={<GameRoomSkeleton />}>
+          <GameRoom />
+        </Suspense>
+      } />
+      <Route path="/leaderboard" element={
+        <Suspense fallback={<LoadingSpinner />}>
+          <Leaderboard />
+        </Suspense>
+      } />
+    </Routes>
+  );
+}
+
+// Component-level lazy loading for heavy features
+const StatisticsModal = lazy(() => import('./StatisticsModal'));
+
+export function GameRoom() {
+  const [showStats, setShowStats] = useState(false);
+  
+  return (
+    <div>
+      {/* Game room content */}
+      <button onClick={() => setShowStats(true)}>
+        Show Statistics
+      </button>
+      
+      {showStats && (
+        <Suspense fallback={<div>Loading statistics...</div>}>
+          <StatisticsModal onClose={() => setShowStats(false)} />
+        </Suspense>
+      )}
+    </div>
+  );
+}
+```
+
+### Bundle Optimization
+Monitor and optimize bundle size:
+
+```typescript
+// Prefer tree-shaking friendly imports
+import { debounce } from 'lodash-es'; // ✅ Tree-shakeable
+// import _ from 'lodash'; // ❌ Imports entire library
+
+// Use dynamic imports for optional features
+async function loadAdvancedFeatures() {
+  if (shouldLoadAdvancedFeatures()) {
+    const { AdvancedGameAnalytics } = await import('./AdvancedGameAnalytics');
+    return AdvancedGameAnalytics;
+  }
+  return null;
+}
+
+// Conditional polyfill loading
+async function loadPolyfills() {
+  if (!window.IntersectionObserver) {
+    await import('intersection-observer');
+  }
+}
+```
+
+### Virtual Scrolling for Large Lists
+Implement virtual scrolling for performance:
+
+```typescript
+import { FixedSizeList as List } from 'react-window';
+
+interface TeamListProps {
+  teams: Team[];
+  onTeamSelect: (teamId: string) => void;
+}
+
+const TeamRow = ({ index, style, data }: { 
+  index: number; 
+  style: React.CSSProperties;
+  data: { teams: Team[]; onTeamSelect: (teamId: string) => void }; 
+}) => (
+  <div style={style} className="team-row">
+    <TeamCard 
+      team={data.teams[index]} 
+      onSelect={() => data.onTeamSelect(data.teams[index].id)}
+    />
+  </div>
+);
+
+export function VirtualizedTeamList({ teams, onTeamSelect }: TeamListProps) {
+  return (
+    <List
+      height={400}
+      itemCount={teams.length}
+      itemSize={80}
+      itemData={{ teams, onTeamSelect }}
+    >
+      {TeamRow}
+    </List>
+  );
+}
+```
+
+## Accessibility (A11y) Best Practices
+
+### Semantic HTML Structure
+Use proper HTML semantics:
+
+```typescript
+// ✅ Good: Semantic structure
+export function GameRoom() {
+  return (
+    <main>
+      <header>
+        <h1>Game Room: Trivia Night</h1>
+        <nav aria-label="Game navigation">
+          <ul>
+            <li><a href="#teams">Teams</a></li>
+            <li><a href="#leaderboard">Leaderboard</a></li>
+          </ul>
+        </nav>
+      </header>
+      
+      <section id="teams" aria-labelledby="teams-heading">
+        <h2 id="teams-heading">Teams</h2>
+        <TeamList />
+      </section>
+      
+      <aside aria-labelledby="leaderboard-heading">
+        <h2 id="leaderboard-heading">Leaderboard</h2>
+        <Leaderboard />
+      </aside>
+    </main>
+  );
+}
+
+// ❌ Bad: Generic divs without semantics
+export function BadGameRoom() {
+  return (
+    <div>
+      <div>
+        <div>Game Room: Trivia Night</div>
+        <div>
+          <div>Teams</div>
+          <div>Leaderboard</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+### ARIA Attributes and Labels
+Provide proper ARIA attributes:
+
+```typescript
+// Form accessibility
+export function AnswerSubmissionForm() {
+  const [error, setError] = useState<string>('');
+  
+  return (
+    <form aria-describedby={error ? 'form-error' : undefined}>
+      <fieldset>
+        <legend>Submit Your Answer</legend>
+        
+        <label htmlFor="answer-input">
+          Your Answer *
+        </label>
+        <input
+          id="answer-input"
+          type="text"
+          required
+          aria-invalid={!!error}
+          aria-describedby={error ? 'answer-error' : 'answer-help'}
+        />
+        <div id="answer-help" className="help-text">
+          Enter your answer for the current question
+        </div>
+        {error && (
+          <div id="answer-error" role="alert" className="error-text">
+            {error}
+          </div>
+        )}
+        
+        <label htmlFor="point-select">Point Value</label>
+        <select id="point-select" aria-describedby="point-help">
+          <option value={1}>1 Point</option>
+          <option value={3}>3 Points</option>
+          <option value={5}>5 Points</option>
+        </select>
+        <div id="point-help" className="help-text">
+          Choose how confident you are in your answer
+        </div>
+      </fieldset>
+      
+      <button type="submit" aria-describedby="submit-help">
+        Submit Answer
+      </button>
+      <div id="submit-help" className="help-text">
+        Press Enter or click to submit your answer
+      </div>
+    </form>
+  );
+}
+
+// Interactive elements accessibility
+export function GameControls({ onStart, onPause, isPlaying }: GameControlsProps) {
+  return (
+    <div role="group" aria-labelledby="game-controls-heading">
+      <h3 id="game-controls-heading">Game Controls</h3>
+      
+      <button
+        onClick={isPlaying ? onPause : onStart}
+        aria-pressed={isPlaying}
+        aria-describedby="play-pause-desc"
+      >
+        {isPlaying ? 'Pause' : 'Start'} Game
+      </button>
+      <div id="play-pause-desc" className="sr-only">
+        {isPlaying ? 'Pause the current game' : 'Start the game for all teams'}
+      </div>
+      
+      <button
+        onClick={onStop}
+        disabled={!isPlaying}
+        aria-describedby="stop-desc"
+      >
+        Stop Game
+      </button>
+      <div id="stop-desc" className="sr-only">
+        End the current game and show final results
+      </div>
+    </div>
+  );
+}
+```
+
+### Keyboard Navigation
+Ensure full keyboard accessibility:
+
+```typescript
+// Modal with keyboard navigation
+export function Modal({ isOpen, onClose, children }: ModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+  
+  useEffect(() => {
+    if (isOpen) {
+      // Store previously focused element
+      previousActiveElement.current = document.activeElement as HTMLElement;
+      
+      // Focus the modal
+      modalRef.current?.focus();
+      
+      // Trap focus within modal
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+        
+        if (e.key === 'Tab') {
+          const modal = modalRef.current;
+          if (!modal) return;
+          
+          const focusableElements = modal.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          
+          const firstElement = focusableElements[0] as HTMLElement;
+          const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+          
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+              e.preventDefault();
+              lastElement.focus();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              e.preventDefault();
+              firstElement.focus();
+            }
+          }
+        }
+      };
+      
+      document.addEventListener('keydown', handleKeyDown);
+      
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        // Restore focus to previous element
+        previousActiveElement.current?.focus();
+      };
+    }
+  }, [isOpen, onClose]);
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div
+      className="modal-backdrop"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        ref={modalRef}
+        className="modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        tabIndex={-1}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Skip navigation links
+export function SkipNavigation() {
+  return (
+    <div className="skip-nav">
+      <a href="#main-content" className="skip-nav-link">
+        Skip to main content
+      </a>
+      <a href="#navigation" className="skip-nav-link">
+        Skip to navigation
+      </a>
+    </div>
+  );
+}
+```
+
+### Color and Contrast
+Ensure proper color accessibility:
+
+```typescript
+// Color utility functions
+export function getContrastRatio(color1: string, color2: string): number {
+  // Implementation to calculate contrast ratio
+  // Should return a value where 4.5:1 is AA compliant, 7:1 is AAA
+}
+
+export function isColorAccessible(foreground: string, background: string): boolean {
+  const ratio = getContrastRatio(foreground, background);
+  return ratio >= 4.5; // WCAG AA standard
+}
+
+// Color-aware components
+export function ScoreIndicator({ score, maxScore }: ScoreIndicatorProps) {
+  const percentage = (score / maxScore) * 100;
+  
+  // Don't rely on color alone - use icons and text
+  const getScoreStatus = () => {
+    if (percentage >= 90) return { status: 'excellent', icon: '🎉', text: 'Excellent' };
+    if (percentage >= 70) return { status: 'good', icon: '👍', text: 'Good' };
+    if (percentage >= 50) return { status: 'average', icon: '👌', text: 'Average' };
+    return { status: 'needs-improvement', icon: '💪', text: 'Keep trying' };
+  };
+  
+  const { status, icon, text } = getScoreStatus();
+  
+  return (
+    <div 
+      className={`score-indicator score-indicator--${status}`}
+      aria-label={`Score: ${score} out of ${maxScore} points - ${text}`}
+    >
+      <span className="score-icon" aria-hidden="true">{icon}</span>
+      <span className="score-text">{score}/{maxScore}</span>
+      <span className="score-status">{text}</span>
+    </div>
+  );
+}
+```
+
+### Screen Reader Support
+Optimize for screen readers:
+
+```typescript
+// Live regions for dynamic content
+export function GameStateAnnouncer({ gameState, currentQuestion }: GameStateAnnouncerProps) {
+  return (
+    <>
+      {/* Polite announcements for non-urgent updates */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {gameState === 'question-active' && currentQuestion && (
+          `New question: ${currentQuestion.text}`
+        )}
+      </div>
+      
+      {/* Assertive announcements for urgent updates */}
+      <div aria-live="assertive" aria-atomic="true" className="sr-only">
+        {gameState === 'game-ended' && 'Game has ended. Final results are now available.'}
+      </div>
+    </>
+  );
+}
+
+// Progress indication
+export function GameProgress({ currentRound, totalRounds, timeRemaining }: GameProgressProps) {
+  const progressPercentage = (currentRound / totalRounds) * 100;
+  
+  return (
+    <div className="game-progress">
+      <div
+        role="progressbar"
+        aria-valuenow={currentRound}
+        aria-valuemin={1}
+        aria-valuemax={totalRounds}
+        aria-label={`Round ${currentRound} of ${totalRounds}`}
+        className="progress-bar"
+      >
+        <div 
+          className="progress-fill"
+          style={{ width: `${progressPercentage}%` }}
+        />
+      </div>
+      
+      <div className="progress-text">
+        Round {currentRound} of {totalRounds}
+      </div>
+      
+      {timeRemaining > 0 && (
+        <div 
+          className="time-remaining"
+          aria-live="polite"
+          aria-label={`${timeRemaining} seconds remaining`}
+        >
+          Time: {timeRemaining}s
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Table accessibility
+export function LeaderboardTable({ teams }: { teams: Team[] }) {
+  return (
+    <table role="table" aria-label="Team leaderboard">
+      <caption className="sr-only">
+        Leaderboard showing team rankings by score. {teams.length} teams total.
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col" aria-sort="none">Rank</th>
+          <th scope="col" aria-sort="descending">Team Name</th>
+          <th scope="col" aria-sort="descending">Score</th>
+          <th scope="col">Members</th>
+        </tr>
+      </thead>
+      <tbody>
+        {teams.map((team, index) => (
+          <tr key={team.id}>
+            <td aria-label={`Rank ${index + 1}`}>{index + 1}</td>
+            <td>{team.name}</td>
+            <td aria-label={`${team.score} points`}>{team.score}</td>
+            <td aria-label={`${team.members.length} members`}>
+              {team.members.length}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+```
+
+## Performance Monitoring
+
+### Performance Metrics Tracking
+Monitor key performance indicators:
+
+```typescript
+// Performance monitoring hook
+export function usePerformanceMonitoring() {
+  useEffect(() => {
+    // Monitor Core Web Vitals
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getCLS(console.log);
+      getFID(console.log);
+      getFCP(console.log);
+      getLCP(console.log);
+      getTTFB(console.log);
+    });
+    
+    // Monitor custom metrics
+    const observer = new PerformanceObserver((list) => {
+      list.getEntries().forEach((entry) => {
+        // Log performance entries
+        console.log(`${entry.name}: ${entry.duration}ms`);
+      });
+    });
+    
+    observer.observe({ entryTypes: ['measure', 'navigation'] });
+    
+    return () => observer.disconnect();
+  }, []);
+}
+
+// Component performance profiling
+export function withPerformanceProfiler<T extends object>(
+  Component: React.ComponentType<T>,
+  name: string
+) {
+  return function ProfiledComponent(props: T) {
+    useEffect(() => {
+      performance.mark(`${name}-start`);
+      
+      return () => {
+        performance.mark(`${name}-end`);
+        performance.measure(name, `${name}-start`, `${name}-end`);
+      };
+    });
+    
+    return <Component {...props} />;
+  };
+}
+```
+
+### Error Boundaries for Performance
+Implement performance-aware error boundaries:
+
+```typescript
+export class PerformanceErrorBoundary extends React.Component<
+  { children: ReactNode; fallback: ComponentType<{ error: Error }> },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Log performance impact of errors
+    performance.mark('error-boundary-triggered');
+    
+    console.error('Performance-impacting error:', {
+      error: error.message,
+      componentStack: errorInfo.componentStack,
+      timestamp: Date.now()
+    });
+  }
+  
+  render() {
+    if (this.state.hasError) {
+      const FallbackComponent = this.props.fallback;
+      return <FallbackComponent error={this.state.error!} />;
+    }
+    
+    return this.props.children;
+  }
+}
+```
+
+## Mobile Performance
+
+### Touch and Gesture Optimization
+Optimize for mobile interactions:
+
+```typescript
+// Touch-friendly components
+export function TouchOptimizedButton({ 
+  children, 
+  onClick, 
+  ...props 
+}: TouchOptimizedButtonProps) {
+  return (
+    <button
+      {...props}
+      onClick={onClick}
+      className={clsx(
+        'min-h-[44px] min-w-[44px]', // Minimum touch target size
+        'touch-manipulation', // Optimize touch interactions
+        'select-none', // Prevent text selection on touch
+        props.className
+      )}
+      style={{
+        WebkitTapHighlightColor: 'transparent', // Remove tap highlight
+        ...props.style
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+// Prevent zoom on input focus (iOS)
+export function MobileOptimizedInput(props: InputProps) {
+  return (
+    <input
+      {...props}
+      style={{
+        fontSize: '16px', // Prevents zoom on iOS
+        ...props.style
+      }}
+    />
+  );
+}
+```
+
+### Image Optimization
+Implement responsive images:
+
+```typescript
+// Responsive image component
+export function ResponsiveImage({ 
+  src, 
+  alt, 
+  sizes = '100vw',
+  className 
+}: ResponsiveImageProps) {
+  return (
+    <picture>
+      <source
+        media="(max-width: 640px)"
+        srcSet={`${src}?w=640 640w, ${src}?w=1280 1280w`}
+      />
+      <source
+        media="(max-width: 1024px)"
+        srcSet={`${src}?w=1024 1024w, ${src}?w=2048 2048w`}
+      />
+      <img
+        src={src}
+        alt={alt}
+        sizes={sizes}
+        className={className}
+        loading="lazy"
+        decoding="async"
+      />
+    </picture>
+  );
+}
+```

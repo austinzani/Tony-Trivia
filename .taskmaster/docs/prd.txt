@@ -1,0 +1,227 @@
+# Tony Trivia - Product Requirements Document
+*Web-Based Live Trivia Platform*
+
+## Project Overview
+
+**Vision:** Create a web-based trivia platform that replicates the engaging Last Call Trivia experience for remote and distributed teams, enabling friends to play together regardless of location.
+
+**Core Value Proposition:**
+- Authentic Last Call Trivia format with confidence-based scoring
+- Real-time multiplayer experience with live host control
+- Cross-platform compatibility (mobile & desktop)
+- Low-latency gameplay with immediate feedback
+
+## Game Format & Rules
+
+### Last Call Trivia Format
+Based on research, the Last Call Trivia format follows these key mechanics:
+
+**Round Structure:**
+- **Round 1:** Teams assign point values 1, 3, or 5 to their answers
+- **Round 2:** Point values switch to 2, 4, or 6
+- **Special Rounds:** Wager-based final questions, picture rounds, theme rounds
+
+**Scoring Rules:**
+- Each point value can only be used ONCE per round
+- Teams must assign points based on confidence level
+- Correct answers earn the assigned points
+- Incorrect answers lose no points (risk-free wagering)
+- Final question allows teams to wager any amount up to their current score
+
+**Answer Validation:**
+- Host manually reviews and approves/rejects each answer
+- Flexible spelling rules (phonetic equivalents accepted)
+- Last names acceptable for person questions
+- Precision required for titles and specific terms
+
+## Core Features
+
+### 1. Authentication System
+**Registered Users:**
+- Sign up/login via Supabase Auth
+- Email verification required
+- Password reset functionality
+- Profile management (username, avatar, stats)
+
+**Guest Users:**
+- Join games without registration
+- Temporary session-based identity
+- Limited to contestant role only
+- Optional conversion to registered account
+
+### 2. Game Room Management
+**Room Creation (Hosts Only):**
+- Generate unique 6-character game codes
+- Set room parameters (max teams, round types, time limits)
+- Pre-load question sets or add questions during gameplay
+- Room privacy settings (public/private)
+
+**Room Joining:**
+- Enter game code to join
+- Display room info before joining
+- Show current participants and game status
+- Handle room capacity limits
+
+### 3. Team Formation & Management
+**Team Creation:**
+- Teams form within game rooms
+- Support 1-6 players per team (configurable)
+- Team naming with profanity filtering
+- Team captain designation for answer submission
+
+**Team Management:**
+- Join existing teams or create new ones
+- Leave/kick team members (captain only)
+- Real-time team member status (online/offline)
+
+### 4. Gameplay Engine
+**Question Flow:**
+- Display questions to all participants simultaneously
+- Support multiple question types (text, image, audio, video)
+- Timed answer submission with visual countdown
+- Lock/unlock answer submission per round
+
+**Scoring System:**
+- Implement Last Call Trivia point allocation (1,3,5 then 2,4,6)
+- Prevent duplicate point value usage per round
+- Calculate running totals with real-time updates
+- Support special round types (wager, picture, bonus)
+
+**Host Controls:**
+- Advance to next question/round
+- Lock/unlock team answers
+- Review and approve/reject answers
+- Override scores when necessary
+- Pause/resume game functionality
+
+### 5. Answer Review System
+**Host Interface:**
+- View all team answers in organized grid
+- One-click approve/reject with bulk actions
+- Add scoring notes for transparency
+- Real-time answer submission notifications
+
+**Team Feedback:**
+- Show answer status (pending, approved, rejected)
+- Display correct answers after review
+- Show point awards and running totals
+
+### 6. Leaderboard & Results
+**Live Leaderboard:**
+- Real-time score updates during gameplay
+- Team rankings with tie-breaking logic
+- Round-by-round score history
+- Final results with winner announcement
+
+**Game History:**
+- Persistent storage for registered users
+- Detailed game statistics and performance
+- Personal and team achievement tracking
+
+## Technical Architecture
+
+### Frontend Stack
+- React 18+ with TypeScript
+- State Management: Zustand
+- Styling: Tailwind CSS + HeadlessUI or shadcn/ui
+- Data Fetching: React Query (TanStack Query)
+- Real-time: Supabase Realtime subscriptions
+- Routing: React Router v6
+- Forms: React Hook Form + Zod validation
+- Animations: Framer Motion
+- Build Tool: Vite
+
+### Backend Architecture (Supabase)
+- Authentication: Built-in auth with RLS
+- Database: PostgreSQL with real-time subscriptions
+- Edge Functions: Custom business logic (Node.js/Deno)
+- Storage: File uploads for images/media
+- Realtime: WebSocket connections for live updates
+- API: Auto-generated REST and GraphQL endpoints
+
+## Database Schema
+
+### Core Tables
+- profiles: User profiles and stats
+- game_rooms: Game room management with settings
+- teams: Team information within rooms
+- team_members: Team membership (users + guests)
+- game_rounds: Round configuration and point values
+- questions: Question content and metadata
+- team_answers: Answer submissions and scoring
+- team_point_usage: Track used point values per round
+- game_state: Real-time game state management
+
+## Development Phases
+
+### Phase 1: MVP (4-6 weeks)
+**Core Features:**
+- Basic authentication (registered users only)
+- Room creation and joining
+- Simple team formation
+- Basic question/answer flow
+- Manual host scoring
+- Simple leaderboard
+
+### Phase 2: Enhanced Gameplay (3-4 weeks)
+**Features:**
+- Guest user support
+- Last Call Trivia scoring system
+- Answer review interface
+- Multiple round types
+- Mobile responsive design
+- Basic chat functionality
+
+### Phase 3: Polish & Scale (2-3 weeks)
+**Features:**
+- Game history and statistics
+- Advanced host controls
+- Media question support (images/audio)
+- Scheduled games
+- Social features (reactions, achievements)
+
+### Phase 4: Advanced Features (Ongoing)
+**Features:**
+- Tournament brackets
+- Custom question sets
+- Integration with external trivia APIs
+- Advanced analytics dashboard
+- Mobile app development
+
+## Performance Requirements
+
+### Response Time Targets
+- Page load time: < 3 seconds (initial load)
+- Navigation: < 500ms (route changes)
+- Real-time updates: < 200ms (WebSocket events)
+- Answer submission: < 1 second (round-trip)
+
+### Scalability Targets
+- Concurrent rooms: 100+ simultaneous games
+- Users per room: 50+ participants
+- Database queries: < 100ms average response time
+- WebSocket connections: 1000+ concurrent connections
+
+### Security & Access Control
+- Row Level Security (RLS) policies
+- Input validation & sanitization
+- Profanity filtering for team names
+- Rate limiting on answer submissions
+- CSRF protection via Supabase's built-in security
+
+## Real-time Communication
+- Room-level updates for game state changes
+- Team-level updates for answer submissions
+- Host-only updates for review notifications
+- Presence tracking for online users
+- Connection management with automatic reconnection
+
+## Edge Cases & Error Handling
+- Network connectivity issues
+- Game state synchronization
+- Answer submission race conditions
+- Scoring validation edge cases
+- Scale and capacity issues
+- Host disconnection scenarios
+
+This comprehensive trivia platform will deliver an engaging multiplayer experience while maintaining the authentic Last Call Trivia format that users love. 

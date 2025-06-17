@@ -1,0 +1,16 @@
+# Task ID: 16
+# Title: Implement Scheduled Games Feature
+# Status: pending
+# Dependencies: 4
+# Priority: low
+# Description: Add functionality to schedule games in advance and manage upcoming games.
+# Details:
+1. Create database schema for scheduled games
+2. Implement UI for hosts to schedule games
+3. Develop system for sending game reminders
+4. Create a calendar view for upcoming scheduled games
+5. Implement automatic game start for scheduled games
+6. Add functionality for users to RSVP to scheduled games
+
+# Test Strategy:
+Write unit tests for scheduling logic. Conduct integration tests for reminder system. Perform user acceptance testing for the scheduling interface.

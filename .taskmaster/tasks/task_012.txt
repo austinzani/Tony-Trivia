@@ -1,0 +1,15 @@
+# Task ID: 12
+# Title: Implement Basic Chat Functionality
+# Status: pending
+# Dependencies: 4, 10
+# Priority: low
+# Description: Add a simple chat system for communication within game rooms.
+# Details:
+1. Create chat UI component
+2. Implement real-time message sending and receiving using Supabase Realtime
+3. Add user identification in chat messages
+4. Implement basic moderation features (e.g., profanity filter)
+5. Ensure chat history persistence within game sessions
+
+# Test Strategy:
+Write unit tests for chat functionality. Conduct integration tests to ensure proper real-time communication. Test chat system under various network conditions.

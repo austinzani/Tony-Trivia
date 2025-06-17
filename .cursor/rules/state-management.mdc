@@ -1,0 +1,160 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# State Management Guidelines
+
+## When to Use Each State Solution
+
+### Use Zustand for Global State
+- Authentication state and user data
+- Current game room and game state
+- Real-time game updates and phase management
+- User preferences and settings
+- Cross-component shared data
+
+### Use useState for Local State
+- Form inputs and validation state
+- Component UI state (modals, dropdowns, loading states)
+- Temporary data that doesn't need persistence
+- Component-specific toggle states
+
+### Use React Context for
+- Theme and styling context
+- Feature-specific context that doesn't need global access
+- Provider patterns for feature modules
+- Dependency injection patterns
+
+## Zustand Store Patterns
+
+### Store Structure Template
+```typescript
+interface GameState {
+  // State properties
+  currentRoom: GameRoom | null;
+  currentTeam: Team | null;
+  gamePhase: GamePhase;
+  
+  // Actions nested in actions object
+  actions: {
+    joinRoom: (roomId: string) => void;
+    updateGamePhase: (phase: GamePhase) => void;
+    resetGameState: () => void;
+  };
+}
+
+export const useGameStore = create<GameState>((set, get) => ({
+  // Initial state
+  currentRoom: null,
+  currentTeam: null,
+  gamePhase: 'lobby',
+  
+  // Actions
+  actions: {
+    joinRoom: (roomId: string) => {
+      // Business logic here
+      set({ currentRoom: /* new room data */ });
+    },
+    
+    updateGamePhase: (phase: GamePhase) => {
+      set({ gamePhase: phase });
+    },
+    
+    resetGameState: () => {
+      set({
+        currentRoom: null,
+        currentTeam: null,
+        gamePhase: 'lobby'
+      });
+    }
+  }
+}));
+```
+
+### Zustand Best Practices
+- Group related actions in the `actions` object
+- Use shallow comparison for selective subscriptions
+- Implement proper TypeScript typing for all state
+- Keep stores focused on specific domains
+- Use immer for complex state updates if needed
+
+## React Context Patterns
+
+### Feature-Specific Context
+```typescript
+interface GameRoomContextValue {
+  roomData: GameRoom;
+  isHost: boolean;
+  actions: {
+    updateSettings: (settings: GameSettings) => void;
+    startGame: () => void;
+  };
+}
+
+const GameRoomContext = createContext<GameRoomContextValue | null>(null);
+
+export function GameRoomProvider({ children }: { children: ReactNode }) {
+  const [roomData, setRoomData] = useState<GameRoom>();
+  
+  const value = useMemo(() => ({
+    roomData,
+    isHost: /* calculation */,
+    actions: {
+      updateSettings: (settings) => { /* logic */ },
+      startGame: () => { /* logic */ }
+    }
+  }), [roomData]);
+  
+  return (
+    <GameRoomContext.Provider value={value}>
+      {children}
+    </GameRoomContext.Provider>
+  );
+}
+
+export function useGameRoomContext() {
+  const context = useContext(GameRoomContext);
+  if (!context) {
+    throw new Error('useGameRoomContext must be used within GameRoomProvider');
+  }
+  return context;
+}
+```
+
+## State Lifting Guidelines
+
+### When to Lift State Up
+- When two or more components need to share the same state
+- When state needs to survive component unmounting
+- When state changes need to trigger effects in sibling components
+- When implementing optimistic updates
+
+### When to Keep State Local
+- UI-only state (hover, focus, modal open/closed)
+- Form input values before submission
+- Component-specific loading states
+- Temporary calculations or derived data
+
+## Performance Optimization
+
+### Zustand Optimization
+```typescript
+// Use shallow comparison for object selections
+const { currentRoom, gamePhase } = useGameStore(
+  (state) => ({ 
+    currentRoom: state.currentRoom, 
+    gamePhase: state.gamePhase 
+  }),
+  shallow
+);
+
+// Select only what you need
+const joinRoom = useGameStore((state) => state.actions.joinRoom);
+```
+
+### React State Optimization
+- Use `useMemo` for expensive calculations
+- Use `useCallback` for stable function references
+- Minimize unnecessary re-renders with proper dependency arrays
+- Consider `useState` vs `useReducer` for complex state logic
