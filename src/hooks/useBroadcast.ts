@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import type { RealtimeChannel } from '../services/supabase';
 import { supabase } from '../services/supabase';
 
 // Game event types

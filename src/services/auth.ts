@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { User, Session, AuthError } from '@supabase/supabase-js';
+import type { User, Session, AuthError } from './supabase';
 
 // Types for our auth service
 export interface SignUpData {

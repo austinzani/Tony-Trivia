@@ -1,11 +1,138 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
+import { AnimatedButton } from './AnimatedButton';
 
 interface AuthFormProps {
   mode: 'signin' | 'signup';
   onModeChange: (mode: 'signin' | 'signup') => void;
   onSuccess?: () => void;
 }
+
+// Move InputField component outside to prevent recreation on every render
+const InputField = ({
+  type,
+  id,
+  name,
+  value,
+  placeholder,
+  label,
+  icon,
+  required = false,
+  onChange,
+  onFocus,
+  onBlur,
+  fieldErrors,
+  focusedField,
+}: {
+  type: string;
+  id: string;
+  name: string;
+  value: string;
+  placeholder: string;
+  label: string;
+  icon: string;
+  required?: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFocus: (fieldName: string) => void;
+  onBlur: (fieldName: string) => void;
+  fieldErrors: Record<string, string>;
+  focusedField: string | null;
+}) => {
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: [0.68, -0.55, 0.265, 1.55],
+      },
+    },
+  };
+
+  const messageVariants = {
+    hidden: { opacity: 0, scale: 0.8, y: -10 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: [0.68, -0.55, 0.265, 1.55],
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.8,
+      y: -10,
+      transition: { duration: 0.2 },
+    },
+  };
+
+  return (
+    <motion.div variants={itemVariants} className="space-y-2">
+      <label
+        htmlFor={id}
+        className="block text-sm font-semibold text-electric-700 mb-1"
+      >
+        {icon} {label}
+      </label>
+      <div className="relative">
+        <input
+          type={type}
+          id={id}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onFocus={() => onFocus(name)}
+          onBlur={() => onBlur(name)}
+          className={`w-full px-4 py-3 border-2 rounded-game font-medium transition-all duration-200 
+            ${
+              fieldErrors[name]
+                ? 'border-energy-red bg-energy-red/5 focus:border-energy-red focus:bg-energy-red/10'
+                : focusedField === name
+                  ? 'border-electric-500 bg-electric-50/50 shadow-electric'
+                  : 'border-gray-300 bg-white hover:border-electric-300'
+            } 
+            focus:outline-none focus:ring-0`}
+          placeholder={placeholder}
+          required={required}
+          aria-invalid={fieldErrors[name] ? 'true' : 'false'}
+          aria-describedby={fieldErrors[name] ? `${name}-error` : undefined}
+        />
+        <AnimatePresence>
+          {focusedField === name && !fieldErrors[name] && (
+            <motion.div
+              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <span className="text-electric-500 animate-pulse">✨</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      <AnimatePresence>
+        {fieldErrors[name] && (
+          <motion.p
+            id={`${name}-error`}
+            className="text-energy-red text-sm font-medium"
+            variants={messageVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            role="alert"
+          >
+            {fieldErrors[name]}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
 
 export default function AuthForm({
   mode,
@@ -20,6 +147,8 @@ export default function AuthForm({
   });
   const [localError, setLocalError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const { signIn, signUp, loading } = useAuth();
 
@@ -27,37 +156,75 @@ export default function AuthForm({
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     setLocalError(null);
+
+    // Clear field-specific error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleFocus = (fieldName: string) => {
+    setFocusedField(fieldName);
+  };
+
+  const handleBlur = (fieldName: string) => {
+    setFocusedField(null);
+    validateField(fieldName);
+  };
+
+  const validateField = (fieldName: string) => {
+    const errors: Record<string, string> = {};
+    const value = formData[fieldName as keyof typeof formData];
+
+    switch (fieldName) {
+      case 'email':
+        if (!value) {
+          errors.email = '🎯 Email is required to join the game!';
+        } else if (!/\S+@\S+\.\S+/.test(value)) {
+          errors.email = '🎮 Please enter a valid email address!';
+        }
+        break;
+      case 'password':
+        if (!value) {
+          errors.password = '🔐 Password is required!';
+        } else if (value.length < 6) {
+          errors.password = '🛡️ Password needs at least 6 characters!';
+        }
+        break;
+      case 'confirmPassword':
+        if (mode === 'signup' && value !== formData.password) {
+          errors.confirmPassword = "🔒 Passwords don't match!";
+        }
+        break;
+      case 'displayName':
+        if (mode === 'signup' && !value.trim()) {
+          errors.displayName = '🏆 Choose a display name!';
+        }
+        break;
+    }
+
+    setFieldErrors(prev => ({ ...prev, ...errors }));
+    return Object.keys(errors).length === 0;
   };
 
   const validateForm = () => {
-    if (!formData.email || !formData.password) {
-      setLocalError('Email and password are required');
-      return false;
-    }
-
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-      setLocalError('Please enter a valid email address');
-      return false;
-    }
-
-    if (formData.password.length < 6) {
-      setLocalError('Password must be at least 6 characters long');
-      return false;
-    }
-
+    const fields = ['email', 'password'];
     if (mode === 'signup') {
-      if (!formData.displayName.trim()) {
-        setLocalError('Display name is required');
-        return false;
-      }
-
-      if (formData.password !== formData.confirmPassword) {
-        setLocalError('Passwords do not match');
-        return false;
-      }
+      fields.push('confirmPassword', 'displayName');
     }
 
-    return true;
+    let isValid = true;
+    fields.forEach(field => {
+      if (!validateField(field)) {
+        isValid = false;
+      }
+    });
+
+    if (!isValid) {
+      setLocalError('🎯 Please fix the errors above to continue!');
+    }
+
+    return isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,10 +244,13 @@ export default function AuthForm({
         });
 
         if (result.success) {
-          setSuccessMessage('Successfully signed in!');
+          setSuccessMessage('🎉 Welcome back to Tony Trivia!');
           onSuccess?.();
         } else {
-          setLocalError(result.error?.message || 'Failed to sign in');
+          setLocalError(
+            result.error?.message ||
+              '❌ Sign in failed - check your credentials and try again!'
+          );
         }
       } else {
         const result = await signUp({
@@ -92,204 +262,279 @@ export default function AuthForm({
         if (result.success) {
           if (result.requiresConfirmation) {
             setSuccessMessage(
-              result.message || 'Please check your email for confirmation'
+              result.message ||
+                '📧 Check your email for verification - we sent you a magic link!'
             );
           } else {
-            setSuccessMessage('Account created successfully!');
+            setSuccessMessage(
+              '🎊 Welcome to Tony Trivia! Your account is ready!'
+            );
             onSuccess?.();
           }
         } else {
-          setLocalError(result.error?.message || 'Failed to create account');
+          setLocalError(
+            result.error?.message ||
+              '❌ Account creation failed - please try again!'
+          );
         }
       }
     } catch (error) {
-      setLocalError('An unexpected error occurred');
+      setLocalError('⚡ Something unexpected happened - please try again!');
       console.error('Auth form error:', error);
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: [0.68, -0.55, 0.265, 1.55],
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: [0.68, -0.55, 0.265, 1.55],
+      },
+    },
+  };
+
+  const messageVariants = {
+    hidden: { opacity: 0, scale: 0.8, y: -10 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: [0.68, -0.55, 0.265, 1.55],
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.8,
+      y: -10,
+      transition: { duration: 0.2 },
+    },
+  };
+
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {mode === 'signin' ? 'Sign In' : 'Create Account'}
-          </h2>
-          <p className="text-gray-600 mt-2">
-            {mode === 'signin'
-              ? 'Welcome back! Please sign in to continue.'
-              : 'Join Tony Trivia and start playing!'}
-          </p>
-        </div>
-
-        {localError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-800 text-sm">{localError}</p>
+      <motion.div
+        className="card-game bg-gradient-to-br from-white to-electric-50/30 border-2 border-electric-200 overflow-hidden"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Header Section */}
+        <motion.div
+          className="text-center mb-8 relative"
+          variants={itemVariants}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-electric-500/10 to-plasma-500/10 rounded-t-card -mx-6 -mt-6 mb-4"></div>
+          <div className="relative pt-4">
+            <motion.div
+              className="inline-flex items-center gap-2 mb-2"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{
+                delay: 0.2,
+                duration: 0.5,
+                ease: [0.68, -0.55, 0.265, 1.55],
+              }}
+            >
+              <span className="text-3xl">🎯</span>
+              <h2 className="text-display-md bg-gradient-to-r from-electric-600 to-plasma-600 bg-clip-text text-transparent font-bold">
+                {mode === 'signin' ? 'Welcome Back!' : 'Join the Game!'}
+              </h2>
+              <span className="text-3xl">🎮</span>
+            </motion.div>
+            <motion.p
+              className="text-gray-600 font-medium"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+            >
+              {mode === 'signin'
+                ? 'Ready for another round of trivia excitement?'
+                : 'Create your player profile and start competing!'}
+            </motion.p>
           </div>
-        )}
+        </motion.div>
 
-        {successMessage && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-green-800 text-sm">{successMessage}</p>
-          </div>
-        )}
+        {/* Error Message */}
+        <AnimatePresence>
+          {localError && (
+            <motion.div
+              className="mb-6 p-4 bg-gradient-to-r from-energy-red/10 to-energy-red/5 border-l-4 border-energy-red rounded-r-lg"
+              variants={messageVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              role="alert"
+              aria-live="assertive"
+            >
+              <p className="text-energy-red font-semibold text-sm">
+                {localError}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === 'signup' && (
-            <div>
-              <label
-                htmlFor="displayName"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Display Name
-              </label>
-              <input
+        {/* Success Message */}
+        <AnimatePresence>
+          {successMessage && (
+            <motion.div
+              className="mb-6 p-4 bg-gradient-to-r from-energy-green/10 to-energy-green/5 border-l-4 border-energy-green rounded-r-lg"
+              variants={messageVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              role="alert"
+              aria-live="polite"
+            >
+              <p className="text-energy-green font-semibold text-sm">
+                {successMessage}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Form */}
+        <motion.form onSubmit={handleSubmit} className="space-y-5">
+          <AnimatePresence mode="wait">
+            {mode === 'signup' && (
+              <InputField
                 type="text"
                 id="displayName"
                 name="displayName"
                 value={formData.displayName}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your display name"
+                placeholder="Choose your game name"
+                label="Player Name"
+                icon="🏆"
                 required={mode === 'signup'}
+                onChange={handleInputChange}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                fieldErrors={fieldErrors}
+                focusedField={focusedField}
               />
-            </div>
-          )}
+            )}
+          </AnimatePresence>
 
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
+          <InputField
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            placeholder="your.email@example.com"
+            label="Email Address"
+            icon="📧"
+            required
+            onChange={handleInputChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            fieldErrors={fieldErrors}
+            focusedField={focusedField}
+          />
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your password"
-              required
-              minLength={6}
-            />
-          </div>
+          <InputField
+            type="password"
+            id="password"
+            name="password"
+            value={formData.password}
+            placeholder="Enter a secure password"
+            label="Password"
+            icon="🔐"
+            required
+            onChange={handleInputChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            fieldErrors={fieldErrors}
+            focusedField={focusedField}
+          />
 
-          {mode === 'signup' && (
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Confirm Password
-              </label>
-              <input
+          <AnimatePresence mode="wait">
+            {mode === 'signup' && (
+              <InputField
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Confirm your password"
+                label="Confirm Password"
+                icon="🔒"
                 required={mode === 'signup'}
+                onChange={handleInputChange}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                fieldErrors={fieldErrors}
+                focusedField={focusedField}
               />
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center"
-          >
-            {loading ? (
-              <>
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                {mode === 'signin' ? 'Signing In...' : 'Creating Account...'}
-              </>
-            ) : mode === 'signin' ? (
-              'Sign In'
-            ) : (
-              'Create Account'
             )}
-          </button>
-        </form>
+          </AnimatePresence>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            {mode === 'signin'
-              ? "Don't have an account? "
-              : 'Already have an account? '}
-            <button
-              type="button"
-              onClick={() =>
-                onModeChange(mode === 'signin' ? 'signup' : 'signin')
+          {/* Submit Button */}
+          <motion.div variants={itemVariants} className="pt-4">
+            <AnimatedButton
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              loading={loading}
+              disabled={loading}
+              icon={
+                loading ? undefined : (
+                  <span>{mode === 'signin' ? '🚀' : '🎊'}</span>
+                )
               }
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="text-lg font-bold py-4"
             >
-              {mode === 'signin' ? 'Sign up' : 'Sign in'}
-            </button>
-          </p>
-        </div>
+              {loading
+                ? mode === 'signin'
+                  ? 'Signing In...'
+                  : 'Creating Account...'
+                : mode === 'signin'
+                  ? 'Sign In & Play!'
+                  : 'Join Tony Trivia!'}
+            </AnimatedButton>
+          </motion.div>
+        </motion.form>
 
-        {mode === 'signin' && (
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                // TODO: Implement proper password reset modal/page
-                const email = prompt('Enter your email address:');
-                if (email) {
-                  alert(
-                    'Password reset functionality will be fully implemented with proper UI'
-                  );
-                }
-              }}
-              className="text-sm text-gray-600 hover:text-gray-700"
-            >
-              Forgot your password?
-            </button>
-          </div>
-        )}
-      </div>
+        {/* Mode Switch */}
+        <motion.div
+          className="mt-8 text-center p-4 bg-gradient-to-r from-gray-50 to-electric-50/30 rounded-game border border-gray-200"
+          variants={itemVariants}
+        >
+          <p className="text-gray-600 mb-3 font-medium">
+            {mode === 'signin'
+              ? '🆕 New to Tony Trivia?'
+              : '🔄 Already have an account?'}
+          </p>
+          <AnimatedButton
+            type="button"
+            variant="secondary"
+            onClick={() =>
+              onModeChange(mode === 'signin' ? 'signup' : 'signin')
+            }
+            icon={<span>{mode === 'signin' ? '✨' : '⚡'}</span>}
+            className="px-6 py-2 font-semibold"
+          >
+            {mode === 'signin' ? 'Create Account' : 'Sign In Instead'}
+          </AnimatedButton>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

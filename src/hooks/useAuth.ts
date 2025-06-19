@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase';
+import type { User, Session, AuthError } from '../services/supabase';
 import { useAppActions } from '../stores/useAppStore';
+import { guestAuthService } from '../services/guestAuth';
 
 interface AuthState {
   user: User | null;
@@ -29,13 +30,15 @@ export function useAuth() {
     error: null,
   });
 
-  const { setUser, logout: appLogout, setLoading, setError } = useAppActions();
+  const { setUser, setGuestUser, logout: appLogout, setLoading, setError } = useAppActions();
 
   useEffect(() => {
     // Get initial session
     const initializeAuth = async () => {
       try {
         setLoading(true);
+        
+        // First, check for Supabase session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -47,6 +50,12 @@ export function useAuth() {
 
         if (session?.user) {
           await handleUserSession(session);
+        } else {
+          // If no Supabase session, check for guest session
+          const guestSession = guestAuthService.getCurrentGuestSession();
+          if (guestSession) {
+            setGuestUser(guestSession.user);
+          }
         }
 
         setAuthState(prev => ({
@@ -81,6 +90,8 @@ export function useAuth() {
 
         if (session?.user) {
           await handleUserSession(session);
+          // Clear any guest session when user logs in
+          guestAuthService.clearGuestSession();
         } else {
           appLogout();
         }
@@ -90,7 +101,7 @@ export function useAuth() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [setUser, appLogout, setLoading, setError]);
+  }, [setUser, setGuestUser, appLogout, setLoading, setError]);
 
   const handleUserSession = async (session: Session) => {
     try {
@@ -144,12 +155,17 @@ export function useAuth() {
       setLoading(true);
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
 
+      // Check if converting from guest
+      const guestData = guestAuthService.getGuestDataForConversion();
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             display_name: displayName,
+            // Include guest data in user metadata for later transfer
+            guest_data: guestData,
           },
         },
       });
@@ -200,7 +216,7 @@ export function useAuth() {
       }
 
       setAuthState(prev => ({ ...prev, loading: false }));
-      return { success: true, user: data.user };
+      return { success: true };
 
     } catch (err) {
       const error = err as AuthError;
@@ -216,19 +232,34 @@ export function useAuth() {
   const signOut = async () => {
     try {
       setLoading(true);
+      setAuthState(prev => ({ ...prev, loading: true, error: null }));
+
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
-        console.error('Sign out error:', error);
         setError(error.message);
+        setAuthState(prev => ({ ...prev, error, loading: false }));
         return { success: false, error };
       }
 
+      // Clear guest session as well
+      guestAuthService.clearGuestSession();
+      appLogout();
+      
+      setAuthState(prev => ({ 
+        ...prev, 
+        user: null, 
+        session: null, 
+        loading: false 
+      }));
+      
       return { success: true };
+
     } catch (err) {
       const error = err as AuthError;
       console.error('Sign out error:', error);
       setError(error.message);
+      setAuthState(prev => ({ ...prev, error, loading: false }));
       return { success: false, error };
     } finally {
       setLoading(false);
@@ -238,23 +269,29 @@ export function useAuth() {
   const resetPassword = async (email: string) => {
     try {
       setLoading(true);
+      setAuthState(prev => ({ ...prev, loading: true, error: null }));
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {
         setError(error.message);
+        setAuthState(prev => ({ ...prev, error, loading: false }));
         return { success: false, error };
       }
 
+      setAuthState(prev => ({ ...prev, loading: false }));
       return { 
         success: true, 
-        message: 'Password reset email sent. Please check your inbox.' 
+        message: 'Password reset email sent successfully!' 
       };
+
     } catch (err) {
       const error = err as AuthError;
-      console.error('Password reset error:', error);
+      console.error('Reset password error:', error);
       setError(error.message);
+      setAuthState(prev => ({ ...prev, error, loading: false }));
       return { success: false, error };
     } finally {
       setLoading(false);
@@ -264,20 +301,26 @@ export function useAuth() {
   const updatePassword = async (newPassword: string) => {
     try {
       setLoading(true);
+      setAuthState(prev => ({ ...prev, loading: true, error: null }));
+
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
       if (error) {
         setError(error.message);
+        setAuthState(prev => ({ ...prev, error, loading: false }));
         return { success: false, error };
       }
 
-      return { success: true, message: 'Password updated successfully.' };
+      setAuthState(prev => ({ ...prev, loading: false }));
+      return { success: true };
+
     } catch (err) {
       const error = err as AuthError;
-      console.error('Password update error:', error);
+      console.error('Update password error:', error);
       setError(error.message);
+      setAuthState(prev => ({ ...prev, error, loading: false }));
       return { success: false, error };
     } finally {
       setLoading(false);
@@ -286,45 +329,27 @@ export function useAuth() {
 
   const updateProfile = async (updates: { display_name?: string; avatar_url?: string }) => {
     try {
-      if (!authState.user) {
-        throw new Error('No user logged in');
-      }
-
       setLoading(true);
-      
-      // Update auth metadata
-      const { error: authError } = await supabase.auth.updateUser({
+      setAuthState(prev => ({ ...prev, loading: true, error: null }));
+
+      const { error } = await supabase.auth.updateUser({
         data: updates,
       });
 
-      if (authError) {
-        throw authError;
+      if (error) {
+        setError(error.message);
+        setAuthState(prev => ({ ...prev, error, loading: false }));
+        return { success: false, error };
       }
 
-      // Update profile table
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', authState.user.id);
+      setAuthState(prev => ({ ...prev, loading: false }));
+      return { success: true };
 
-      if (profileError) {
-        throw profileError;
-      }
-
-      // Update app store
-      if (updates.display_name) {
-        setUser({
-          id: authState.user.id,
-          name: updates.display_name,
-          isHost: false,
-        });
-      }
-
-      return { success: true, message: 'Profile updated successfully.' };
     } catch (err) {
-      const error = err as Error;
-      console.error('Profile update error:', error);
+      const error = err as AuthError;
+      console.error('Update profile error:', error);
       setError(error.message);
+      setAuthState(prev => ({ ...prev, error, loading: false }));
       return { success: false, error };
     } finally {
       setLoading(false);
@@ -337,8 +362,7 @@ export function useAuth() {
     session: authState.session,
     loading: authState.loading,
     error: authState.error,
-    isAuthenticated: !!authState.user,
-
+    
     // Actions
     signUp,
     signIn,

@@ -33,4 +33,12 @@ export const isSupabaseConfigured = (): boolean => {
 };
 
 // Export types for use throughout the app
-export type { User, Session, AuthError } from '@supabase/supabase-js'; 
+export type { 
+  User, 
+  Session, 
+  AuthError,
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+  PostgrestError,
+  PostgrestResponse
+} from '@supabase/supabase-js'; 

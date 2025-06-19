@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabase';
-import { PostgrestError, PostgrestResponse } from '@supabase/supabase-js';
+import type { PostgrestError, PostgrestResponse } from './supabase';
+import { supabase } from './supabase';
 
 // Database table types
 export interface Profile {

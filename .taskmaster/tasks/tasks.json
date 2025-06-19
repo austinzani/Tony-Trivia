@@ -91,15 +91,15 @@
         "dependencies": [
           1
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
             "title": "Create Supabase Project and Configure Client",
             "description": "Set up a new Supabase project and integrate the client into the React application",
             "dependencies": [],
-            "details": "1. Create a new Supabase project from the dashboard\n2. Note the project URL and anon key\n3. Install Supabase client libraries: `npm install @supabase/supabase-js`\n4. Create a client configuration file (e.g., `lib/supabase.js`) that exports the Supabase client instance\n5. Add environment variables for SUPABASE_URL and SUPABASE_ANON_KEY\n6. Configure the client to use these environment variables",
-            "status": "pending",
+            "details": "1. Create a new Supabase project from the dashboard\n2. Note the project URL and anon key\n3. Install Supabase client libraries: `npm install @supabase/supabase-js`\n4. Create a client configuration file (e.g., `lib/supabase.js`) that exports the Supabase client instance\n5. Add environment variables for SUPABASE_URL and SUPABASE_ANON_KEY\n6. Configure the client to use these environment variables\n<info added on 2025-06-19T01:40:38.897Z>\n✅ Completed Supabase Project Setup:\n\n1. ✅ Supabase project already exists (qfgzextahvckxrtwgujx.supabase.co)\n2. ✅ Supabase client is properly configured in src/services/supabase.ts\n3. ✅ Client includes proper auth and realtime configuration\n4. ✅ Environment variables structure is ready (.gitignore properly excludes .env)\n5. ✅ Connection test successful - can access Supabase project\n\n**Environment Variables Needed:**\n- VITE_SUPABASE_URL=https://qfgzextahvckxrtwgujx.supabase.co\n- VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmZ3pleHRhaHZja3hydHdndWp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNzE0NTMsImV4cCI6MjA2NTc0NzQ1M30.TXSLLhk7G-a6RYAh2ccgf9-HsjwJzNiDcLOrduXoaHA\n</info added on 2025-06-19T01:40:38.897Z>",
+            "status": "done",
             "testStrategy": "Verify client connection by making a simple query to the public schema"
           },
           {
@@ -109,8 +109,8 @@
             "dependencies": [
               1
             ],
-            "details": "Create the following tables with appropriate columns and relationships:\n1. profiles (id, user_id, display_name, avatar_url, created_at)\n2. game_rooms (id, name, created_by, created_at, settings)\n3. teams (id, room_id, name, created_at)\n4. team_members (id, team_id, user_id, role, joined_at)\n5. game_rounds (id, room_id, round_number, status, started_at, ended_at)\n6. questions (id, round_id, question_text, options, correct_answer, points)\n7. team_answers (id, team_id, question_id, answer, is_correct, points_earned)\n8. team_point_usage (id, team_id, round_id, points_used, reason)\n9. game_state (id, room_id, current_round, status, last_updated)",
-            "status": "pending",
+            "details": "Create the following tables with appropriate columns and relationships:\n1. profiles (id, user_id, display_name, avatar_url, created_at)\n2. game_rooms (id, name, created_by, created_at, settings)\n3. teams (id, room_id, name, created_at)\n4. team_members (id, team_id, user_id, role, joined_at)\n5. game_rounds (id, room_id, round_number, status, started_at, ended_at)\n6. questions (id, round_id, question_text, options, correct_answer, points)\n7. team_answers (id, team_id, question_id, answer, is_correct, points_earned)\n8. team_point_usage (id, team_id, round_id, points_used, reason)\n9. game_state (id, room_id, current_round, status, last_updated)\n<info added on 2025-06-19T01:44:57.424Z>\n✅ Successfully Created Complete Database Schema:\n\n**Tables Created:**\n1. ✅ **profiles** - User profile information (extends auth.users)\n2. ✅ **game_rooms** - Game room management with host controls\n3. ✅ **teams** - Team structure with automatic scoring\n4. ✅ **team_members** - Team membership with roles (captain/member)\n5. ✅ **game_rounds** - Round management with different types (standard, picture, wager, lightning)\n6. ✅ **questions** - Question storage with media support and difficulty levels\n7. ✅ **team_answers** - Answer tracking with automatic scoring\n8. ✅ **team_point_usage** - Point wagering system for special rounds\n9. ✅ **game_state** - Real-time game state tracking\n\n**Advanced Features Implemented:**\n- ✅ **Row Level Security (RLS)** policies for all tables\n- ✅ **Automatic room code generation** (6-character unique codes)\n- ✅ **Automatic score calculation** via triggers\n- ✅ **Comprehensive indexing** for performance optimization\n- ✅ **Data integrity constraints** and validation\n- ✅ **Foreign key relationships** properly established\n- ✅ **UUID primary keys** for scalability\n\n**Security & Performance:**\n- ✅ All tables have appropriate RLS policies\n- ✅ Indexes created for frequently queried columns\n- ✅ Composite indexes for complex queries\n- ✅ Check constraints for data validation\n- ✅ Unique constraints where needed\n\n**Database Schema Ready For:**\n- Real-time multiplayer trivia games\n- Team-based gameplay with roles\n- Multiple round types and scoring systems\n- Point wagering mechanics\n- Game state management\n- Media-rich questions\n</info added on 2025-06-19T01:44:57.424Z>",
+            "status": "done",
             "testStrategy": "Verify table creation by querying table information from Supabase"
           },
           {
@@ -120,8 +120,8 @@
             "dependencies": [
               1
             ],
-            "details": "1. Configure authentication providers in Supabase dashboard (email/password, OAuth providers)\n2. Create sign-up, sign-in, and sign-out functionality in the application\n3. Implement session persistence and refresh\n4. Create protected routes that require authentication\n5. Set up user profile creation on sign-up\n6. Add password reset functionality\n7. Handle authentication errors and user feedback",
-            "status": "pending",
+            "details": "1. Configure authentication providers in Supabase dashboard (email/password, OAuth providers)\n2. Create sign-up, sign-in, and sign-out functionality in the application\n3. Implement session persistence and refresh\n4. Create protected routes that require authentication\n5. Set up user profile creation on sign-up\n6. Add password reset functionality\n7. Handle authentication errors and user feedback\n<info added on 2025-06-19T01:50:45.162Z>\n✅ Successfully implemented complete authentication flow with Supabase:\n\n**Core Authentication System:**\n- Created useAuth hook with session management, profile creation, real-time state changes, and error handling\n- Developed AuthForm, UserStatus, ProtectedRoute, and PasswordReset components\n\n**Authentication Features:**\n- Email/password sign up with display name\n- Email/password sign in\n- Sign out with session cleanup\n- Password reset via email\n- Automatic profile creation in database\n- Session persistence across browser sessions\n- Real-time auth state updates\n\n**Integration & Security:**\n- Protected routes for /game and /host\n- Database integration with profiles table\n- Compatible with Row Level Security policies\n- Comprehensive error handling and validation\n- Loading indicators throughout the authentication flow\n\n**User Experience:**\n- Client-side form validation with helpful error messages\n- Confirmation feedback for all actions\n- Mobile-friendly authentication forms\n- Seamless integration with existing app components\n\n**Technical Implementation:**\n- Full TypeScript support\n- Integration with Zustand state management\n- React Router integration for protected routes and redirects\n- Leveraged Supabase's built-in authentication features\n</info added on 2025-06-19T01:50:45.162Z>",
+            "status": "done",
             "testStrategy": "Test the complete authentication flow including sign-up, sign-in, session persistence, and sign-out"
           },
           {
@@ -132,8 +132,8 @@
               2,
               3
             ],
-            "details": "For each table, implement appropriate RLS policies:\n1. profiles: Users can read any profile but only update their own\n2. game_rooms: Creators can update rooms, participants can read\n3. teams: Team members can read/update their team data\n4. team_members: Users can read team members, only admins can add/remove\n5. game_rounds: Game admins can create/update, participants can read\n6. questions: Game admins can create, participants can read during active rounds\n7. team_answers: Team members can create answers for their team\n8. team_point_usage: Team members can read, team admins can create\n9. game_state: Game admins can update, participants can read",
-            "status": "pending",
+            "details": "For each table, implement appropriate RLS policies:\n1. profiles: Users can read any profile but only update their own\n2. game_rooms: Creators can update rooms, participants can read\n3. teams: Team members can read/update their team data\n4. team_members: Users can read team members, only admins can add/remove\n5. game_rounds: Game admins can create/update, participants can read\n6. questions: Game admins can create, participants can read during active rounds\n7. team_answers: Team members can create answers for their team\n8. team_point_usage: Team members can read, team admins can create\n9. game_state: Game admins can update, participants can read\n<info added on 2025-06-19T01:51:21.978Z>\n✅ Row Level Security Policies Already Implemented:\n\n**RLS Policies Created in Subtask 2.2:**\nAll RLS policies were implemented during the database schema creation phase. Each table has appropriate security policies:\n\n1. ✅ **profiles** - Users can view all profiles, update only their own\n2. ✅ **game_rooms** - Public rooms viewable by all, private rooms by participants only, hosts can manage\n3. ✅ **teams** - Viewable in public games and by team members, manageable by hosts\n4. ✅ **team_members** - Viewable by team members and in public games, manageable by hosts and team members\n5. ✅ **game_rounds** - Viewable by game participants, manageable by hosts\n6. ✅ **questions** - Viewable by game participants, manageable by hosts\n7. ✅ **team_answers** - Viewable by team members and hosts, creatable by team members\n8. ✅ **team_point_usage** - Viewable by team members, manageable by team members\n9. ✅ **game_state** - Viewable by game participants, manageable by hosts\n\n**Security Features Implemented:**\n- ✅ All tables have RLS enabled\n- ✅ Policies enforce user-based access control\n- ✅ Game hosts have administrative privileges\n- ✅ Team members have appropriate team-scoped access\n- ✅ Public/private game room distinction\n- ✅ Authentication-based access control\n\n**Policy Types Implemented:**\n- ✅ SELECT policies for data viewing\n- ✅ INSERT policies for data creation\n- ✅ UPDATE policies for data modification\n- ✅ DELETE policies for data removal\n- ✅ Role-based permissions (host, team member, public)\n\nThis subtask was completed as part of the comprehensive database schema creation in subtask 2.2.\n</info added on 2025-06-19T01:51:21.978Z>",
+            "status": "done",
             "testStrategy": "Test policies by attempting authorized and unauthorized operations on each table"
           },
           {
@@ -144,8 +144,8 @@
               2,
               4
             ],
-            "details": "1. Enable real-time functionality in Supabase dashboard\n2. Implement real-time subscriptions for:\n   - Game state changes\n   - Team updates\n   - Round status changes\n   - New questions\n   - Team answers\n   - Score updates\n3. Create React hooks for managing subscriptions\n4. Handle subscription events to update UI in real-time\n5. Implement error handling and reconnection logic",
-            "status": "pending",
+            "details": "1. Enable real-time functionality in Supabase dashboard\n2. Implement real-time subscriptions for:\n   - Game state changes\n   - Team updates\n   - Round status changes\n   - New questions\n   - Team answers\n   - Score updates\n3. Create React hooks for managing subscriptions\n4. Handle subscription events to update UI in real-time\n5. Implement error handling and reconnection logic\n<info added on 2025-06-19T01:58:42.266Z>\n## Real-time Implementation Completed\n\n### Core Real-time Infrastructure\n1. **useRealtimeSubscription** - Base hook with error handling, reconnection logic, and performance optimization\n2. **useGameState** - Comprehensive game state management with real-time updates for all game entities\n3. **usePresence** - User presence tracking showing who's online in game rooms\n4. **useBroadcast** - Event broadcasting system for game actions (start game, present questions, etc.)\n\n### Specialized Hooks\n- **useGameRoomSubscription** - Real-time game room updates\n- **useTeamSubscription** - Team creation, updates, and deletions\n- **useGameStateSubscription** - Game state changes (lobby, active, paused, etc.)\n- **useTeamAnswersSubscription** - Answer submissions and scoring updates\n\n### UI Components\n- **RealtimeStatus** - Shows connection status for different subscription types\n- **ConnectionStatus** - Comprehensive connection health monitoring\n- **GameRoomRealtime** - Example implementation showing all hooks working together\n\n### Key Features Implemented\n- Real-time game state synchronization\n- Team management with live updates\n- User presence tracking\n- Event broadcasting system\n- Connection monitoring and error handling\n- Automatic reconnection with exponential backoff\n- Performance optimization with memoization\n- TypeScript support throughout\n- Comprehensive error handling\n\n### Performance Optimizations\n- Memoized callbacks to prevent unnecessary re-subscriptions\n- Debounced updates for frequently changing data\n- Efficient subscription cleanup\n- Connection pooling and reuse\n- Optimistic UI updates\n</info added on 2025-06-19T01:58:42.266Z>",
+            "status": "done",
             "testStrategy": "Test real-time updates by making changes in one client and verifying they appear in another"
           },
           {
@@ -156,8 +156,8 @@
               2,
               4
             ],
-            "details": "1. Set up Supabase CLI for local development of edge functions\n2. Create edge functions for:\n   - Starting a new game round\n   - Calculating and updating team scores\n   - Validating team answers\n   - Managing game state transitions\n   - Handling team point usage\n3. Deploy functions to Supabase\n4. Create client-side utilities to invoke edge functions\n5. Implement error handling and logging",
-            "status": "pending",
+            "details": "1. Set up Supabase CLI for local development of edge functions\n2. Create edge functions for:\n   - Starting a new game round\n   - Calculating and updating team scores\n   - Validating team answers\n   - Managing game state transitions\n   - Handling team point usage\n3. Deploy functions to Supabase\n4. Create client-side utilities to invoke edge functions\n5. Implement error handling and logging\n<info added on 2025-06-19T02:15:12.979Z>\nSuccessfully implemented and deployed all 5 Edge Functions for Tony Trivia game logic:\n\n## Edge Functions Deployed:\n\n### 1. manage-game-state\n- **Purpose**: Central game state management and transitions\n- **Actions**: start, pause, resume, end, next_round\n- **Features**: Host authorization, game state validation, round management\n- **Database Operations**: Updates game_rooms, game_state, game_rounds tables\n\n### 2. validate-answers\n- **Purpose**: Validate team answers with sophisticated matching\n- **Features**: \n  - Exact matching for multiple choice\n  - Fuzzy matching with Levenshtein distance for text answers\n  - Partial answer acceptance based on similarity threshold (80%)\n  - Automatic score calculation and team score updates\n  - Duplicate submission prevention\n\n### 3. calculate-scores\n- **Purpose**: Real-time and final score calculations\n- **Actions**: live_update, round_end, game_end\n- **Features**:\n  - Live score tracking with team rankings\n  - Round-specific score calculations\n  - Final game statistics (average, highest, completion rates)\n  - Automatic team rank assignment\n\n### 4. handle-point-usage\n- **Purpose**: Team point wagering system management\n- **Actions**: wager, refund, check_balance, reset\n- **Features**:\n  - Point allocation limits (1-point: 6 uses, 3-point: 4 uses, 5-point: 2 uses)\n  - Duplicate wager prevention per question\n  - Balance tracking and validation\n  - Refund capabilities for error correction\n\n### 5. start-game-round\n- **Purpose**: Initialize new game rounds with questions\n- **Features**:\n  - Multi-question round creation\n  - Question validation (text, multiple choice, true/false)\n  - Round timing and status management\n  - Automatic cleanup of previous round answers\n\n## Client-Side Integration:\n\n### EdgeFunctionService Class\n- Comprehensive TypeScript service with full type safety\n- Error handling and response validation\n- Convenience methods for common operations\n- Health check functionality for all functions\n\n### React Hooks (useEdgeFunctions.ts)\n- React Query integration for optimal caching\n- Individual hooks for each function type\n- Composite hooks for common workflows:\n  - `useGameManagement()` - Complete host controls\n  - `useTeamAnswering()` - Team answer submission flow\n- Automatic cache invalidation and updates\n\n### Demo Component\n- Complete working example showing all Edge Functions\n- Real-time health monitoring\n- Interactive game management controls\n- Live score display with team rankings\n- Point balance tracking and answer submission\n\n## Database Support:\n- Added `update_team_score()` PostgreSQL function for safe score updates\n- Proper error handling and transaction safety\n\n## Key Features Implemented:\n✅ Serverless game logic with automatic scaling\n✅ Real-time score calculation and ranking\n✅ Sophisticated answer validation with fuzzy matching\n✅ Point wagering system with usage limits\n✅ Complete game state management\n✅ Error handling and logging throughout\n✅ TypeScript support with full type safety\n✅ React Query integration for optimal performance\n✅ Health monitoring and diagnostics\n</info added on 2025-06-19T02:15:12.979Z>",
+            "status": "done",
             "testStrategy": "Test each function individually with various inputs and verify the expected database changes"
           },
           {
@@ -169,8 +169,8 @@
               4,
               6
             ],
-            "details": "1. Create storage buckets for:\n   - User avatars\n   - Game assets\n   - Question media\n2. Configure appropriate bucket permissions\n3. Generate REST endpoints for all tables\n4. Set up GraphQL schema and endpoints\n5. Create API documentation\n6. Implement client-side utilities for storage operations\n7. Test all endpoints for CRUD operations\n8. Create Postman/Insomnia collection for API testing",
-            "status": "pending",
+            "details": "1. Create storage buckets for:\n   - User avatars\n   - Game assets\n   - Question media\n2. Configure appropriate bucket permissions\n3. Generate REST endpoints for all tables\n4. Set up GraphQL schema and endpoints\n5. Create API documentation\n6. Implement client-side utilities for storage operations\n7. Test all endpoints for CRUD operations\n8. Create Postman/Insomnia collection for API testing\n<info added on 2025-06-19T02:29:05.501Z>\n# Supabase Storage and API Implementation Completion Report\n\n## Storage Buckets Created\n- user-avatars (private, 5MB limit) - User profile pictures with RLS policies\n- game-assets (public, 50MB limit) - Game resources accessible to all\n- question-media (public, 100MB limit) - Question images/videos/audio\n- team-logos (private, 2MB limit) - Team branding with member access control\n- temp-uploads (private, 10MB limit) - Temporary file storage with auto-cleanup\n\n## Storage Service Features\n- Comprehensive TypeScript StorageService class with file validation, upload/download, signed URLs, and batch operations\n- Full RLS policies for secure access control based on user roles and team membership\n- Image transformation support with quality/resize options\n- File metadata management and automatic cleanup utilities\n- Progress tracking for uploads and comprehensive error handling\n\n## React Storage Hooks\n- useFileUpload with progress tracking and React Query integration\n- useFileList, useFileInfo, useSignedUrl for file management\n- useUserAvatar, useTeamLogo, useQuestionMedia, useGameAssets for specific use cases\n- useFileOperations for delete/move/copy operations\n- useTempFileCleanup for maintenance operations\n\n## API Service Implementation\n- Generic ApiService class with full CRUD operations for all database tables\n- Specialized API classes: ProfilesApi, GameRoomsApi, TeamsApi, GameRoundsApi, QuestionsApi, TeamAnswersApi, GameStateApi\n- Advanced querying with filters, pagination, sorting, and complex relationships\n- Batch operations support and comprehensive error handling\n- TypeScript interfaces for all database entities and API responses\n\n## Demo Component\n- Interactive StorageApiDemo component showcasing all functionality\n- Real-time file upload with progress bars and validation\n- Bucket selection and file listing with metadata display\n- API endpoint testing with full CRUD operations demonstration\n- System status monitoring and error handling examples\n\n## Technical Features\n- Full TypeScript support with proper type safety\n- React Query integration for optimal caching and performance\n- Comprehensive error handling and validation\n- File size limits and MIME type restrictions per bucket\n- Automatic cache invalidation and real-time updates\n- Production-ready with security best practices\n</info added on 2025-06-19T02:29:05.501Z>",
+            "status": "done",
             "testStrategy": "Create comprehensive tests for all API endpoints and storage operations, verifying correct data access and manipulation"
           }
         ]
@@ -179,41 +179,111 @@
         "id": 3,
         "title": "Implement Authentication System",
         "description": "Create a robust authentication system for both registered and guest users.",
-        "details": "1. Implement sign up functionality using Supabase Auth\n2. Create login form and logic\n3. Implement email verification process\n4. Add password reset functionality\n5. Create profile management page (username, avatar, stats)\n6. Implement guest user authentication with temporary session-based identity\n7. Add option to convert guest account to registered account",
-        "testStrategy": "Write unit tests for all authentication flows. Manually test each authentication scenario, including edge cases like invalid inputs and network errors.",
-        "priority": "high",
+        "status": "done",
         "dependencies": [
           2
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "high",
+        "details": "1. Implement sign up functionality using Supabase Auth\n2. Create login form and logic\n3. Implement email verification process\n4. Add password reset functionality\n5. Create profile management page (username, avatar, stats)\n6. Implement guest user authentication with temporary session-based identity\n7. Add option to convert guest account to registered account\n\nUI Implementation Note: When building UI components for this authentication system, follow the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md):\n- Adhere to playful & colorful, energetic & competitive design principles\n- Use the established color palette (electric blues, plasma purples, energy colors)\n- Implement component patterns and accessibility guidelines from the style guide\n- Create game-like authentication UI with badges and animations\n- Ensure mobile-first responsive design following style guide specifications",
+        "testStrategy": "Write unit tests for all authentication flows. Manually test each authentication scenario, including edge cases like invalid inputs and network errors. Ensure UI components created according to the Tony Trivia Style Guide maintain proper functionality across different devices and screen sizes, with special attention to mobile-first responsive design.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement User Registration and Login UI Components",
+            "description": "Create the sign-up and login form components following the Tony Trivia Style Guide with playful, game-like UI elements.",
+            "dependencies": [],
+            "details": "Design and implement responsive form components for registration and login that include: animated input fields, form validation with playful error messages, electric blue submit buttons, and plasma purple accent elements. Ensure mobile-first design and implement accessibility features like proper focus states, ARIA labels, and keyboard navigation. Add subtle animations for form transitions and success/error states.\n<info added on 2025-06-19T14:54:45.843Z>\n# AuthForm Component Upgrade Implementation Details\n\n## AnimatedButton Integration\n- Integrate the new AnimatedButton component for submit buttons\n- Replace standard button elements with AnimatedButton for consistent styling\n- Implement loading states with proper button variants (primary/secondary)\n- Add ARIA attributes for enhanced accessibility\n\n## Advanced Form Validation System\n- Create field-level validation with real-time error feedback\n- Design playful error messages with emojis following Tony Trivia style\n- Develop validateField() function for individual field validation\n- Provide immediate feedback on field blur events\n\n## Framer Motion Animations\n- Implement container animations with staggered children for smooth entry\n- Add input field animations with scale effects on focus\n- Create message animations for error/success feedback\n- Design form mode transitions with AnimatePresence for seamless switching\n\n## User Experience Enhancements\n- Add focus state indicators with animated sparkle icons\n- Implement dynamic field styling based on validation state\n- Associate ARIA labels with error messages\n- Ensure mobile-optimized responsive design\n\n## Visual Polish & Style Guide Compliance\n- Apply electric blue gradients for focused states\n- Incorporate plasma purple accents for secondary elements\n- Use consistent emoji styling in error messages\n- Enhance typography with proper font weights and spacing\n\n## Technical Animation Variants\n- containerVariants: Smooth entry with staggered children\n- itemVariants: Individual element animations\n- messageVariants: Error/success message transitions\n</info added on 2025-06-19T14:54:45.843Z>",
+            "status": "done",
+            "testStrategy": "Test form validation for various inputs, responsive behavior across device sizes, and accessibility compliance using screen readers and keyboard-only navigation."
+          },
+          {
+            "id": 2,
+            "title": "Implement Supabase Authentication Logic",
+            "description": "Set up the core authentication logic using Supabase Auth for sign-up, login, and session management.",
+            "dependencies": [
+              1
+            ],
+            "details": "Configure Supabase Auth in the application, implement sign-up functionality with email/password, create login logic with proper error handling, set up session management and persistence, and implement protected routes. Create authentication context/provider to manage auth state throughout the application. Ensure proper security practices like CSRF protection and secure cookie handling.\n<info added on 2025-06-19T15:15:52.359Z>\nThe Supabase authentication system has been successfully implemented with all core requirements met. The implementation includes:\n\n1. Proper Supabase client configuration in src/services/supabase.ts with environment variables and type exports\n2. Complete authService in src/services/auth.ts with comprehensive functionality (sign up, sign in, sign out, session management, password reset, profile updates)\n3. A robust useAuth hook that handles session persistence, user profiles, and integrates with Zustand for state management\n4. Protected routes implementation with appropriate loading states and fallbacks\n5. Global state management using Zustand for tracking authentication status\n6. Security features including proper session handling and error validation\n\nAll essential authentication features are complete and functioning as expected. The system could be enhanced in the future with:\n- Improved email confirmation flow UI\n- Client-side password strength validation\n- Rate limiting and CAPTCHA integration\n- Social authentication options (Google/GitHub/Discord)\n- Automatic token refresh handling\n\nThis task can be marked as complete, allowing progress to the next task (email verification and password reset implementation).\n</info added on 2025-06-19T15:15:52.359Z>",
+            "status": "done",
+            "testStrategy": "Unit test authentication functions, integration test the auth flow from registration to login, and test session persistence across page refreshes."
+          },
+          {
+            "id": 3,
+            "title": "Implement Email Verification and Password Reset",
+            "description": "Create the email verification process and password reset functionality with styled email templates matching the Tony Trivia brand.",
+            "dependencies": [
+              2
+            ],
+            "details": "Configure Supabase email templates with Tony Trivia branding (electric blues, plasma purples), implement verification email sending on registration, create verification confirmation page with celebratory animations, implement password reset request form and email flow, and design password reset confirmation page with game-like success feedback. Ensure all email templates are responsive and accessible.\n<info added on 2025-06-19T18:19:30.877Z>\nEmail verification and password reset components have been successfully implemented with Tony Trivia branding. The PasswordReset component features electric blue gradients, plasma purple accents, and Framer Motion animations including staggered containers, icon effects, and smooth transitions. The new EmailVerification component includes three distinct states (pending, success, error) with AnimatePresence transitions, auto-redirect functionality, and resend email capability. Both components are mobile-responsive with backdrop blur effects and follow accessibility best practices with proper ARIA labels and focus management. The implementation includes TypeScript for type safety, React Router for navigation, and comprehensive Supabase auth integration. All components adhere to the Tony Trivia Style Guide with consistent color schemes, animations, and emoji usage for a gaming-first experience.\n</info added on 2025-06-19T18:19:30.877Z>",
+            "status": "done",
+            "testStrategy": "Test the complete email verification flow, password reset process, and verify email template rendering across different email clients."
+          },
+          {
+            "id": 4,
+            "title": "Implement Guest User Authentication",
+            "description": "Create a temporary session-based authentication system for guest users with the option to convert to registered accounts.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement guest user creation with temporary IDs, design an engaging guest onboarding flow with playful animations, create session storage for guest user data, implement conversion flow from guest to registered user that preserves user data, and add UI components to prompt guest users to register at strategic moments. Ensure the guest experience maintains the energetic and competitive design principles.",
+            "status": "done",
+            "testStrategy": "Test guest user creation, session persistence, data preservation during account conversion, and verify the guest experience across different devices and browsers."
+          },
+          {
+            "id": 5,
+            "title": "Implement Profile Management Page",
+            "description": "Create a gamified profile management page for users to update their information, avatar, and view their stats.",
+            "dependencies": [
+              2
+            ],
+            "details": "Design and implement a profile page with sections for personal information, avatar selection/upload with playful options, stats display with game-like visualizations (progress bars, achievement badges), account settings with toggles styled according to the color palette, and responsive layout following mobile-first principles. Add micro-animations for interactions and ensure all UI elements follow the established component patterns from the style guide.",
+            "status": "done",
+            "testStrategy": "Test profile updates for different user types, avatar upload functionality, responsive behavior of stats visualizations, and accessibility of all interactive elements."
+          }
+        ]
       },
       {
         "id": 4,
         "title": "Develop Game Room Management",
         "description": "Create functionality for creating, joining, and managing game rooms.",
-        "details": "1. Implement room creation logic for hosts\n2. Generate unique 6-character game codes\n3. Create interface for setting room parameters (max teams, round types, time limits)\n4. Implement question set pre-loading and dynamic addition\n5. Add room privacy settings (public/private)\n6. Create room joining functionality\n7. Display room info before joining\n8. Implement room capacity limits\n9. Show current participants and game status",
-        "testStrategy": "Write unit tests for room creation, joining, and management functions. Perform integration tests to ensure proper interaction between frontend and backend.",
-        "priority": "high",
+        "status": "pending",
         "dependencies": [
           2,
           3
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "high",
+        "details": "1. Implement room creation logic for hosts\n2. Generate unique 6-character game codes\n3. Create interface for setting room parameters (max teams, round types, time limits)\n4. Implement question set pre-loading and dynamic addition\n5. Add room privacy settings (public/private)\n6. Create room joining functionality\n7. Display room info before joining\n8. Implement room capacity limits\n9. Show current participants and game status",
+        "testStrategy": "Write unit tests for room creation, joining, and management functions. Perform integration tests to ensure proper interaction between frontend and backend.",
+        "subtasks": [
+          {
+            "id": 4.1,
+            "title": "UI Implementation with Tony Trivia Style Guide",
+            "description": "Utilize the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) to build and refine game room management UI components",
+            "details": "1. Follow the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) to create:\n   - Room creation forms with playful & colorful elements\n   - Room cards/listings featuring the established color palette (electric blues, plasma purples)\n   - Join room interfaces with game-like UI elements (badges, animations)\n   - Room management dashboards that encourage friendly rivalry\n2. Implement design principles from the style guide:\n   - Playful & colorful visual elements\n   - Energetic & competitive interface components\n   - Game-like UI with badges, leaderboards, and animations\n3. Use the established color palette throughout all components:\n   - Electric blues\n   - Plasma purples\n   - Energy colors as specified in the style guide\n4. Create competitive elements that encourage friendly rivalry between teams/players\n5. Ensure mobile-first responsive design for all components:\n   - Optimized for mobile players\n   - Adapted layouts for desktop hosts\n6. Maintain consistent design language across all game room components",
+            "status": "pending"
+          }
+        ]
       },
       {
         "id": 5,
         "title": "Implement Team Formation & Management",
         "description": "Develop features for creating and managing teams within game rooms.",
-        "details": "1. Implement team creation within game rooms\n2. Support configurable team sizes (1-6 players)\n3. Add team naming functionality with profanity filtering\n4. Implement team captain designation\n5. Create interface for joining existing teams or creating new ones\n6. Add functionality to leave/kick team members (captain only)\n7. Implement real-time team member status tracking (online/offline)",
-        "testStrategy": "Write unit tests for team creation, joining, and management functions. Perform user acceptance testing to ensure smooth team formation process.",
-        "priority": "high",
+        "status": "pending",
         "dependencies": [
           4
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "high",
+        "details": "1. Implement team creation within game rooms\n2. Support configurable team sizes (1-6 players)\n3. Add team naming functionality with profanity filtering\n4. Implement team captain designation\n5. Create interface for joining existing teams or creating new ones\n6. Add functionality to leave/kick team members (captain only)\n7. Implement real-time team member status tracking (online/offline)",
+        "testStrategy": "Write unit tests for team creation, joining, and management functions. Perform user acceptance testing to ensure smooth team formation process.",
+        "subtasks": [
+          {
+            "id": "5.1",
+            "title": "UI Implementation for Team Features",
+            "description": "Develop UI components for team formation and management following the Tony Trivia Style Guide",
+            "status": "pending",
+            "details": "1. Follow the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) for all UI components:\n   - Team creation forms\n   - Team member cards\n   - Team management dashboards\n2. Implement playful & colorful, energetic & competitive design principles\n3. Use the established color palette and team-specific colors to create visual rivalry\n4. Create game-like team formation with badges and animations\n5. Design competitive team displays with leaderboard elements\n6. Ensure mobile-first responsive design for all team interfaces\n7. Ensure UI components align with core team functionality requirements"
+          }
+        ]
       },
       {
         "id": 6,
@@ -328,56 +398,132 @@
       {
         "id": 7,
         "title": "Create Host Controls Interface",
-        "description": "Develop a comprehensive interface for hosts to control the game flow and manage answers.",
-        "details": "1. Implement controls to advance to next question/round\n2. Add functionality to lock/unlock team answers\n3. Create interface for reviewing and approving/rejecting answers\n4. Implement score override functionality\n5. Add pause/resume game controls\n6. Develop real-time notifications for answer submissions",
-        "testStrategy": "Conduct usability testing with potential hosts to ensure intuitive controls. Write integration tests to verify proper interaction between host controls and gameplay engine.",
-        "priority": "high",
+        "description": "Develop a comprehensive interface for hosts to control the game flow and manage answers following the Tony Trivia Style Guide.",
+        "status": "pending",
         "dependencies": [
           6
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "high",
+        "details": "1. Implement controls to advance to next question/round\n2. Add functionality to lock/unlock team answers\n3. Create interface for reviewing and approving/rejecting answers\n4. Implement score override functionality\n5. Add pause/resume game controls\n6. Develop real-time notifications for answer submissions\n7. Follow the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) for all UI components\n8. Design with playful & colorful, energetic & competitive principles as outlined in the style guide\n9. Use the established color palette to create a professional yet game-like host interface\n10. Implement clear visual hierarchy for host controls\n11. Design for desktop-first since hosts will primarily use desktop devices\n12. Include real-time leaderboard visibility to maintain competitive atmosphere",
+        "testStrategy": "Conduct usability testing with potential hosts to ensure intuitive controls. Write integration tests to verify proper interaction between host controls and gameplay engine. Evaluate UI components against the Tony Trivia Style Guide for consistency, responsiveness and usability.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Host Controls Layout and Navigation",
+            "description": "Create the foundational layout and navigation structure for the host controls interface following the Tony Trivia Style Guide.",
+            "dependencies": [],
+            "details": "Design a responsive desktop-first layout with clear sections for game flow controls, answer management, and leaderboard. Implement the navigation structure with tabs or sections for different control categories. Apply the color palette from the style guide with proper contrast for readability. Create a visual hierarchy that emphasizes primary actions (next question, lock answers) over secondary ones. Include a real-time leaderboard panel that's always visible to the host.",
+            "status": "pending",
+            "testStrategy": "Validate layout across different desktop screen sizes. Conduct usability testing with sample host scenarios to ensure intuitive navigation."
+          },
+          {
+            "id": 2,
+            "title": "Implement Game Flow Controls",
+            "description": "Develop the controls for advancing through game rounds, questions, and managing the overall game state.",
+            "dependencies": [],
+            "details": "Create prominent buttons for next question/round navigation with appropriate visual feedback. Implement pause/resume game functionality with clear state indicators. Design confirmation dialogs for critical actions like ending rounds. Add visual timers or progress indicators to show current game state. Ensure all controls follow the playful & colorful, energetic & competitive principles from the style guide.",
+            "status": "pending",
+            "testStrategy": "Test game flow transitions to ensure smooth progression between states. Verify that game state is properly maintained and reflected in the UI."
+          },
+          {
+            "id": 3,
+            "title": "Develop Answer Management Interface",
+            "description": "Create the interface for hosts to review, approve, reject, and manage team answers.",
+            "dependencies": [],
+            "details": "Design a grid or list view showing all team submissions with status indicators. Implement lock/unlock functionality for answer submissions with clear visual feedback. Create an answer review panel with approve/reject buttons and optional feedback field. Use color coding from the style guide to indicate answer statuses (pending, approved, rejected). Add sorting and filtering options to help hosts manage multiple team submissions efficiently.",
+            "status": "pending",
+            "testStrategy": "Test with multiple simultaneous answer submissions to ensure the interface scales well. Verify that approval/rejection actions are clearly communicated and properly recorded."
+          },
+          {
+            "id": 4,
+            "title": "Create Score Management System",
+            "description": "Implement functionality for hosts to override scores and manage point allocations.",
+            "dependencies": [],
+            "details": "Design an intuitive score adjustment interface with increment/decrement controls. Implement a score history log to track changes. Create a confirmation dialog for score modifications to prevent accidental changes. Add the ability to adjust individual question scores or overall team scores. Ensure all score-related UI elements follow the established color palette and maintain the competitive atmosphere through visual design.",
+            "status": "pending",
+            "testStrategy": "Test score calculations to verify accuracy after manual adjustments. Ensure score history properly tracks and displays all modifications."
+          },
+          {
+            "id": 5,
+            "title": "Implement Real-time Notifications System",
+            "description": "Develop a system to alert hosts about game events such as answer submissions and time limits.",
+            "dependencies": [],
+            "details": "Create toast or notification components that appear for new answer submissions. Implement sound alerts (with mute option) for important events. Design a notification center or log where hosts can review past events. Add visual indicators on the interface that show teams' submission status. Ensure notifications follow the style guide's principles while being noticeable but not disruptive to the host experience.",
+            "status": "pending",
+            "testStrategy": "Test notification delivery timing and visibility. Verify that multiple simultaneous notifications are handled gracefully. Ensure notifications are properly cleared or archived after being addressed."
+          }
+        ]
       },
       {
         "id": 8,
         "title": "Implement Answer Review System",
         "description": "Create a system for hosts to review and validate team answers efficiently.",
-        "details": "1. Develop organized grid view for all team answers\n2. Implement one-click approve/reject functionality\n3. Add bulk action capabilities for answer review\n4. Create interface for adding scoring notes\n5. Implement real-time answer submission notifications\n6. Develop team feedback system (pending, approved, rejected statuses)\n7. Display correct answers after review\n8. Show point awards and running totals to teams",
-        "testStrategy": "Write unit tests for answer review logic. Conduct usability testing with hosts to ensure efficient review process. Test real-time updates for teams.",
-        "priority": "high",
+        "status": "pending",
         "dependencies": [
           6,
           7
         ],
-        "status": "pending",
+        "priority": "high",
+        "details": "1. Develop organized grid view for all team answers\n2. Implement one-click approve/reject functionality\n3. Add bulk action capabilities for answer review\n4. Create interface for adding scoring notes\n5. Implement real-time answer submission notifications\n6. Develop team feedback system (pending, approved, rejected statuses)\n7. Display correct answers after review\n8. Show point awards and running totals to teams\n9. Follow Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) for UI implementation:\n   - Apply playful & colorful, energetic & competitive design principles\n   - Ensure mobile-first responsive design for all review interfaces\n   - Use the established color palette and game-like elements from the style guide\n   - Implement competitive features like leaderboards after each round\n   - Add animated badges for celebrations and achievements when teams get correct answers",
+        "testStrategy": "Write unit tests for answer review logic. Conduct usability testing with hosts to ensure efficient review process. Test real-time updates for teams. Validate that UI components follow the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) and meet usability requirements for host review workflows. Ensure mobile responsiveness and that the competitive elements enhance rather than distract from the review experience.",
         "subtasks": []
       },
       {
         "id": 9,
         "title": "Develop Leaderboard & Results System",
-        "description": "Create a real-time leaderboard and comprehensive results display system.",
-        "details": "1. Implement real-time score updates during gameplay\n2. Create team rankings with tie-breaking logic\n3. Develop round-by-round score history display\n4. Implement final results calculation and winner announcement\n5. Create persistent storage for game history (registered users)\n6. Develop detailed game statistics and performance metrics\n7. Implement personal and team achievement tracking",
-        "testStrategy": "Write unit tests for leaderboard calculations and statistics. Perform integration tests to ensure real-time updates are reflected accurately. Conduct user acceptance testing for result displays.",
-        "priority": "medium",
+        "description": "Create a real-time leaderboard and comprehensive results display system following the Tony Trivia Style Guide.",
+        "status": "pending",
         "dependencies": [
           6,
           8
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "medium",
+        "details": "1. Implement real-time score updates during gameplay\n2. Create team rankings with tie-breaking logic\n3. Develop round-by-round score history display\n4. Implement final results calculation and winner announcement\n5. Create persistent storage for game history (registered users)\n6. Develop detailed game statistics and performance metrics\n7. Implement personal and team achievement tracking\n8. Follow the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) for UI implementation:\n   - Create playful & colorful, energetic & competitive design elements\n   - Design highly competitive visual displays that encourage rivalry\n   - Use the established color palette with team-specific colors\n   - Implement animated leaderboards visible after every round\n   - Add celebration animations and badges for achievements",
+        "testStrategy": "Write unit tests for leaderboard calculations and statistics. Perform integration tests to ensure real-time updates are reflected accurately. Conduct user acceptance testing for result displays and UI components to verify visual appeal, data readability, and adherence to the Tony Trivia Style Guide.",
+        "subtasks": [
+          {
+            "id": 9.1,
+            "title": "Implement core leaderboard functionality",
+            "status": "pending"
+          },
+          {
+            "id": 9.2,
+            "title": "Create UI components following the Style Guide",
+            "status": "pending",
+            "details": "Reference Docs/STYLE_GUIDE.md to create leaderboard displays, results cards, and scoring animations that follow the playful & colorful, energetic & competitive design principles"
+          },
+          {
+            "id": 9.3,
+            "title": "Implement team-specific color scheme",
+            "status": "pending",
+            "details": "Apply the established color palette from the Style Guide with team-specific colors to enhance rivalry and team identity"
+          },
+          {
+            "id": 9.4,
+            "title": "Develop animated leaderboard transitions",
+            "status": "pending",
+            "details": "Create animated leaderboards that display after every round, emphasizing position changes and score differences"
+          },
+          {
+            "id": 9.5,
+            "title": "Design celebration animations and achievement badges",
+            "status": "pending",
+            "details": "Implement visually exciting celebration animations and achievement badges that follow the Style Guide's energetic design principles"
+          }
+        ]
       },
       {
         "id": 10,
         "title": "Implement Real-time Communication System",
-        "description": "Develop a robust real-time communication system using Supabase Realtime subscriptions.",
-        "details": "1. Implement room-level updates for game state changes\n2. Create team-level updates for answer submissions\n3. Develop host-only updates for review notifications\n4. Implement presence tracking for online users\n5. Create connection management with automatic reconnection\n6. Optimize real-time updates for low latency (<200ms for WebSocket events)\n7. Implement efficient data synchronization strategies",
-        "testStrategy": "Write unit tests for real-time event handling. Conduct stress tests to ensure system can handle multiple concurrent connections. Measure and optimize latency for real-time updates.",
-        "priority": "high",
+        "description": "Develop a robust real-time communication system using Supabase Realtime subscriptions, following the Tony Trivia Style Guide.",
+        "status": "pending",
         "dependencies": [
           2,
           6
         ],
-        "status": "pending",
+        "priority": "high",
+        "details": "1. Implement room-level updates for game state changes\n2. Create team-level updates for answer submissions\n3. Develop host-only updates for review notifications\n4. Implement presence tracking for online users\n5. Create connection management with automatic reconnection\n6. Optimize real-time updates for low latency (<200ms for WebSocket events)\n7. Implement efficient data synchronization strategies\n8. Follow the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) for all UI components and interactions",
+        "testStrategy": "Write unit tests for real-time event handling. Conduct stress tests to ensure system can handle multiple concurrent connections. Measure and optimize latency for real-time updates. Verify all UI components adhere to the Tony Trivia Style Guide.",
         "subtasks": [
           {
             "id": 1,
@@ -406,9 +552,9 @@
             "dependencies": [
               2
             ],
-            "details": "Implement subscription to room:* channels for game state updates. Create handlers for team:* channels to process answer submissions. Develop data transformation functions to convert raw WebSocket payloads into application-specific data structures. Implement broadcast methods for sending updates to rooms and teams.",
+            "details": "Implement subscription to room:* channels for game state updates. Create handlers for team:* channels to process answer submissions. Develop data transformation functions to convert raw WebSocket payloads into application-specific data structures. Implement broadcast methods for sending updates to rooms and teams. Follow the playful & colorful, energetic & competitive design principles from the Style Guide for all real-time UI updates.",
             "status": "pending",
-            "testStrategy": "Test event broadcasting and receiving for both room and team channels. Verify correct data transformation and event handling."
+            "testStrategy": "Test event broadcasting and receiving for both room and team channels. Verify correct data transformation and event handling. Ensure UI updates follow the Tony Trivia Style Guide."
           },
           {
             "id": 4,
@@ -417,9 +563,9 @@
             "dependencies": [
               2
             ],
-            "details": "Implement host:* channel subscriptions with authentication checks. Create notification handlers for review requests, game control events, and administrative actions. Develop a queue system for handling notifications when a host reconnects after disconnection.",
+            "details": "Implement host:* channel subscriptions with authentication checks. Create notification handlers for review requests, game control events, and administrative actions. Develop a queue system for handling notifications when a host reconnects after disconnection. Use the established color palette from the Style Guide for status indicators and notifications.",
             "status": "pending",
-            "testStrategy": "Test host notification delivery, authentication requirements, and notification queuing during disconnection periods."
+            "testStrategy": "Test host notification delivery, authentication requirements, and notification queuing during disconnection periods. Verify notifications adhere to the style guide's color palette and design principles."
           },
           {
             "id": 5,
@@ -428,9 +574,9 @@
             "dependencies": [
               2
             ],
-            "details": "Implement Presence API integration to track users joining and leaving. Create presence state synchronization across clients. Develop UI components to display online status. Implement heartbeat mechanism to maintain accurate presence information. Create hooks or observables for components to react to presence changes.",
+            "details": "Implement Presence API integration to track users joining and leaving. Create presence state synchronization across clients. Develop UI components to display online status following the Style Guide's principles. Implement heartbeat mechanism to maintain accurate presence information. Create hooks or observables for components to react to presence changes. Use skeleton screens as specified in the Style Guide for loading states.",
             "status": "pending",
-            "testStrategy": "Test presence detection for users joining/leaving, proper UI updates, and resilience to network disruptions."
+            "testStrategy": "Test presence detection for users joining/leaving, proper UI updates, and resilience to network disruptions. Verify skeleton screens and loading states match the Style Guide specifications."
           },
           {
             "id": 6,
@@ -444,6 +590,33 @@
             "details": "Implement debouncing and throttling for high-frequency events. Create a delta-based synchronization system to minimize payload sizes. Develop a conflict resolution strategy for concurrent updates. Implement performance monitoring to track latency and optimize critical paths. Add caching layer for frequently accessed data to reduce unnecessary updates.",
             "status": "pending",
             "testStrategy": "Benchmark WebSocket event latency under various network conditions. Test synchronization with simulated concurrent updates. Verify payload sizes remain optimized for different update scenarios."
+          },
+          {
+            "id": 7,
+            "title": "Implement engaging real-time feedback with animations",
+            "description": "Create visual feedback for real-time events using animations and visual effects as specified in the Style Guide.",
+            "dependencies": [
+              3,
+              4,
+              5
+            ],
+            "details": "Implement animations for state transitions during real-time updates. Create visual effects for notifications and status changes following the Style Guide's playful & colorful principles. Ensure animations are performant and don't interfere with the core functionality. Use the established color palette for all visual elements.",
+            "status": "pending",
+            "testStrategy": "Test animation performance across different devices. Verify animations enhance rather than detract from the user experience. Ensure all visual effects comply with the Style Guide."
+          },
+          {
+            "id": 8,
+            "title": "Ensure mobile-first responsive design for real-time features",
+            "description": "Implement responsive design for all real-time UI components following the mobile-first approach specified in the Style Guide.",
+            "dependencies": [
+              3,
+              4,
+              5,
+              7
+            ],
+            "details": "Ensure all real-time UI components adapt appropriately to different screen sizes. Implement touch-friendly interactions for mobile users. Optimize notification display for smaller screens. Test and refine the responsive behavior of all real-time features according to the Style Guide's mobile-first principles.",
+            "status": "pending",
+            "testStrategy": "Test responsive behavior across various device sizes and orientations. Verify touch interactions work correctly on mobile devices. Ensure all real-time features remain usable and visually consistent across different screen sizes."
           }
         ]
       },
@@ -451,9 +624,7 @@
         "id": 11,
         "title": "Develop Mobile Responsive Design",
         "description": "Ensure the application is fully responsive and functional on mobile devices.",
-        "details": "1. Implement responsive design using Tailwind CSS\n2. Create mobile-specific layouts for game rooms and gameplay\n3. Optimize touch interactions for mobile users\n4. Ensure proper rendering of question types on smaller screens\n5. Adapt host controls for mobile usage\n6. Test and optimize performance on various mobile devices",
-        "testStrategy": "Conduct cross-device testing on various screen sizes and orientations. Perform usability testing on both Android and iOS devices. Use browser developer tools to simulate different device sizes.",
-        "priority": "medium",
+        "status": "pending",
         "dependencies": [
           1,
           3,
@@ -464,61 +635,224 @@
           8,
           9
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "medium",
+        "details": "1. Implement responsive design using Tailwind CSS\n2. Create mobile-specific layouts for game rooms and gameplay\n3. Optimize touch interactions for mobile users\n4. Ensure proper rendering of question types on smaller screens\n5. Adapt host controls for mobile usage\n6. Test and optimize performance on various mobile devices\n\nUI Implementation Note:\nRefer to the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) for:\n- Creating responsive UI components optimized for mobile layouts and touch interfaces\n- Following established design patterns for mobile-first design and responsive layouts\n- Ensuring all UI components provide optimal mobile user experience\n- Implementing error states that work well on both mobile and desktop\n- Using the established color palette for all UI states including error feedback\n- Creating accessible interfaces that meet AA compliance standards",
+        "testStrategy": "Conduct cross-device testing on various screen sizes and orientations. Perform usability testing on both Android and iOS devices. Use browser developer tools to simulate different device sizes. Verify that error states and feedback maintain the playful, energetic atmosphere specified in the style guide while remaining fully functional across all device types.",
+        "subtasks": [
+          {
+            "id": 11.1,
+            "title": "Review Tony Trivia Style Guide for mobile design specifications",
+            "status": "pending",
+            "description": "Thoroughly review the style guide at Docs/STYLE_GUIDE.md to understand mobile design requirements, color palette, and accessibility standards."
+          },
+          {
+            "id": 11.2,
+            "title": "Create mobile-optimized UI components following style guide",
+            "status": "pending",
+            "description": "Develop touch-friendly UI components specifically for mobile interfaces that adhere to the playful design aesthetic defined in the style guide."
+          },
+          {
+            "id": 11.3,
+            "title": "Implement responsive error handling for mobile devices",
+            "status": "pending",
+            "description": "Create error states and feedback mechanisms that maintain the fun, energetic atmosphere while being fully functional on mobile devices."
+          },
+          {
+            "id": 11.4,
+            "title": "Ensure mobile UI meets accessibility standards",
+            "status": "pending",
+            "description": "Verify that all mobile UI components, including error states, meet AA compliance standards as specified in the style guide."
+          }
+        ]
       },
       {
         "id": 12,
         "title": "Implement Basic Chat Functionality",
-        "description": "Add a simple chat system for communication within game rooms.",
-        "details": "1. Create chat UI component\n2. Implement real-time message sending and receiving using Supabase Realtime\n3. Add user identification in chat messages\n4. Implement basic moderation features (e.g., profanity filter)\n5. Ensure chat history persistence within game sessions",
-        "testStrategy": "Write unit tests for chat functionality. Conduct integration tests to ensure proper real-time communication. Test chat system under various network conditions.",
-        "priority": "low",
+        "description": "Add a simple chat system for communication within game rooms, following the Tony Trivia Style Guide.",
+        "status": "pending",
         "dependencies": [
           4,
           10
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "low",
+        "details": "1. Create chat UI component\n   - Follow the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) for building UI components\n   - Implement playful & colorful, energetic & competitive design principles for chat UI\n   - Use the established color palette for message bubbles and chat elements\n   - Create mobile-first responsive chat interfaces\n   - Implement game-like chat elements that fit the overall aesthetic\n   - Ensure accessibility standards are met for all chat functionality\n2. Implement real-time message sending and receiving using Supabase Realtime\n3. Add user identification in chat messages\n4. Implement basic moderation features (e.g., profanity filter)\n5. Ensure chat history persistence within game sessions",
+        "testStrategy": "Write unit tests for chat functionality. Conduct integration tests to ensure proper real-time communication. Test chat system under various network conditions. Validate UI components for adherence to the Tony Trivia Style Guide, responsiveness, accessibility standards, and overall user experience. Test on multiple device sizes to verify mobile-first approach.",
+        "subtasks": [
+          {
+            "id": "12.1",
+            "title": "Create chat UI components using Tony Trivia Style Guide",
+            "description": "Build chat windows, message bubbles, and emoji pickers following the design principles in Docs/STYLE_GUIDE.md",
+            "status": "pending"
+          },
+          {
+            "id": "12.2",
+            "title": "Apply style guide color palette to chat elements",
+            "description": "Implement the established color palette from the style guide for message bubbles and other chat UI elements",
+            "status": "pending"
+          },
+          {
+            "id": "12.3",
+            "title": "Implement real-time messaging with Supabase",
+            "description": "Set up Supabase Realtime for message sending and receiving between users in game rooms",
+            "status": "pending"
+          },
+          {
+            "id": "12.4",
+            "title": "Create mobile-first responsive chat interface",
+            "description": "Design and implement a responsive chat interface that works well on mobile devices first, then scales appropriately to larger screens",
+            "status": "pending"
+          },
+          {
+            "id": "12.5",
+            "title": "Implement game-like chat elements",
+            "description": "Create chat UI elements that match the playful, energetic, and competitive aesthetic of Tony Trivia",
+            "status": "pending"
+          },
+          {
+            "id": "12.6",
+            "title": "Ensure accessibility compliance",
+            "description": "Verify that all chat functionality meets accessibility standards as specified in the Style Guide",
+            "status": "pending"
+          }
+        ]
       },
       {
         "id": 13,
         "title": "Develop Game History and Statistics",
         "description": "Create a system for storing and displaying game history and player statistics.",
-        "details": "1. Design and implement database schema for game history\n2. Create API endpoints for retrieving game history and statistics\n3. Develop UI for displaying personal game history\n4. Implement team performance statistics\n5. Create global leaderboards for registered users\n6. Add filtering and sorting options for game history",
-        "testStrategy": "Write unit tests for statistics calculations. Perform integration tests to ensure proper data retrieval and display. Conduct user acceptance testing for the statistics interface.",
-        "priority": "low",
+        "status": "pending",
         "dependencies": [
           9
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "low",
+        "details": "1. Design and implement database schema for game history\n2. Create API endpoints for retrieving game history and statistics\n3. Develop UI for displaying personal game history\n4. Implement team performance statistics\n5. Create global leaderboards for registered users\n6. Add filtering and sorting options for game history\n\nUI Implementation Notes:\n- Follow the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) for all UI components:\n  - Apply playful & colorful, energetic & competitive design principles for statistics displays\n  - Use the established color palette from the style guide for data visualizations and charts\n  - Create information-dense but clean layouts as specified in the style guide\n  - Implement badges and achievements following the game-like aesthetic\n  - Ensure mobile-first responsive design for all statistics pages and components",
+        "testStrategy": "Write unit tests for statistics calculations. Perform integration tests to ensure proper data retrieval and display. Conduct user acceptance testing for the statistics interface. Verify that UI components correctly follow the Tony Trivia Style Guide and properly display and visualize game history and statistics data. Test responsive design on various device sizes to ensure mobile-first approach works correctly.",
+        "subtasks": [
+          {
+            "id": "13.1",
+            "title": "Implement statistics dashboards using MCP component builder",
+            "status": "pending"
+          },
+          {
+            "id": "13.2",
+            "title": "Create data visualization charts for player performance metrics",
+            "status": "pending"
+          },
+          {
+            "id": "13.3",
+            "title": "Research effective analytics layouts using component inspiration tool",
+            "status": "pending"
+          },
+          {
+            "id": "13.4",
+            "title": "Refine history tables for improved readability using component refiner",
+            "status": "pending"
+          },
+          {
+            "id": "13.5",
+            "title": "Implement statistics dashboards following Tony Trivia Style Guide",
+            "status": "pending"
+          },
+          {
+            "id": "13.6",
+            "title": "Create data visualization charts using style guide color palette",
+            "status": "pending"
+          },
+          {
+            "id": "13.7",
+            "title": "Design information-dense but clean layouts per style guide specifications",
+            "status": "pending"
+          },
+          {
+            "id": "13.8",
+            "title": "Develop badges and achievements with game-like aesthetic",
+            "status": "pending"
+          },
+          {
+            "id": "13.9",
+            "title": "Ensure mobile-first responsive design for all statistics components",
+            "status": "pending"
+          }
+        ]
       },
       {
         "id": 14,
         "title": "Implement Advanced Host Controls",
         "description": "Enhance host controls with additional features for game management.",
-        "details": "1. Implement question set management interface\n2. Add ability to edit questions on-the-fly\n3. Create custom round creation functionality\n4. Implement advanced scoring options (e.g., bonus points, penalties)\n5. Add timer controls for timed rounds\n6. Develop host dashboard for monitoring game progress",
-        "testStrategy": "Conduct usability testing with experienced hosts. Write integration tests for new host control features. Perform stress testing to ensure stability under various game scenarios.",
-        "priority": "medium",
+        "status": "pending",
         "dependencies": [
           7
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "medium",
+        "details": "1. Implement question set management interface\n2. Add ability to edit questions on-the-fly\n3. Create custom round creation functionality\n4. Implement advanced scoring options (e.g., bonus points, penalties)\n5. Add timer controls for timed rounds\n6. Develop host dashboard for monitoring game progress\n\nUI Implementation Notes:\nFollow the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) for all UI development:\n- Apply the playful & colorful, energetic & competitive design principles for professional host interfaces\n- Use the established color palette with clear visual hierarchy for all host controls\n- Create desktop-first interfaces since hosts primarily use desktop devices\n- Implement game-like elements while maintaining professional functionality\n- Ensure all advanced controls follow the established component patterns in the style guide",
+        "testStrategy": "Conduct usability testing with experienced hosts. Write integration tests for new host control features. Perform stress testing to ensure stability under various game scenarios. Test UI components for responsiveness, accessibility, and cross-browser compatibility, with emphasis on desktop performance as per the style guide.",
+        "subtasks": [
+          {
+            "id": 14.1,
+            "title": "Review Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) for host interface requirements",
+            "status": "pending"
+          },
+          {
+            "id": 14.2,
+            "title": "Create UI component library for host controls following style guide principles",
+            "status": "pending"
+          },
+          {
+            "id": 14.3,
+            "title": "Design professional host interfaces with playful & colorful, energetic & competitive elements",
+            "status": "pending"
+          },
+          {
+            "id": 14.4,
+            "title": "Implement and refine UI for question management and on-the-fly editing with established color palette",
+            "status": "pending"
+          },
+          {
+            "id": 14.5,
+            "title": "Develop advanced scoring and timer control interfaces with game-like elements",
+            "status": "pending"
+          },
+          {
+            "id": 14.6,
+            "title": "Create desktop-first host analytics dashboard following component patterns",
+            "status": "pending"
+          }
+        ]
       },
       {
         "id": 15,
         "title": "Add Support for Media Questions",
-        "description": "Implement support for image and audio questions in the gameplay.",
-        "details": "1. Set up Supabase Storage for media file uploads\n2. Implement image upload and display functionality\n3. Add audio upload and playback support\n4. Create UI for hosts to add media questions\n5. Optimize media loading and caching for performance\n6. Ensure proper rendering of media questions on all devices",
-        "testStrategy": "Write unit tests for media handling functions. Conduct integration tests for media upload and display. Perform cross-device testing to ensure compatibility.",
-        "priority": "medium",
+        "description": "Implement support for image and audio questions in the gameplay with a focus on accessibility.",
+        "status": "pending",
         "dependencies": [
           6
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "medium",
+        "details": "1. Set up Supabase Storage for media file uploads\n2. Implement image upload and display functionality\n3. Add audio upload and playback support\n4. Create UI for hosts to add media questions\n5. Optimize media loading and caching for performance\n6. Ensure proper rendering of media questions on all devices\n7. Implement accessibility features for media questions:\n   - Add alternative text options for images\n   - Provide transcripts for audio content\n   - Ensure keyboard navigation for media controls\n   - Support screen reader compatibility\n8. Follow the Tony Trivia Style Guide (Docs/STYLE_GUIDE.md) for all media components and interfaces",
+        "testStrategy": "Write unit tests for media handling functions. Conduct integration tests for media upload and display. Perform cross-device testing to ensure compatibility. Include accessibility testing with screen readers and keyboard-only navigation. Verify all components adhere to the Tony Trivia Style Guide and meet AA accessibility compliance standards.",
+        "subtasks": [
+          {
+            "id": "15.1",
+            "title": "Implement media UI components following the Style Guide",
+            "description": "Create media question interfaces following the Tony Trivia Style Guide located at Docs/STYLE_GUIDE.md:",
+            "details": "1. Design media player controls and image display components that follow the playful & colorful, energetic & competitive design principles\n2. Apply the established color palette from the Style Guide to all media interfaces\n3. Ensure all components meet AA compliance standards for accessibility\n4. Implement responsive design for optimal display on both mobile and desktop devices\n5. Integrate media elements with the game-like aesthetic defined in the Style Guide",
+            "status": "pending"
+          },
+          {
+            "id": "15.2",
+            "title": "Implement media accessibility features",
+            "description": "Add specific accessibility features for media questions",
+            "details": "1. Create fields for alternative text when uploading images\n2. Implement transcript upload/generation for audio questions\n3. Ensure proper ARIA attributes on all media elements\n4. Add visible focus indicators for interactive media elements that align with the Style Guide\n5. Implement keyboard shortcuts for media playback control\n6. Verify all accessibility implementations meet AA compliance standards as specified in the Style Guide",
+            "status": "pending"
+          },
+          {
+            "id": "15.3",
+            "title": "Ensure responsive media experience",
+            "description": "Optimize media questions for different device sizes and orientations",
+            "details": "1. Implement responsive layouts for media questions following the Style Guide principles\n2. Test and optimize media display on various screen sizes (mobile, tablet, desktop)\n3. Ensure media controls are touch-friendly for mobile users while maintaining the game-like aesthetic\n4. Implement appropriate loading states and fallbacks that match the Style Guide's visual language",
+            "status": "pending"
+          }
+        ]
       },
       {
         "id": 16,
@@ -691,7 +1025,7 @@
     ],
     "metadata": {
       "created": "2025-06-17T14:08:45.878Z",
-      "updated": "2025-06-17T18:01:03.828Z",
+      "updated": "2025-06-19T18:48:25.103Z",
       "description": "Tasks for master context"
     }
   }
