@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import { 
   useGameRoomSubscription, 
@@ -7,6 +7,19 @@ import {
   useTeamAnswersSubscription 
 } from './useRealtimeSubscription';
 import { useAuth } from './useAuth';
+import { 
+  GameState, 
+  GameAction, 
+  GameEvent, 
+  GameStateUpdate,
+  GamePhase,
+  ActiveQuestion,
+  PlayerScore,
+  TeamScore,
+  Round,
+  PointValue
+} from '../types/game';
+import { GameStateManager } from '../services/gameStateManager';
 
 interface GameRoom {
   id: string;
@@ -91,54 +104,96 @@ interface TeamAnswer {
   submitted_by: string;
 }
 
-interface UseGameStateReturn {
-  // Data
-  gameRoom: GameRoom | null;
-  teams: Team[];
+export interface UseGameStateReturn {
+  // State
   gameState: GameState | null;
-  currentRound: GameRound | null;
-  currentQuestion: Question | null;
-  teamAnswers: TeamAnswer[];
-  userTeam: Team | null;
-  isHost: boolean;
-  
-  // Loading states
-  loading: boolean;
+  phase: GamePhase | null;
+  currentRound: Round | null;
+  currentQuestion: ActiveQuestion | null;
+  isLoading: boolean;
   error: string | null;
   
-  // Real-time connection status
-  connectionStatus: {
-    gameRoom: boolean;
-    teams: boolean;
-    gameState: boolean;
-    teamAnswers: boolean;
-  };
+  // Computed values
+  isGameActive: boolean;
+  isGamePaused: boolean;
+  isGameComplete: boolean;
+  canSubmitAnswers: boolean;
+  timeRemaining: number;
+  
+  // Player/Team data
+  playerScore: PlayerScore | null;
+  teamScore: TeamScore | null;
+  leaderboard: (PlayerScore | TeamScore)[];
   
   // Actions
-  joinGame: (roomCode: string) => Promise<{ success: boolean; error?: string }>;
-  createTeam: (teamName: string) => Promise<{ success: boolean; error?: string }>;
-  joinTeam: (teamId: string) => Promise<{ success: boolean; error?: string }>;
-  leaveTeam: () => Promise<{ success: boolean; error?: string }>;
-  startGame: () => Promise<{ success: boolean; error?: string }>;
-  submitAnswer: (questionId: string, answer: string) => Promise<{ success: boolean; error?: string }>;
+  startGame: () => Promise<void>;
+  pauseGame: () => Promise<void>;
+  resumeGame: () => Promise<void>;
+  endGame: () => Promise<void>;
   
-  // Utilities
-  refreshData: () => Promise<void>;
+  // Round actions
+  startRound: () => Promise<void>;
+  endRound: () => Promise<void>;
+  
+  // Question actions
+  presentQuestion: (questionId: string) => Promise<void>;
+  submitAnswer: (answer: string, pointValue: PointValue) => Promise<void>;
+  lockAnswers: () => Promise<void>;
+  revealAnswers: () => Promise<void>;
+  advanceQuestion: () => Promise<void>;
+  skipQuestion: () => Promise<void>;
+  
+  // Player management
+  addPlayer: (playerId: string, teamId?: string) => Promise<void>;
+  removePlayer: (playerId: string) => Promise<void>;
+  
+  // Team management
+  formTeam: (teamId: string, playerIds: string[]) => Promise<void>;
+  
+  // Utility
+  refresh: () => void;
+  reset: () => void;
 }
 
-export function useGameState(roomId?: string): UseGameStateReturn {
+export interface UseGameStateOptions {
+  gameId?: string;
+  playerId?: string;
+  teamId?: string;
+  autoRefresh?: boolean;
+  refreshInterval?: number;
+}
+
+export function useGameState(
+  initialState?: GameState,
+  options: UseGameStateOptions = {}
+): UseGameStateReturn {
+  const {
+    gameId,
+    playerId,
+    teamId,
+    autoRefresh = true,
+    refreshInterval = 1000
+  } = options;
+
   const { user } = useAuth();
   
   // State
   const [gameRoom, setGameRoom] = useState<GameRoom | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
-  const [gameState, setGameState] = useState<GameState | null>(null);
+  const [gameState, setGameState] = useState<GameState | null>(initialState || null);
   const [currentRound, setCurrentRound] = useState<GameRound | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [teamAnswers, setTeamAnswers] = useState<TeamAnswer[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+
+  // Refs
+  const gameManagerRef = useRef<GameStateManager | null>(null);
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const stateListenerRef = useRef<(() => void) | null>(null);
+  const eventListenerRef = useRef<(() => void) | null>(null);
 
   // Real-time subscription callbacks
   const handleGameRoomUpdate = useCallback((payload: any) => {
@@ -184,312 +239,282 @@ export function useGameState(roomId?: string): UseGameStateReturn {
   }, []);
 
   // Set up real-time subscriptions
-  const gameRoomSub = useGameRoomSubscription(roomId || '', handleGameRoomUpdate);
-  const teamSub = useTeamSubscription(roomId || '', handleTeamUpdate);
-  const gameStateSub = useGameStateSubscription(roomId || '', handleGameStateUpdate);
-  const teamAnswersSub = useTeamAnswersSubscription(roomId || '', handleTeamAnswerUpdate);
+  const gameRoomSub = useGameRoomSubscription(gameId || '', handleGameRoomUpdate);
+  const teamSub = useTeamSubscription(gameId || '', handleTeamUpdate);
+  const gameStateSub = useGameStateSubscription(gameId || '', handleGameStateUpdate);
+  const teamAnswersSub = useTeamAnswersSubscription(gameId || '', handleTeamAnswerUpdate);
 
-  // Connection status
-  const connectionStatus = useMemo(() => ({
-    gameRoom: gameRoomSub.state.isConnected,
-    teams: teamSub.state.isConnected,
-    gameState: gameStateSub.state.isConnected,
-    teamAnswers: teamAnswersSub.state.isConnected,
-  }), [
-    gameRoomSub.state.isConnected,
-    teamSub.state.isConnected,
-    gameStateSub.state.isConnected,
-    teamAnswersSub.state.isConnected,
-  ]);
-
-  // Derived state
-  const userTeam = useMemo(() => {
-    if (!user || !teams.length || !teamMembers.length) return null;
-    
-    const userMembership = teamMembers.find(member => member.user_id === user.id);
-    if (!userMembership) return null;
-    
-    return teams.find(team => team.id === userMembership.team_id) || null;
-  }, [user, teams, teamMembers]);
-
-  const isHost = useMemo(() => {
-    return user && gameRoom ? gameRoom.host_id === user.id : false;
-  }, [user, gameRoom]);
-
-  // Load initial data
-  const loadInitialData = useCallback(async () => {
-    if (!roomId) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Load game room
-      const { data: roomData, error: roomError } = await supabase
-        .from('game_rooms')
-        .select('*')
-        .eq('id', roomId)
-        .single();
-
-      if (roomError) throw roomError;
-      setGameRoom(roomData);
-
-      // Load teams
-      const { data: teamsData, error: teamsError } = await supabase
-        .from('teams')
-        .select('*')
-        .eq('game_room_id', roomId)
-        .order('created_at');
-
-      if (teamsError) throw teamsError;
-      setTeams(teamsData || []);
-
-      // Load team members
-      const { data: membersData, error: membersError } = await supabase
-        .from('team_members')
-        .select('*')
-        .in('team_id', (teamsData || []).map(team => team.id));
-
-      if (membersError) throw membersError;
-      setTeamMembers(membersData || []);
-
-      // Load game state
-      const { data: stateData, error: stateError } = await supabase
-        .from('game_state')
-        .select('*')
-        .eq('game_room_id', roomId)
-        .single();
-
-      if (stateError && stateError.code !== 'PGRST116') throw stateError;
-      setGameState(stateData);
-
-      // Load current round if exists
-      if (stateData?.current_round_id) {
-        const { data: roundData, error: roundError } = await supabase
-          .from('game_rounds')
-          .select('*')
-          .eq('id', stateData.current_round_id)
-          .single();
-
-        if (roundError) throw roundError;
-        setCurrentRound(roundData);
-      }
-
-      // Load current question if exists
-      if (stateData?.current_question_id) {
-        const { data: questionData, error: questionError } = await supabase
-          .from('questions')
-          .select('*')
-          .eq('id', stateData.current_question_id)
-          .single();
-
-        if (questionError) throw questionError;
-        setCurrentQuestion(questionData);
-      }
-
-    } catch (err) {
-      console.error('Error loading game data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load game data');
-    } finally {
-      setLoading(false);
-    }
-  }, [roomId]);
-
-  // Load data when roomId changes
+  // Initialize game manager
   useEffect(() => {
-    if (roomId) {
-      loadInitialData();
-    }
-  }, [roomId, loadInitialData]);
-
-  // Actions
-  const joinGame = useCallback(async (roomCode: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('game_rooms')
-        .select('*')
-        .eq('code', roomCode.toUpperCase())
-        .single();
-
-      if (error) {
-        return { success: false, error: 'Game not found' };
+    if (initialState && !gameManagerRef.current) {
+      try {
+        gameManagerRef.current = new GameStateManager(initialState);
+        setGameState(initialState);
+        
+        // Set up state listener
+        stateListenerRef.current = gameManagerRef.current.addStateListener(
+          (update: GameStateUpdate) => {
+            setGameState(prev => prev ? { ...prev, ...update.data } : null);
+          }
+        );
+        
+        // Set up event listener
+        eventListenerRef.current = gameManagerRef.current.addEventListener(
+          (event: GameEvent) => {
+            console.log('Game event:', event);
+            
+            // Handle specific events
+            switch (event.type) {
+              case 'timer-warning':
+                // Could trigger UI notifications
+                break;
+              case 'timer-expired':
+                setTimeRemaining(0);
+                break;
+              case 'game-ended':
+                if (event.data?.error) {
+                  setError(event.data.error);
+                }
+                break;
+            }
+          }
+        );
+        
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to initialize game');
       }
+    }
+  }, [initialState]);
 
-      return { success: true };
+  // Timer updates
+  useEffect(() => {
+    if (gameState?.currentQuestion && autoRefresh) {
+      const updateTimer = () => {
+        const questionTimer = Object.values(gameState.timers).find(
+          timer => timer.type === 'question' && timer.isActive
+        );
+        
+        if (questionTimer) {
+          setTimeRemaining(questionTimer.remaining);
+        }
+      };
+
+      updateTimer();
+      const interval = setInterval(updateTimer, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [gameState?.currentQuestion, gameState?.timers, autoRefresh]);
+
+  // Auto-refresh game state
+  useEffect(() => {
+    if (autoRefresh && gameState?.isActive) {
+      refreshIntervalRef.current = setInterval(() => {
+        if (gameManagerRef.current) {
+          const currentState = gameManagerRef.current.getState();
+          setGameState(currentState);
+        }
+      }, refreshInterval);
+
+      return () => {
+        if (refreshIntervalRef.current) {
+          clearInterval(refreshIntervalRef.current);
+        }
+      };
+    }
+  }, [autoRefresh, refreshInterval, gameState?.isActive]);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (stateListenerRef.current) {
+        stateListenerRef.current();
+      }
+      if (eventListenerRef.current) {
+        eventListenerRef.current();
+      }
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+      if (gameManagerRef.current) {
+        gameManagerRef.current.destroy();
+      }
+    };
+  }, []);
+
+  // Action handlers
+  const executeAction = useCallback(async (action: Omit<GameAction, 'gameId' | 'timestamp'>) => {
+    if (!gameManagerRef.current || !gameState) {
+      throw new Error('Game not initialized');
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await gameManagerRef.current.executeAction({
+        ...action,
+        gameId: gameState.id,
+        timestamp: new Date().toISOString()
+      });
     } catch (err) {
-      return { success: false, error: 'Failed to join game' };
+      const errorMessage = err instanceof Error ? err.message : 'Action failed';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [gameState]);
+
+  // Game lifecycle actions
+  const startGame = useCallback(() => executeAction({ type: 'start-game' }), [executeAction]);
+  const pauseGame = useCallback(() => executeAction({ type: 'pause-game' }), [executeAction]);
+  const resumeGame = useCallback(() => executeAction({ type: 'resume-game' }), [executeAction]);
+  const endGame = useCallback(() => executeAction({ type: 'end-game' }), [executeAction]);
+
+  // Round actions
+  const startRound = useCallback(() => executeAction({ type: 'start-round' }), [executeAction]);
+  const endRound = useCallback(() => executeAction({ type: 'end-round' }), [executeAction]);
+
+  // Question actions
+  const presentQuestion = useCallback(
+    (questionId: string) => executeAction({ 
+      type: 'present-question', 
+      payload: { questionId } 
+    }), 
+    [executeAction]
+  );
+
+  const submitAnswer = useCallback(
+    (answer: string, pointValue: PointValue) => executeAction({
+      type: 'submit-answer',
+      playerId,
+      teamId,
+      payload: { playerId, teamId, answer, pointValue }
+    }),
+    [executeAction, playerId, teamId]
+  );
+
+  const lockAnswers = useCallback(() => executeAction({ type: 'lock-answers' }), [executeAction]);
+  const revealAnswers = useCallback(() => executeAction({ type: 'reveal-answers' }), [executeAction]);
+  const advanceQuestion = useCallback(() => executeAction({ type: 'advance-question' }), [executeAction]);
+  const skipQuestion = useCallback(() => executeAction({ type: 'skip-question' }), [executeAction]);
+
+  // Player management
+  const addPlayer = useCallback(
+    (playerIdToAdd: string, teamIdToAdd?: string) => executeAction({
+      type: 'add-player',
+      playerId: playerIdToAdd,
+      payload: { playerId: playerIdToAdd, teamId: teamIdToAdd }
+    }),
+    [executeAction]
+  );
+
+  const removePlayer = useCallback(
+    (playerIdToRemove: string) => executeAction({
+      type: 'remove-player',
+      playerId: playerIdToRemove,
+      payload: { playerId: playerIdToRemove }
+    }),
+    [executeAction]
+  );
+
+  // Team management
+  const formTeam = useCallback(
+    (teamIdToForm: string, playerIds: string[]) => executeAction({
+      type: 'form-team',
+      payload: { teamId: teamIdToForm, playerIds }
+    }),
+    [executeAction]
+  );
+
+  // Utility functions
+  const refresh = useCallback(() => {
+    if (gameManagerRef.current) {
+      const currentState = gameManagerRef.current.getState();
+      setGameState(currentState);
     }
   }, []);
 
-  const createTeam = useCallback(async (teamName: string) => {
-    if (!user || !roomId) {
-      return { success: false, error: 'User not authenticated or no room ID' };
+  const reset = useCallback(() => {
+    setGameState(null);
+    setError(null);
+    setIsLoading(false);
+    setTimeRemaining(0);
+    
+    if (gameManagerRef.current) {
+      gameManagerRef.current.destroy();
+      gameManagerRef.current = null;
     }
+  }, []);
 
-    try {
-      const { data: teamData, error: teamError } = await supabase
-        .from('teams')
-        .insert([{
-          game_room_id: roomId,
-          name: teamName,
-        }])
-        .select()
-        .single();
-
-      if (teamError) throw teamError;
-
-      // Add user to team as captain
-      const { error: memberError } = await supabase
-        .from('team_members')
-        .insert([{
-          team_id: teamData.id,
-          user_id: user.id,
-          role: 'captain',
-        }]);
-
-      if (memberError) throw memberError;
-
-      return { success: true };
-    } catch (err) {
-      console.error('Error creating team:', err);
-      return { success: false, error: 'Failed to create team' };
-    }
-  }, [user, roomId]);
-
-  const joinTeam = useCallback(async (teamId: string) => {
-    if (!user) {
-      return { success: false, error: 'User not authenticated' };
-    }
-
-    try {
-      const { error } = await supabase
-        .from('team_members')
-        .insert([{
-          team_id: teamId,
-          user_id: user.id,
-          role: 'member',
-        }]);
-
-      if (error) throw error;
-
-      return { success: true };
-    } catch (err) {
-      console.error('Error joining team:', err);
-      return { success: false, error: 'Failed to join team' };
-    }
-  }, [user]);
-
-  const leaveTeam = useCallback(async () => {
-    if (!user || !userTeam) {
-      return { success: false, error: 'No team to leave' };
-    }
-
-    try {
-      const { error } = await supabase
-        .from('team_members')
-        .delete()
-        .eq('team_id', userTeam.id)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      return { success: true };
-    } catch (err) {
-      console.error('Error leaving team:', err);
-      return { success: false, error: 'Failed to leave team' };
-    }
-  }, [user, userTeam]);
-
-  const startGame = useCallback(async () => {
-    if (!isHost || !roomId) {
-      return { success: false, error: 'Only the host can start the game' };
-    }
-
-    try {
-      // Update game room status
-      const { error: roomError } = await supabase
-        .from('game_rooms')
-        .update({ 
-          status: 'active',
-          started_at: new Date().toISOString(),
-        })
-        .eq('id', roomId);
-
-      if (roomError) throw roomError;
-
-      // Create or update game state
-      const { error: stateError } = await supabase
-        .from('game_state')
-        .upsert([{
-          game_room_id: roomId,
-          status: 'active',
-        }]);
-
-      if (stateError) throw stateError;
-
-      return { success: true };
-    } catch (err) {
-      console.error('Error starting game:', err);
-      return { success: false, error: 'Failed to start game' };
-    }
-  }, [isHost, roomId]);
-
-  const submitAnswer = useCallback(async (questionId: string, answer: string) => {
-    if (!user || !userTeam || !currentRound) {
-      return { success: false, error: 'Cannot submit answer' };
-    }
-
-    try {
-      const { error } = await supabase
-        .from('team_answers')
-        .insert([{
-          team_id: userTeam.id,
-          question_id: questionId,
-          game_round_id: currentRound.id,
-          answer,
-          submitted_by: user.id,
-        }]);
-
-      if (error) throw error;
-
-      return { success: true };
-    } catch (err) {
-      console.error('Error submitting answer:', err);
-      return { success: false, error: 'Failed to submit answer' };
-    }
-  }, [user, userTeam, currentRound]);
-
-  const refreshData = useCallback(async () => {
-    await loadInitialData();
-  }, [loadInitialData]);
+  // Computed values
+  const phase = gameState?.phase || null;
+  const currentRound = gameState ? gameManagerRef.current?.getCurrentRound() || null : null;
+  const currentQuestion = gameState?.currentQuestion || null;
+  const isGameActive = gameState?.isActive || false;
+  const isGamePaused = gameState?.isPaused || false;
+  const isGameComplete = gameState?.isComplete || false;
+  const canSubmitAnswers = phase === 'answer-submission' && !currentQuestion?.isLocked;
+  
+  // Player/Team scores
+  const playerScore = playerId && gameState ? gameState.players[playerId] || null : null;
+  const teamScore = teamId && gameState ? gameState.teams[teamId] || null : null;
+  
+  // Leaderboard
+  const leaderboard = gameState ? [
+    ...Object.values(gameState.players),
+    ...Object.values(gameState.teams)
+  ].sort((a, b) => b.totalPoints - a.totalPoints) : [];
 
   return {
-    // Data
-    gameRoom,
-    teams,
+    // State
     gameState,
+    phase,
     currentRound,
     currentQuestion,
-    teamAnswers,
-    userTeam,
-    isHost,
-    
-    // Loading states
-    loading,
+    isLoading,
     error,
     
-    // Real-time connection status
-    connectionStatus,
+    // Computed values
+    isGameActive,
+    isGamePaused,
+    isGameComplete,
+    canSubmitAnswers,
+    timeRemaining,
+    
+    // Player/Team data
+    playerScore,
+    teamScore,
+    leaderboard,
     
     // Actions
-    joinGame,
-    createTeam,
-    joinTeam,
-    leaveTeam,
     startGame,
-    submitAnswer,
+    pauseGame,
+    resumeGame,
+    endGame,
     
-    // Utilities
-    refreshData,
+    // Round actions
+    startRound,
+    endRound,
+    
+    // Question actions
+    presentQuestion,
+    submitAnswer,
+    lockAnswers,
+    revealAnswers,
+    advanceQuestion,
+    skipQuestion,
+    
+    // Player management
+    addPlayer,
+    removePlayer,
+    
+    // Team management
+    formTeam,
+    
+    // Utility
+    refresh,
+    reset
   };
 } 

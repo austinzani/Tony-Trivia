@@ -380,6 +380,20 @@ export class GameRoomsApi {
   static async deleteGameRoom(id: string): Promise<ApiResponse<null>> {
     return ApiService.delete('game_rooms', id);
   }
+
+  static async findGameRoomByCode(code: string): Promise<ApiResponse<GameRoom>> {
+    try {
+      const { data, error } = await supabase
+        .from('game_rooms')
+        .select('*')
+        .eq('code', code.toUpperCase())
+        .single();
+
+      return { data, error };
+    } catch (error) {
+      return { data: null, error: error as PostgrestError };
+    }
+  }
 }
 
 export class TeamsApi {
