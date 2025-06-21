@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { GameTimer, TimerConfiguration, TimerState, TimerEventType, TimerEvent, TimerPhase } from '../services/gameTimer';
+import { GameTimer } from '../services/gameTimer';
+import type { TimerConfiguration, TimerState, TimerEventType, TimerEvent, TimerPhase } from '../services/gameTimer';
 
 export interface UseTimerOptions extends Partial<TimerConfiguration> {
   onExpired?: () => void;

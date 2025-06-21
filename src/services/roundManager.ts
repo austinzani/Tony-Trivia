@@ -1,12 +1,10 @@
-import {
+import type {
   Round,
   RoundType,
   PointValue,
-  Question,
-  GameDifficulty,
-  PlayerAnswer,
-  GAME_CONSTRAINTS
+  Question
 } from '../types/game';
+import { GAME_CONSTRAINTS } from '../types/game';
 
 export interface RoundConfiguration {
   number: number;

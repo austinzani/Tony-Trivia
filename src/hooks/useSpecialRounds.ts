@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { SpecialRoundManager } from '../services/specialRoundManager';
-import {
+import { SpecialRoundType, SpecialRoundEventType } from '../types/specialRounds';
+import type {
   SpecialRound,
-  SpecialRoundType,
   SpecialRoundEvent,
-  SpecialRoundEventType,
   WagerRound,
   WagerPhase,
   PictureRound,

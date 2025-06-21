@@ -4,7 +4,7 @@ import { ScoreManager } from './scoreManager';
 import { SpecialRoundManager } from './specialRoundManager';
 import { AnswerSubmissionManager } from './answerSubmissionManager';
 import { GameTimer } from './gameTimer';
-import {
+import type {
   GameControllerState,
   GameControllerOptions,
   GameControllerEvent,
@@ -26,8 +26,9 @@ import {
   PhaseHandlerRegistry,
   GameFlowConfiguration
 } from '../types/gameController';
-import { GameState, GamePhase, Round, Question } from '../types/game';
-import { SpecialRoundType } from '../types/specialRounds';
+import type { GameState, GamePhase, Round, Question } from '../types/game';
+import type { SpecialRoundType } from '../types/specialRounds';
+import { GameProgressionPhase } from '../types/gameController';
 
 export class GameController {
   private gameStateManager: GameStateManager;

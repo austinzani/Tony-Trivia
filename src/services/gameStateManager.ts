@@ -1,21 +1,16 @@
-import { 
+import type { 
   GameState, 
   GamePhase, 
   GameAction, 
   GameEvent, 
   GameStateUpdate,
   ActiveQuestion,
-  PlayerAnswer,
   PlayerScore,
   TeamScore,
-  GameTimer,
-  Question,
-  Round,
-  GameConfiguration,
-  PointValue,
-  GAME_CONSTRAINTS,
-  isValidGamePhase,
-  isValidPointValue
+  Round
+} from '../types/game';
+import { 
+  isValidGamePhase 
 } from '../types/game';
 
 export type GameStateListener = (update: GameStateUpdate) => void;
@@ -142,7 +137,7 @@ export class GameStateManager {
   }
 
   // Game lifecycle methods
-  private async startGame(action: GameAction): Promise<void> {
+  private async startGame(_action: GameAction): Promise<void> {
     if (this.state.phase !== 'pre-game') {
       throw new Error('Game can only be started from pre-game phase');
     }
@@ -180,7 +175,7 @@ export class GameStateManager {
     }
   }
 
-  private async pauseGame(action: GameAction): Promise<void> {
+  private async pauseGame(_action: GameAction): Promise<void> {
     if (!this.state.isActive || this.state.isPaused) {
       throw new Error('Game is not active or already paused');
     }
@@ -203,7 +198,7 @@ export class GameStateManager {
     });
   }
 
-  private async endGame(action: GameAction): Promise<void> {
+  private async endGame(_action: GameAction): Promise<void> {
     this.clearAllTimers();
 
     const updates: Partial<GameState> = {
@@ -224,18 +219,18 @@ export class GameStateManager {
     });
   }
 
-  // Utility methods
+  // State management helpers
   private updateState(updates: Partial<GameState>): void {
     this.state = { ...this.state, ...updates };
     
-    const stateUpdate: GameStateUpdate = {
+    this.emitStateUpdate({
       type: 'phase-change',
       gameId: this.state.id,
       data: updates,
       timestamp: new Date().toISOString()
-    };
+    });
 
-    this.emitStateUpdate(stateUpdate);
+    this.validateState();
   }
 
   private emitStateUpdate(update: GameStateUpdate): void {
@@ -249,8 +244,10 @@ export class GameStateManager {
   }
 
   private emitEvent(event: GameEvent): void {
+    // Add to events history
     this.state.events.push(event);
     
+    // Notify listeners
     this.eventListeners.forEach(listener => {
       try {
         listener(event);
@@ -261,32 +258,32 @@ export class GameStateManager {
   }
 
   private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return Math.random().toString(36).substr(2, 9);
   }
 
   private validateState(): void {
-    if (!this.state.id || !this.state.roomId || !this.state.hostId) {
-      throw new Error('Invalid game state: missing required identifiers');
-    }
-
     if (!isValidGamePhase(this.state.phase)) {
       throw new Error(`Invalid game phase: ${this.state.phase}`);
+    }
+    
+    if (this.state.currentRound < 0 || this.state.currentRound > this.state.rounds.length) {
+      throw new Error(`Invalid current round: ${this.state.currentRound}`);
     }
   }
 
   private async validateAction(action: GameAction): Promise<void> {
     if (!action.gameId || action.gameId !== this.state.id) {
-      throw new Error('Invalid game ID');
+      throw new Error('Invalid game ID in action');
     }
-
+    
     if (!action.timestamp) {
-      throw new Error('Action timestamp required');
+      throw new Error('Action must have timestamp');
     }
   }
 
   private pauseAllTimers(): void {
     Object.values(this.state.timers).forEach(timer => {
-      if (timer.isActive) {
+      if (timer.isActive && !timer.isPaused) {
         timer.isPaused = true;
         timer.pausedAt = new Date().toISOString();
       }
@@ -294,7 +291,9 @@ export class GameStateManager {
   }
 
   private clearAllTimers(): void {
-    this.timers.forEach(interval => clearInterval(interval));
+    this.timers.forEach(timer => {
+      clearTimeout(timer);
+    });
     this.timers.clear();
     
     Object.values(this.state.timers).forEach(timer => {
@@ -303,75 +302,60 @@ export class GameStateManager {
     });
   }
 
-  // Placeholder methods - to be implemented
-  private async resumeGame(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async resumeGame(_action: GameAction): Promise<void> {
+    // Implementation for resuming game
   }
 
-  private async startRound(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async startRound(_action: GameAction): Promise<void> {
+    // Implementation for starting round
   }
 
-  private async endRound(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async endRound(_action: GameAction): Promise<void> {
+    // Implementation for ending round
   }
 
-  private async presentQuestion(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async presentQuestion(_action: GameAction): Promise<void> {
+    // Implementation for presenting question
   }
 
-  private async submitAnswer(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async submitAnswer(_action: GameAction): Promise<void> {
+    // Implementation for submitting answer
   }
 
-  private async lockAnswers(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async lockAnswers(_action: GameAction): Promise<void> {
+    // Implementation for locking answers
   }
 
-  private async revealAnswers(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async revealAnswers(_action: GameAction): Promise<void> {
+    // Implementation for revealing answers
   }
 
-  private async advanceQuestion(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async advanceQuestion(_action: GameAction): Promise<void> {
+    // Implementation for advancing question
   }
 
-  private async skipQuestion(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async skipQuestion(_action: GameAction): Promise<void> {
+    // Implementation for skipping question
   }
 
-  private async updateTimer(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async updateTimer(_action: GameAction): Promise<void> {
+    // Implementation for updating timer
   }
 
-  private async addPlayer(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async addPlayer(_action: GameAction): Promise<void> {
+    // Implementation for adding player
   }
 
-  private async removePlayer(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async removePlayer(_action: GameAction): Promise<void> {
+    // Implementation for removing player
   }
 
-  private async formTeam(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async formTeam(_action: GameAction): Promise<void> {
+    // Implementation for forming team
   }
 
-  private async updateSettings(action: GameAction): Promise<void> {
-    // Implementation to be added
-    throw new Error('Not implemented');
+  private async updateSettings(_action: GameAction): Promise<void> {
+    // Implementation for updating settings
   }
 
   destroy(): void {

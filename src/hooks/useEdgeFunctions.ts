@@ -1,16 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   edgeFunctionService, 
-  GameStateRequest, 
-  GameStateResponse,
+  GameStateRequest,
   ValidateAnswerRequest,
-  AnswerValidationResponse,
   CalculateScoresRequest,
-  ScoreCalculationResponse,
   PointUsageRequest,
-  PointUsageResponse,
-  StartRoundRequest,
-  StartRoundResponse
+  StartRoundRequest
 } from '../services/edgeFunctions';
 
 // Query keys for React Query caching

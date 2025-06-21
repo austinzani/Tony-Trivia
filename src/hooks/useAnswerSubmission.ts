@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { AnswerSubmissionManager, AnswerSubmission, SubmissionEventType, SubmissionEvent, AnswerSubmissionOptions } from '../services/answerSubmissionManager';
+import { AnswerSubmissionManager } from '../services/answerSubmissionManager';
+import type { AnswerSubmission, SubmissionEventType, SubmissionEvent, AnswerSubmissionOptions } from '../services/answerSubmissionManager';
 import { RoundManager } from '../services/roundManager';
 
 export interface UseAnswerSubmissionOptions extends AnswerSubmissionOptions {

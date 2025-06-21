@@ -1,4 +1,4 @@
-import type { PostgrestError, PostgrestResponse } from './supabase';
+import type { PostgrestError } from './supabase';
 import { supabase } from './supabase';
 
 // Database table types
@@ -128,7 +128,7 @@ export class ApiService {
     options?: { select?: string }
   ): Promise<ApiResponse<T>> {
     try {
-      let query = supabase.from(table).select(options?.select || '*').eq('id', id);
+      const query = supabase.from(table).select(options?.select || '*').eq('id', id);
       
       const { data, error } = await query.single();
       return { data, error };

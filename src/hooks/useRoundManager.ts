@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { RoundManager, RoundConfiguration, RoundValidationResult, RoundProgressInfo } from '../services/roundManager';
-import { Round, PointValue, Question } from '../types/game';
+import { RoundManager } from '../services/roundManager';
+import type { RoundConfiguration, RoundValidationResult, RoundProgressInfo } from '../services/roundManager';
+import type { Round, PointValue, Question } from '../types/game';
 
 export interface UseRoundManagerOptions {
   initialRounds?: Round[];

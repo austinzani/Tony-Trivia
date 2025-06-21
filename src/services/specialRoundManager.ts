@@ -1,10 +1,8 @@
 import { RoundManager } from './roundManager';
 import { ScoreManager } from './scoreManager';
-import {
+import type {
   SpecialRound,
-  SpecialRoundType,
   SpecialRoundEvent,
-  SpecialRoundEventType,
   WagerRound,
   WagerSubmission,
   WagerPhase,
@@ -15,18 +13,13 @@ import {
   BonusScore,
   LightningRound,
   LightningProgress,
-  AudioRound,
-  AudioLoadStatus,
-  AudioPlaybackStatus,
-  VideoRound,
-  VideoLoadStatus,
-  VideoPlaybackStatus,
-  TeamChallengeRound,
-  TeamSubmission,
-  DiscussionEntry,
   SpecialRoundConfig,
   SpecialRoundValidationResult,
   SpecialRoundMetrics
+} from '../types/specialRounds';
+import {
+  SpecialRoundType,
+  SpecialRoundEventType
 } from '../types/specialRounds';
 
 export type SpecialRoundEventListener = (event: SpecialRoundEvent) => void;

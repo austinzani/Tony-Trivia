@@ -1,5 +1,5 @@
-import { GameState, GamePhase, Round, Question, GameConfiguration } from './game';
-import { SpecialRound, SpecialRoundType } from './specialRounds';
+import type { GameState } from './game';
+import type { SpecialRound, SpecialRoundType } from './specialRounds';
 
 // Game Progression Types
 export enum GameProgressionPhase {

@@ -1,4 +1,5 @@
-import { AnswerSubmissionManager, AnswerSubmission } from './answerSubmissionManager';
+import type { AnswerSubmission } from './answerSubmissionManager';
+import { AnswerSubmissionManager } from './answerSubmissionManager';
 import { RoundManager } from './roundManager';
 
 export interface PlayerScore {

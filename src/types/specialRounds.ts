@@ -1,16 +1,18 @@
-import { Question, Round, RoundType } from './game';
+import type { Question, Round } from './game';
 
 // Special Round Types
-export enum SpecialRoundType {
-  WAGER = 'wager',
-  PICTURE = 'picture',
-  BONUS = 'bonus',
-  LIGHTNING = 'lightning',
-  FINAL_JEOPARDY = 'final_jeopardy',
-  AUDIO = 'audio',
-  VIDEO = 'video',
-  TEAM_CHALLENGE = 'team_challenge'
-}
+export const SpecialRoundType = {
+  WAGER: 'wager',
+  PICTURE: 'picture',
+  BONUS: 'bonus',
+  LIGHTNING: 'lightning',
+  FINAL_JEOPARDY: 'final_jeopardy',
+  AUDIO: 'audio',
+  VIDEO: 'video',
+  TEAM_CHALLENGE: 'team_challenge'
+} as const;
+
+export type SpecialRoundType = typeof SpecialRoundType[keyof typeof SpecialRoundType];
 
 // Wager Round Types
 export interface WagerRoundSettings {
@@ -31,21 +33,23 @@ export interface WagerSubmission {
 }
 
 export interface WagerRound extends Round {
-  type: RoundType.SPECIAL;
-  specialType: SpecialRoundType.WAGER;
+  type: 'wager';
+  specialType: typeof SpecialRoundType.WAGER;
   settings: WagerRoundSettings;
   wagerSubmissions: Map<string, WagerSubmission>;
   wagerPhase: WagerPhase;
   currentWagerDeadline?: Date;
 }
 
-export enum WagerPhase {
-  INSTRUCTIONS = 'instructions',
-  WAGER_SUBMISSION = 'wager_submission',
-  QUESTION_DISPLAY = 'question_display',
-  ANSWER_SUBMISSION = 'answer_submission',
-  RESULTS = 'results'
-}
+export const WagerPhase = {
+  INSTRUCTIONS: 'instructions',
+  WAGER_SUBMISSION: 'wager_submission',
+  QUESTION_DISPLAY: 'question_display',
+  ANSWER_SUBMISSION: 'answer_submission',
+  RESULTS: 'results'
+} as const;
+
+export type WagerPhase = typeof WagerPhase[keyof typeof WagerPhase];
 
 // Picture Round Types
 export interface PictureRoundSettings {
@@ -71,19 +75,21 @@ export interface PictureQuestion extends Question {
 }
 
 export interface PictureRound extends Round {
-  type: RoundType.SPECIAL;
-  specialType: SpecialRoundType.PICTURE;
+  type: 'picture';
+  specialType: typeof SpecialRoundType.PICTURE;
   settings: PictureRoundSettings;
   questions: PictureQuestion[];
   imageLoadingStatus: Map<string, ImageLoadStatus>;
 }
 
-export enum ImageLoadStatus {
-  PENDING = 'pending',
-  LOADING = 'loading',
-  LOADED = 'loaded',
-  ERROR = 'error'
-}
+export const ImageLoadStatus = {
+  PENDING: 'pending',
+  LOADING: 'loading',
+  LOADED: 'loaded',
+  ERROR: 'error'
+} as const;
+
+export type ImageLoadStatus = typeof ImageLoadStatus[keyof typeof ImageLoadStatus];
 
 // Bonus Round Types
 export interface BonusRoundSettings {
@@ -100,8 +106,8 @@ export interface BonusRoundSettings {
 }
 
 export interface BonusRound extends Round {
-  type: RoundType.SPECIAL;
-  specialType: SpecialRoundType.BONUS;
+  type: 'bonus';
+  specialType: typeof SpecialRoundType.BONUS;
   settings: BonusRoundSettings;
   participantStatus: Map<string, BonusParticipantStatus>;
   bonusScores: Map<string, BonusScore>;
@@ -140,8 +146,8 @@ export interface LightningRoundSettings {
 }
 
 export interface LightningRound extends Round {
-  type: RoundType.SPECIAL;
-  specialType: SpecialRoundType.LIGHTNING;
+  type: 'lightning';
+  specialType: typeof SpecialRoundType.LIGHTNING;
   settings: LightningRoundSettings;
   startTime?: Date;
   endTime?: Date;
@@ -185,20 +191,22 @@ export interface AudioQuestion extends Question {
 }
 
 export interface AudioRound extends Round {
-  type: RoundType.SPECIAL;
-  specialType: SpecialRoundType.AUDIO;
+  type: 'audio';
+  specialType: typeof SpecialRoundType.AUDIO;
   settings: AudioRoundSettings;
   questions: AudioQuestion[];
   audioLoadingStatus: Map<string, AudioLoadStatus>;
   playbackStatus: Map<string, AudioPlaybackStatus>;
 }
 
-export enum AudioLoadStatus {
-  PENDING = 'pending',
-  LOADING = 'loading',
-  LOADED = 'loaded',
-  ERROR = 'error'
-}
+export const AudioLoadStatus = {
+  PENDING: 'pending',
+  LOADING: 'loading',
+  LOADED: 'loaded',
+  ERROR: 'error'
+} as const;
+
+export type AudioLoadStatus = typeof AudioLoadStatus[keyof typeof AudioLoadStatus];
 
 export interface AudioPlaybackStatus {
   questionId: string;
@@ -238,20 +246,22 @@ export interface VideoQuestion extends Question {
 }
 
 export interface VideoRound extends Round {
-  type: RoundType.SPECIAL;
-  specialType: SpecialRoundType.VIDEO;
+  type: 'video';
+  specialType: typeof SpecialRoundType.VIDEO;
   settings: VideoRoundSettings;
   questions: VideoQuestion[];
   videoLoadingStatus: Map<string, VideoLoadStatus>;
   playbackStatus: Map<string, VideoPlaybackStatus>;
 }
 
-export enum VideoLoadStatus {
-  PENDING = 'pending',
-  LOADING = 'loading',
-  LOADED = 'loaded',
-  ERROR = 'error'
-}
+export const VideoLoadStatus = {
+  PENDING: 'pending',
+  LOADING: 'loading',
+  LOADED: 'loaded',
+  ERROR: 'error'
+} as const;
+
+export type VideoLoadStatus = typeof VideoLoadStatus[keyof typeof VideoLoadStatus];
 
 export interface VideoPlaybackStatus {
   questionId: string;
@@ -276,8 +286,8 @@ export interface TeamChallengeSettings {
 }
 
 export interface TeamChallengeRound extends Round {
-  type: RoundType.SPECIAL;
-  specialType: SpecialRoundType.TEAM_CHALLENGE;
+  type: 'standard'; // Team challenges use standard type but with special settings
+  specialType: typeof SpecialRoundType.TEAM_CHALLENGE;
   settings: TeamChallengeSettings;
   teamSubmissions: Map<string, TeamSubmission>;
   discussionPhase: boolean;
@@ -299,7 +309,7 @@ export interface DiscussionEntry {
   type: 'message' | 'vote' | 'suggestion';
 }
 
-// Union Types
+// Union types for special rounds
 export type SpecialRound = 
   | WagerRound 
   | PictureRound 
@@ -314,7 +324,7 @@ export type SpecialQuestion =
   | AudioQuestion 
   | VideoQuestion;
 
-// Special Round Events
+// Event types
 export interface SpecialRoundEvent {
   type: SpecialRoundEventType;
   roundId: string;
@@ -325,29 +335,31 @@ export interface SpecialRoundEvent {
   data?: any;
 }
 
-export enum SpecialRoundEventType {
-  ROUND_STARTED = 'special_round_started',
-  ROUND_ENDED = 'special_round_ended',
-  PHASE_CHANGED = 'special_phase_changed',
-  WAGER_SUBMITTED = 'wager_submitted',
-  WAGER_LOCKED = 'wager_locked',
-  IMAGE_LOADED = 'image_loaded',
-  IMAGE_ERROR = 'image_error',
-  AUDIO_LOADED = 'audio_loaded',
-  AUDIO_PLAYED = 'audio_played',
-  VIDEO_LOADED = 'video_loaded',
-  VIDEO_PLAYED = 'video_played',
-  BONUS_ACHIEVED = 'bonus_achieved',
-  PARTICIPANT_ELIMINATED = 'participant_eliminated',
-  STREAK_BONUS = 'streak_bonus',
-  TIME_BONUS = 'time_bonus',
-  PERFECT_ROUND_BONUS = 'perfect_round_bonus',
-  TEAM_DISCUSSION_STARTED = 'team_discussion_started',
-  TEAM_DISCUSSION_ENDED = 'team_discussion_ended',
-  LIGHTNING_COMPLETED = 'lightning_completed'
-}
+export const SpecialRoundEventType = {
+  ROUND_STARTED: 'special_round_started',
+  ROUND_ENDED: 'special_round_ended',
+  PHASE_CHANGED: 'special_phase_changed',
+  WAGER_SUBMITTED: 'wager_submitted',
+  WAGER_LOCKED: 'wager_locked',
+  IMAGE_LOADED: 'image_loaded',
+  IMAGE_ERROR: 'image_error',
+  AUDIO_LOADED: 'audio_loaded',
+  AUDIO_PLAYED: 'audio_played',
+  VIDEO_LOADED: 'video_loaded',
+  VIDEO_PLAYED: 'video_played',
+  BONUS_ACHIEVED: 'bonus_achieved',
+  PARTICIPANT_ELIMINATED: 'participant_eliminated',
+  STREAK_BONUS: 'streak_bonus',
+  TIME_BONUS: 'time_bonus',
+  PERFECT_ROUND_BONUS: 'perfect_round_bonus',
+  TEAM_DISCUSSION_STARTED: 'team_discussion_started',
+  TEAM_DISCUSSION_ENDED: 'team_discussion_ended',
+  LIGHTNING_COMPLETED: 'lightning_completed'
+} as const;
 
-// Special Round Configuration
+export type SpecialRoundEventType = typeof SpecialRoundEventType[keyof typeof SpecialRoundEventType];
+
+// Configuration and validation types
 export interface SpecialRoundConfig {
   specialType: SpecialRoundType;
   enabled: boolean;
@@ -367,7 +379,6 @@ export interface SpecialRoundRule {
   enabled: boolean;
 }
 
-// Utility Types
 export interface SpecialRoundValidationResult {
   isValid: boolean;
   errors: string[];

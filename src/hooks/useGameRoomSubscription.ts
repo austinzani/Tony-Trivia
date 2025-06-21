@@ -1,6 +1,5 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import type { RealtimePostgresChangesPayload } from '../services/supabase';
-import { supabase } from '../services/supabase';
 import { useRealtimeSubscription } from './useRealtimeSubscription';
 
 interface GameRoom {

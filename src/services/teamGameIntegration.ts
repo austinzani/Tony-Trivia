@@ -1,5 +1,4 @@
 import { supabase } from './supabase';
-import type { TeamMemberStatus, TeamActivity } from '../hooks/useTeamPresence';
 
 export interface GameTeamState {
   teamId: string;
@@ -49,7 +48,7 @@ export interface GameReadinessCheck {
 }
 
 class TeamGameIntegrationService {
-  private eventListeners: Map<string, Function[]> = new Map();
+  private eventListeners: Map<string, (() => void)[]> = new Map();
 
   /**
    * Subscribe to team-game integration events

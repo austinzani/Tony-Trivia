@@ -7,14 +7,66 @@ import { SpecialRoundManager } from '../services/specialRoundManager';
 import { AnswerSubmissionManager } from '../services/answerSubmissionManager';
 import { GameTimer } from '../services/gameTimer';
 import {
-  GameControllerState,
-  GameControllerOptions,
-  GameControllerEvent,
+  type GameControllerState,
+  type GameControllerOptions,
+  type GameControllerEvent,
   GameControllerEventType,
   GameProgressionPhase,
-  AdvanceOptions
+  type AdvanceOptions
 } from '../types/gameController';
-import { GameState } from '../types/game';
+import type { GameState } from '../types/game';
+
+// Create a default initial game state
+const createInitialGameState = (gameId: string): GameState => ({
+  id: gameId,
+  roomId: `room-${gameId}`,
+  hostId: 'host-1',
+  configuration: {
+    id: `config-${gameId}`,
+    name: 'Default Game',
+    description: 'A default trivia game',
+    settings: {
+      maxRounds: 3,
+      questionsPerRound: 10,
+      defaultTimeLimit: 60,
+      allowTeams: true,
+      maxTeamSize: 6,
+      maxTeams: 20,
+      pointSystem: 'last-call',
+      enableSpecialRounds: true,
+      enableWagerRounds: true,
+      enableBonusRounds: true,
+      autoAdvance: false,
+      showCorrectAnswers: true,
+      allowAnswerChanges: false,
+      enableHints: false,
+      difficulty: 'medium'
+    },
+    rounds: [],
+    categories: ['General Knowledge'],
+    createdBy: 'host-1',
+    isPublic: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  phase: 'pre-game',
+  currentRound: 0,
+  currentQuestion: undefined,
+  rounds: [],
+  completedRounds: 0,
+  totalQuestions: 0,
+  answeredQuestions: 0,
+  players: {},
+  teams: {},
+  usedPointValues: {},
+  timers: {},
+  isActive: false,
+  isPaused: false,
+  isComplete: false,
+  events: [],
+  connectedPlayers: [],
+  lastUpdated: new Date().toISOString()
+});
 
 // Main hook for game controller management
 export function useGameController(
@@ -40,8 +92,11 @@ export function useGameController(
       setIsLoading(true);
       setError(null);
 
+      // Create initial game state
+      const initialState = createInitialGameState(gameId);
+
       // Initialize all required services
-      gameStateManagerRef.current = new GameStateManager();
+      gameStateManagerRef.current = new GameStateManager(initialState);
       roundManagerRef.current = new RoundManager();
       scoreManagerRef.current = new ScoreManager();
       specialRoundManagerRef.current = new SpecialRoundManager(
@@ -198,9 +253,15 @@ export function useGameController(
     // Status checks
     isInitialized: controllerState?.isInitialized ?? false,
     isActive: controllerState?.isActive ?? false,
-    isPaused: controllerState?.pauseResume.isPaused ?? false,
-    currentPhase: controllerState?.progression.currentPhase ?? GameProgressionPhase.INITIALIZATION,
-    canAdvance: controllerState?.progression.canAdvance ?? false,
+    isPaused: controllerState?.isPaused ?? false,
+    isComplete: controllerState?.isComplete ?? false,
+    
+    // Current state
+    currentPhase: controllerState?.currentPhase ?? 'pre_game',
+    currentRound: controllerState?.currentRound ?? 0,
+    currentQuestion: controllerState?.currentQuestion ?? 0,
+    totalRounds: controllerState?.totalRounds ?? 0,
+    totalQuestions: controllerState?.totalQuestions ?? 0,
     
     // Control functions
     startGame,
@@ -215,8 +276,13 @@ export function useGameController(
     clearEvents,
     reinitialize: initializeController,
     
-    // Direct access to controller (for advanced usage)
-    controller: controllerRef.current
+    // Direct access to managers (for advanced usage)
+    gameStateManager: gameStateManagerRef.current,
+    roundManager: roundManagerRef.current,
+    scoreManager: scoreManagerRef.current,
+    specialRoundManager: specialRoundManagerRef.current,
+    answerSubmissionManager: answerSubmissionManagerRef.current,
+    gameTimer: gameTimerRef.current
   };
 }
 

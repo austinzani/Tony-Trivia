@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ScoreManager, PlayerScore, TeamScore, LeaderboardEntry, ScoreEvent } from '../services/scoreManager';
+import { ScoreManager } from '../services/scoreManager';
+import type { PlayerScore, TeamScore, LeaderboardEntry, ScoreEvent } from '../services/scoreManager';
 
 export interface UseScoreManagerReturn {
   // State

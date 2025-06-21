@@ -1,24 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '../services/supabase';
-import { 
-  useGameRoomSubscription, 
-  useTeamSubscription, 
-  useGameStateSubscription,
-  useTeamAnswersSubscription 
-} from './useRealtimeSubscription';
 import { useAuth } from './useAuth';
-import { 
-  GameState, 
-  GameAction, 
-  GameEvent, 
-  GameStateUpdate,
-  GamePhase,
-  ActiveQuestion,
-  PlayerScore,
-  TeamScore,
-  Round,
-  PointValue
-} from '../types/game';
 import { GameStateManager } from '../services/gameStateManager';
 
 interface GameRoom {
@@ -175,7 +156,7 @@ export function useGameState(
     refreshInterval = 1000
   } = options;
 
-  const { user } = useAuth();
+  const { /* user */ } = useAuth();
   
   // State
   const [gameRoom, setGameRoom] = useState<GameRoom | null>(null);
@@ -239,10 +220,10 @@ export function useGameState(
   }, []);
 
   // Set up real-time subscriptions
-  const gameRoomSub = useGameRoomSubscription(gameId || '', handleGameRoomUpdate);
-  const teamSub = useTeamSubscription(gameId || '', handleTeamUpdate);
-  const gameStateSub = useGameStateSubscription(gameId || '', handleGameStateUpdate);
-  const teamAnswersSub = useTeamAnswersSubscription(gameId || '', handleTeamAnswerUpdate);
+  // const gameRoomSub = useGameRoomSubscription(gameId || '', handleGameRoomUpdate);
+  // const teamSub = useTeamSubscription(gameId || '', handleTeamUpdate);
+  // const gameStateSub = useGameStateSubscription(gameId || '', handleGameStateUpdate);
+  // const teamAnswersSub = useTeamAnswersSubscription(gameId || '', handleTeamAnswerUpdate);
 
   // Initialize game manager
   useEffect(() => {
