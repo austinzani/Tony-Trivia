@@ -14,7 +14,7 @@ import {
   GameProgressionPhase,
   type AdvanceOptions
 } from '../types/gameController';
-import type { GameState } from '../types/game';
+import type { GameState, Round } from '../types/game';
 
 // Create a default initial game state
 const createInitialGameState = (gameId: string): GameState => ({
@@ -68,6 +68,14 @@ const createInitialGameState = (gameId: string): GameState => ({
   lastUpdated: new Date().toISOString()
 });
 
+// Create default rounds for the game
+const createDefaultRounds = (): Round[] => {
+  return RoundManager.createLastCallTriviaRounds(
+    [], // Empty questions array for now
+    []  // Empty questions array for now
+  );
+};
+
 // Main hook for game controller management
 export function useGameController(
   gameId: string,
@@ -95,16 +103,28 @@ export function useGameController(
       // Create initial game state
       const initialState = createInitialGameState(gameId);
 
+      // Create default rounds
+      const defaultRounds = createDefaultRounds();
+
       // Initialize all required services
       gameStateManagerRef.current = new GameStateManager(initialState);
-      roundManagerRef.current = new RoundManager();
-      scoreManagerRef.current = new ScoreManager();
+      roundManagerRef.current = new RoundManager(defaultRounds);
+      answerSubmissionManagerRef.current = new AnswerSubmissionManager(
+        roundManagerRef.current
+      );
+      scoreManagerRef.current = new ScoreManager(
+        answerSubmissionManagerRef.current,
+        roundManagerRef.current
+      );
       specialRoundManagerRef.current = new SpecialRoundManager(
         roundManagerRef.current,
         scoreManagerRef.current
       );
-      answerSubmissionManagerRef.current = new AnswerSubmissionManager();
-      gameTimerRef.current = new GameTimer();
+      gameTimerRef.current = new GameTimer({
+        duration: 60,
+        warningThreshold: 10,
+        criticalThreshold: 5
+      });
 
       // Create controller with default options
       const defaultOptions: GameControllerOptions = {
@@ -113,18 +133,26 @@ export function useGameController(
           totalRounds: 3,
           questionsPerRound: 10,
           allowSkipQuestions: true,
-          allowPause: true,
-          autoAdvanceQuestions: false,
-          autoAdvanceRounds: false,
-          questionTimeLimit: 60,
-          roundTimeLimit: 600,
-          intermissionDuration: 30,
-          showResults: true,
           enableSpecialRounds: true,
           specialRoundFrequency: 3,
-          enableMetrics: true,
-          saveProgress: true
+          questionTimeLimit: 60,
+          answerReviewTime: 30,
+          roundIntroTime: 15,
+          intermissionTime: 30,
+          autoAdvanceDelay: 3000,
+          requireAllAnswers: false,
+          allowEarlyAdvance: true,
+          enablePauseResume: true,
+          maxGameDuration: 120,
+          maxRetries: 3,
+          errorRecoveryMode: 'auto',
+          fallbackToManualControl: true
         },
+        enableEventLogging: true,
+        enableMetrics: true,
+        debugMode: false,
+        strictMode: false,
+        performanceMode: false,
         ...options
       };
 
@@ -138,26 +166,26 @@ export function useGameController(
         defaultOptions
       );
 
-      // Setup event listeners
+      // Setup event listeners using correct enum values
       const eventTypes: GameControllerEventType[] = [
-        'initialized',
-        'started',
-        'paused',
-        'resumed',
-        'ended',
-        'phase_changed',
-        'question_advanced',
-        'round_completed',
-        'special_round_started',
-        'error_occurred',
-        'metrics_updated'
+        GameControllerEventType.GAME_INITIALIZED,
+        GameControllerEventType.GAME_STARTED,
+        GameControllerEventType.GAME_PAUSED,
+        GameControllerEventType.GAME_RESUMED,
+        GameControllerEventType.GAME_ENDED,
+        GameControllerEventType.PHASE_TRANSITION_COMPLETED,
+        GameControllerEventType.QUESTION_DISPLAYED,
+        GameControllerEventType.ROUND_COMPLETED,
+        GameControllerEventType.SPECIAL_ROUND_STARTED,
+        GameControllerEventType.ERROR_OCCURRED,
+        GameControllerEventType.SCORING_COMPLETED
       ];
 
       eventTypes.forEach(eventType => {
         controllerRef.current?.addEventListener(eventType, (event) => {
           setEvents(prev => [...prev.slice(-49), event]); // Keep last 50 events
           
-          if (eventType === 'error_occurred') {
+          if (eventType === GameControllerEventType.ERROR_OCCURRED) {
             setError(event.data?.message || 'An error occurred');
           }
         });
@@ -194,15 +222,15 @@ export function useGameController(
       setControllerState(controllerRef.current!.getState());
     };
 
-    // Update state on phase changes
-    controllerRef.current.addEventListener('phase_changed', updateState);
-    controllerRef.current.addEventListener('metrics_updated', updateState);
+    // Update state on phase changes using correct enum values
+    controllerRef.current.addEventListener(GameControllerEventType.PHASE_TRANSITION_COMPLETED, updateState);
+    controllerRef.current.addEventListener(GameControllerEventType.SCORING_COMPLETED, updateState);
 
     return () => {
-      controllerRef.current?.removeEventListener('phase_changed', updateState);
-      controllerRef.current?.removeEventListener('metrics_updated', updateState);
+      controllerRef.current?.removeEventListener(GameControllerEventType.PHASE_TRANSITION_COMPLETED, updateState);
+      controllerRef.current?.removeEventListener(GameControllerEventType.SCORING_COMPLETED, updateState);
     };
-  }, [controllerRef.current]);
+  }, []);
 
   // Control functions
   const startGame = useCallback(async () => {
@@ -243,6 +271,16 @@ export function useGameController(
     setEvents([]);
   }, []);
 
+  // Get current state properties
+  const isActive = controllerState?.isActive ?? false;
+  const isPaused = controllerState?.pauseResume.isPaused ?? false;
+  const isComplete = controllerState?.progression.currentPhase === GameProgressionPhase.GAME_COMPLETE;
+  const currentPhase = controllerState?.progression.currentPhase ?? GameProgressionPhase.INITIALIZATION;
+  const currentRound = controllerState?.roundProgression.currentRoundIndex ?? 0;
+  const currentQuestion = controllerState?.questionProgression.currentQuestionIndex ?? 0;
+  const totalRounds = controllerState?.roundProgression.totalRounds ?? 0;
+  const totalQuestions = controllerState?.questionProgression.totalQuestions ?? 0;
+
   return {
     // State
     state: controllerState,
@@ -252,16 +290,16 @@ export function useGameController(
     
     // Status checks
     isInitialized: controllerState?.isInitialized ?? false,
-    isActive: controllerState?.isActive ?? false,
-    isPaused: controllerState?.isPaused ?? false,
-    isComplete: controllerState?.isComplete ?? false,
+    isActive,
+    isPaused,
+    isComplete,
     
     // Current state
-    currentPhase: controllerState?.currentPhase ?? 'pre_game',
-    currentRound: controllerState?.currentRound ?? 0,
-    currentQuestion: controllerState?.currentQuestion ?? 0,
-    totalRounds: controllerState?.totalRounds ?? 0,
-    totalQuestions: controllerState?.totalQuestions ?? 0,
+    currentPhase,
+    currentRound,
+    currentQuestion,
+    totalRounds,
+    totalQuestions,
     
     // Control functions
     startGame,

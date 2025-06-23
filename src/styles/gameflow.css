@@ -1,0 +1,222 @@
+/* Game Flow Controls Styles */
+.game-flow-controls {
+  position: relative;
+}
+
+/* Enhanced button hover effects */
+.btn-game-primary {
+  background: linear-gradient(135deg, #3b82f6, #a855f7);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-game-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.btn-game-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Secondary action buttons */
+.btn-game-secondary {
+  background: rgba(255, 255, 255, 0.9);
+  color: #1d4ed8;
+  border: 2px solid #bfdbfe;
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-game-secondary:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+}
+
+/* Warning/danger buttons */
+.btn-game-warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-game-warning:hover {
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+.btn-game-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-game-danger:hover {
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+/* Success/start buttons */
+.btn-game-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-game-success:hover {
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+/* Progress ring animations */
+.progress-ring-bg {
+  stroke: #e5e7eb;
+}
+
+.progress-ring-fill {
+  stroke: #3b82f6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease-out;
+}
+
+/* Pulse animations for status indicators */
+.status-pulse {
+  animation: status-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Loading spinner for better UX */
+.loading-spinner {
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Card hover effects */
+.status-card {
+  transition: all 0.2s ease;
+}
+
+.status-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Game state phase colors */
+.phase-pre-game {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1d4ed8;
+}
+
+.phase-active {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #065f46;
+}
+
+.phase-scoring {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+}
+
+.phase-results {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  color: #5b21b6;
+}
+
+.phase-error {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #991b1b;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .game-flow-controls {
+    padding: 1rem;
+  }
+  
+  .btn-game-primary,
+  .btn-game-secondary,
+  .btn-game-warning,
+  .btn-game-danger,
+  .btn-game-success {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Accessibility improvements */
+.btn-game-primary:focus,
+.btn-game-secondary:focus,
+.btn-game-warning:focus,
+.btn-game-danger:focus,
+.btn-game-success:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn-game-primary,
+  .btn-game-warning,
+  .btn-game-danger,
+  .btn-game-success {
+    border: 2px solid #000;
+  }
+  
+  .btn-game-secondary {
+    border: 2px solid #000;
+    background: #fff;
+    color: #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .btn-game-primary,
+  .btn-game-secondary,
+  .btn-game-warning,
+  .btn-game-danger,
+  .btn-game-success {
+    transition: none;
+  }
+  
+  .btn-game-primary:hover,
+  .btn-game-secondary:hover {
+    transform: none;
+  }
+  
+  .status-pulse {
+    animation: none;
+    opacity: 1;
+  }
+  
+  .loading-spinner {
+    animation: none;
+    border: 3px solid #3b82f6;
+    border-radius: 50%;
+  }
+} 

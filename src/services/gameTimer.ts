@@ -18,12 +18,14 @@ export interface TimerState {
   phase: TimerPhase;
 }
 
-export enum TimerPhase {
-  NORMAL = 'normal',
-  WARNING = 'warning',
-  CRITICAL = 'critical',
-  EXPIRED = 'expired'
-}
+export const TimerPhase = {
+  NORMAL: 'normal',
+  WARNING: 'warning',
+  CRITICAL: 'critical',
+  EXPIRED: 'expired'
+} as const;
+
+export type TimerPhase = typeof TimerPhase[keyof typeof TimerPhase];
 
 export interface TimerEvent {
   type: TimerEventType;
@@ -32,17 +34,19 @@ export interface TimerEvent {
   phase: TimerPhase;
 }
 
-export enum TimerEventType {
-  STARTED = 'started',
-  PAUSED = 'paused',
-  RESUMED = 'resumed',
-  STOPPED = 'stopped',
-  TICK = 'tick',
-  WARNING = 'warning',
-  CRITICAL = 'critical',
-  EXPIRED = 'expired',
-  RESET = 'reset'
-}
+export const TimerEventType = {
+  STARTED: 'started',
+  PAUSED: 'paused',
+  RESUMED: 'resumed',
+  STOPPED: 'stopped',
+  TICK: 'tick',
+  WARNING: 'warning',
+  CRITICAL: 'critical',
+  EXPIRED: 'expired',
+  RESET: 'reset'
+} as const;
+
+export type TimerEventType = typeof TimerEventType[keyof typeof TimerEventType];
 
 export type TimerEventListener = (event: TimerEvent) => void;
 

@@ -21,6 +21,11 @@ import {
   Zap,
 } from 'lucide-react';
 import { useGameController } from '../../hooks/useGameController';
+import { useNotifications } from '../../hooks/useNotifications';
+import { GameFlowControls } from './GameFlowControls';
+import { AnswerManagementInterface } from './AnswerManagementInterface';
+import { ScoreManagementInterface } from './ScoreManagementInterface';
+import { NotificationSystem, NotificationBell } from './NotificationSystem';
 
 interface HostControlsLayoutProps {
   gameId: string;
@@ -98,6 +103,8 @@ export function HostControlsLayout({
   const { state, isInitialized, isActive, isPaused, currentPhase, error } =
     useGameController(gameId);
 
+  const { unreadCount, hasNewNotifications } = useNotifications(gameId);
+
   // Auto-focus on answer management when answers come in
   useEffect(() => {
     // This would be connected to real-time answer submissions
@@ -156,6 +163,19 @@ export function HostControlsLayout({
               </div>
             </div>
 
+            {/* Notification Bell */}
+            <div className="bg-white/20 rounded-lg backdrop-blur-sm">
+              <NotificationBell
+                unreadCount={unreadCount}
+                hasNewNotifications={hasNewNotifications}
+                soundsEnabled={true} // This will be connected to preferences
+                onClick={() => setActiveTab('notifications')}
+                size="md"
+                variant="minimal"
+                className="text-white hover:text-blue-100"
+              />
+            </div>
+
             {/* Minimize Toggle */}
             <button
               onClick={() => setIsMinimized(!isMinimized)}
@@ -212,7 +232,12 @@ export function HostControlsLayout({
                         />
                       )}
 
-                      {/* Notification Badge (placeholder for future) */}
+                      {/* Notification Badge */}
+                      {tab.id === 'notifications' && unreadCount > 0 && (
+                        <div className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[16px] h-4 flex items-center justify-center">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </div>
+                      )}
                       {tab.id === 'answer-management' && (
                         <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                       )}
@@ -246,33 +271,75 @@ export function HostControlsLayout({
                       </p>
                     </div>
 
-                    {/* Quick Actions for Current Tab */}
+                    {/* Quick Actions Handled by Tab Components */}
                     <div className="flex items-center space-x-2">
-                      {activeTab === 'game-flow' && (
-                        <>
-                          <button className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
-                            <Play className="w-4 h-4" />
-                          </button>
-                          <button className="p-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors">
-                            <Pause className="w-4 h-4" />
-                          </button>
-                          <button className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                            <SkipForward className="w-4 h-4" />
-                          </button>
-                        </>
-                      )}
+                      {/* Reserved for future quick actions */}
                     </div>
                   </div>
 
-                  {/* Tab Content Placeholder */}
+                  {/* Tab Content */}
                   <div className="space-y-4">
-                    <div className="bg-white p-4 rounded-lg border-2 border-dashed border-gray-300">
-                      <p className="text-gray-500 text-center">
-                        {activeTab.charAt(0).toUpperCase() +
-                          activeTab.slice(1).replace('-', ' ')}{' '}
-                        content will be implemented here
-                      </p>
-                    </div>
+                    {activeTab === 'game-flow' && (
+                      <GameFlowControls gameId={gameId} />
+                    )}
+
+                    {activeTab === 'answer-management' && (
+                      <AnswerManagementInterface
+                        gameId={gameId}
+                        currentQuestionId={
+                          gameState?.currentQuestion?.question.id
+                        }
+                        currentRoundId={
+                          gameState?.rounds?.[gameState.currentRound - 1]?.id
+                        }
+                      />
+                    )}
+
+                    {activeTab === 'score-management' && (
+                      <ScoreManagementInterface
+                        gameId={gameId}
+                        onScoreChanged={adjustment => {
+                          console.log('Score adjustment made:', adjustment);
+                        }}
+                        onError={error => {
+                          console.error('Score management error:', error);
+                        }}
+                      />
+                    )}
+
+                    {activeTab === 'notifications' && (
+                      <div className="bg-white rounded-lg p-4">
+                        <div className="text-center text-gray-600">
+                          <Activity className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                          <h3 className="text-lg font-medium mb-2">
+                            Notification Center
+                          </h3>
+                          <p className="text-sm mb-4">
+                            The notification center is available through the
+                            bell icon in the header. Toast notifications will
+                            appear automatically for important events.
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Click the bell icon above to open the full
+                            notification center with filtering, search, and
+                            preference settings.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab !== 'game-flow' &&
+                      activeTab !== 'answer-management' &&
+                      activeTab !== 'score-management' &&
+                      activeTab !== 'notifications' && (
+                        <div className="bg-white p-4 rounded-lg border-2 border-dashed border-gray-300">
+                          <p className="text-gray-500 text-center">
+                            {activeTab.charAt(0).toUpperCase() +
+                              activeTab.slice(1).replace('-', ' ')}{' '}
+                            content will be implemented here
+                          </p>
+                        </div>
+                      )}
                   </div>
                 </motion.div>
               </div>
@@ -371,6 +438,15 @@ export function HostControlsLayout({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Notification System - Toast notifications and modal */}
+      <NotificationSystem
+        gameId={gameId}
+        bellSize="md"
+        bellVariant="default"
+        maxToastCount={3}
+        toastPosition="top-right"
+      />
     </motion.div>
   );
 }

@@ -558,3 +558,7 @@ type GamePhase = 'lobby' | 'active' | 'reviewing' | 'finished';
 type OptionalFields<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 ```
+
+# Importing Types
+
+Please ensure when importing types that you import them as such to avoid import errors in the project

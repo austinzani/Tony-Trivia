@@ -92,16 +92,18 @@ export interface ScoreEvent {
   data?: any;
 }
 
-export enum ScoreEventType {
-  SCORE_UPDATED = 'score_updated',
-  PLAYER_SCORED = 'player_scored',
-  TEAM_SCORED = 'team_scored',
-  LEADERBOARD_UPDATED = 'leaderboard_updated',
-  STREAK_ACHIEVED = 'streak_achieved',
-  BONUS_AWARDED = 'bonus_awarded',
-  PENALTY_APPLIED = 'penalty_applied',
-  ROUND_COMPLETED = 'round_completed'
-}
+export const ScoreEventType = {
+  SCORE_UPDATED: 'score_updated',
+  PLAYER_SCORED: 'player_scored',
+  TEAM_SCORED: 'team_scored',
+  LEADERBOARD_UPDATED: 'leaderboard_updated',
+  STREAK_ACHIEVED: 'streak_achieved',
+  BONUS_AWARDED: 'bonus_awarded',
+  PENALTY_APPLIED: 'penalty_applied',
+  ROUND_COMPLETED: 'round_completed'
+} as const;
+
+export type ScoreEventType = typeof ScoreEventType[keyof typeof ScoreEventType];
 
 export type ScoreEventListener = (event: ScoreEvent) => void;
 

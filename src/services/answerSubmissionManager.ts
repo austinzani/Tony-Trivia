@@ -35,16 +35,18 @@ export interface SubmissionEvent {
   data?: any;
 }
 
-export enum SubmissionEventType {
-  SUBMISSION_CREATED = 'submission_created',
-  SUBMISSION_UPDATED = 'submission_updated',
-  SUBMISSION_LOCKED = 'submission_locked',
-  SUBMISSION_UNLOCKED = 'submission_unlocked',
-  SUBMISSION_DELETED = 'submission_deleted',
-  ROUND_LOCKED = 'round_locked',
-  ROUND_UNLOCKED = 'round_unlocked',
-  VALIDATION_FAILED = 'validation_failed'
-}
+export const SubmissionEventType = {
+  SUBMISSION_CREATED: 'submission_created',
+  SUBMISSION_UPDATED: 'submission_updated',
+  SUBMISSION_LOCKED: 'submission_locked',
+  SUBMISSION_UNLOCKED: 'submission_unlocked',
+  SUBMISSION_DELETED: 'submission_deleted',
+  ROUND_LOCKED: 'round_locked',
+  ROUND_UNLOCKED: 'round_unlocked',
+  VALIDATION_FAILED: 'validation_failed'
+} as const;
+
+export type SubmissionEventType = typeof SubmissionEventType[keyof typeof SubmissionEventType];
 
 export type SubmissionEventListener = (event: SubmissionEvent) => void;
 

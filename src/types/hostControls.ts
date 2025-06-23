@@ -217,4 +217,63 @@ export interface HostControlsError {
   gameId: string;
   timestamp: Date;
   isRecoverable: boolean;
+}
+
+// Notification System Types
+export interface GameNotification {
+  id: string;
+  type: 'answer_submitted' | 'time_warning' | 'time_expired' | 'round_complete' | 'error' | 'info';
+  title: string;
+  message: string;
+  timestamp: Date;
+  teamId?: string;
+  teamName?: string;
+  questionId?: string;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  sound?: boolean;
+  autoClose?: boolean;
+  duration?: number; // milliseconds
+  actionRequired?: boolean;
+  metadata?: Record<string, any>;
+}
+
+export interface NotificationPreferences {
+  enableSounds: boolean;
+  soundVolume: number; // 0-1
+  autoCloseToasts: boolean;
+  defaultToastDuration: number; // milliseconds
+  showTeamSubmissionIndicators: boolean;
+  enableTimeWarnings: boolean;
+  timeWarningThresholds: number[]; // seconds
+  enableAnswerSubmissionAlerts: boolean;
+  enableRoundProgressAlerts: boolean;
+}
+
+export interface TeamSubmissionStatus {
+  teamId: string;
+  teamName: string;
+  hasSubmitted: boolean;
+  submissionTime?: Date;
+  confidence?: 'low' | 'medium' | 'high';
+  pointValue?: number;
+  isLocked: boolean;
+}
+
+export interface NotificationState {
+  notifications: GameNotification[];
+  unreadCount: number;
+  isNotificationCenterOpen: boolean;
+  preferences: NotificationPreferences;
+  teamSubmissionStatuses: Record<string, TeamSubmissionStatus>;
+}
+
+export interface NotificationActions {
+  addNotification: (notification: Omit<GameNotification, 'id' | 'timestamp'>) => void;
+  removeNotification: (id: string) => void;
+  markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
+  clearAll: () => void;
+  updatePreferences: (preferences: Partial<NotificationPreferences>) => void;
+  updateTeamSubmissionStatus: (teamId: string, status: Partial<TeamSubmissionStatus>) => void;
+  resetTeamSubmissionStatuses: () => void;
 } 

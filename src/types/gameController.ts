@@ -1,30 +1,34 @@
 import type { GameState } from './game';
-import type { SpecialRound, SpecialRoundType } from './specialRounds';
+import type { SpecialRoundType } from './specialRounds';
 
 // Game Progression Types
-export enum GameProgressionPhase {
-  INITIALIZATION = 'initialization',
-  PRE_GAME = 'pre_game',
-  ROUND_INTRO = 'round_intro',
-  QUESTION_DISPLAY = 'question_display',
-  ANSWER_COLLECTION = 'answer_collection',
-  ANSWER_REVIEW = 'answer_review',
-  SCORING = 'scoring',
-  ROUND_RESULTS = 'round_results',
-  SPECIAL_ROUND = 'special_round',
-  INTERMISSION = 'intermission',
-  FINAL_RESULTS = 'final_results',
-  GAME_COMPLETE = 'game_complete',
-  ERROR_STATE = 'error_state'
-}
+export const GameProgressionPhase = {
+  INITIALIZATION: 'initialization',
+  PRE_GAME: 'pre_game',
+  ROUND_INTRO: 'round_intro',
+  QUESTION_DISPLAY: 'question_display',
+  ANSWER_COLLECTION: 'answer_collection',
+  ANSWER_REVIEW: 'answer_review',
+  SCORING: 'scoring',
+  ROUND_RESULTS: 'round_results',
+  SPECIAL_ROUND: 'special_round',
+  INTERMISSION: 'intermission',
+  FINAL_RESULTS: 'final_results',
+  GAME_COMPLETE: 'game_complete',
+  ERROR_STATE: 'error_state'
+} as const;
 
-export enum TransitionTrigger {
-  AUTOMATIC = 'automatic',
-  USER_ACTION = 'user_action',
-  TIMER_EXPIRY = 'timer_expiry',
-  ADMIN_OVERRIDE = 'admin_override',
-  ERROR_RECOVERY = 'error_recovery'
-}
+export type GameProgressionPhase = typeof GameProgressionPhase[keyof typeof GameProgressionPhase];
+
+export const TransitionTrigger = {
+  AUTOMATIC: 'automatic',
+  USER_ACTION: 'user_action',
+  TIMER_EXPIRY: 'timer_expiry',
+  ADMIN_OVERRIDE: 'admin_override',
+  ERROR_RECOVERY: 'error_recovery'
+} as const;
+
+export type TransitionTrigger = typeof TransitionTrigger[keyof typeof TransitionTrigger];
 
 export interface GameProgressionState {
   currentPhase: GameProgressionPhase;
@@ -137,27 +141,29 @@ export interface GameControllerEvent {
   error?: string;
 }
 
-export enum GameControllerEventType {
-  GAME_INITIALIZED = 'game_initialized',
-  GAME_STARTED = 'game_started',
-  GAME_PAUSED = 'game_paused',
-  GAME_RESUMED = 'game_resumed',
-  GAME_ENDED = 'game_ended',
-  PHASE_TRANSITION_STARTED = 'phase_transition_started',
-  PHASE_TRANSITION_COMPLETED = 'phase_transition_completed',
-  PHASE_TRANSITION_FAILED = 'phase_transition_failed',
-  ROUND_STARTED = 'round_started',
-  ROUND_COMPLETED = 'round_completed',
-  QUESTION_DISPLAYED = 'question_displayed',
-  QUESTION_ANSWERED = 'question_answered',
-  QUESTION_SKIPPED = 'question_skipped',
-  SPECIAL_ROUND_STARTED = 'special_round_started',
-  SPECIAL_ROUND_COMPLETED = 'special_round_completed',
-  SCORING_COMPLETED = 'scoring_completed',
-  ERROR_OCCURRED = 'error_occurred',
-  RECOVERY_ATTEMPTED = 'recovery_attempted',
-  MANUAL_OVERRIDE = 'manual_override'
-}
+export const GameControllerEventType = {
+  GAME_INITIALIZED: 'game_initialized',
+  GAME_STARTED: 'game_started',
+  GAME_PAUSED: 'game_paused',
+  GAME_RESUMED: 'game_resumed',
+  GAME_ENDED: 'game_ended',
+  PHASE_TRANSITION_STARTED: 'phase_transition_started',
+  PHASE_TRANSITION_COMPLETED: 'phase_transition_completed',
+  PHASE_TRANSITION_FAILED: 'phase_transition_failed',
+  ROUND_STARTED: 'round_started',
+  ROUND_COMPLETED: 'round_completed',
+  QUESTION_DISPLAYED: 'question_displayed',
+  QUESTION_ANSWERED: 'question_answered',
+  QUESTION_SKIPPED: 'question_skipped',
+  SPECIAL_ROUND_STARTED: 'special_round_started',
+  SPECIAL_ROUND_COMPLETED: 'special_round_completed',
+  SCORING_COMPLETED: 'scoring_completed',
+  ERROR_OCCURRED: 'error_occurred',
+  RECOVERY_ATTEMPTED: 'recovery_attempted',
+  MANUAL_OVERRIDE: 'manual_override'
+} as const;
+
+export type GameControllerEventType = typeof GameControllerEventType[keyof typeof GameControllerEventType];
 
 export interface GameControllerOptions {
   gameId: string;
