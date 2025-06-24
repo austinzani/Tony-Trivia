@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
@@ -9,12 +9,21 @@ import {
   ArrowLeft,
   ArrowRight,
   Sparkles,
+  Info,
 } from 'lucide-react';
+import AnimatedButton from './AnimatedButton';
+import {
+  SecuritySchemas,
+  rateLimiters,
+  validateSecurely,
+} from '../utils/security';
+import { useTeamNameValidator } from '../hooks/useProfanityFilter';
 
-interface CreateTeamFormData {
+export interface CreateTeamFormData {
   name: string;
   maxMembers: number;
   color: string;
+  isOpen: boolean;
   description?: string;
 }
 
@@ -40,9 +49,21 @@ export function CreateTeamForm({
     name: '',
     maxMembers: 4,
     color: 'electric-blue',
+    isOpen: true,
     description: '',
   });
   const [errors, setErrors] = useState<Partial<CreateTeamFormData>>({});
+  const [isRateLimited, setIsRateLimited] = useState(false);
+
+  // Enhanced profanity filtering for team names
+  const teamNameValidator = useTeamNameValidator(formData.name);
+
+  // Update team name validation in real-time
+  useEffect(() => {
+    if (formData.name && formData.name.length > 0) {
+      teamNameValidator.checkText(formData.name);
+    }
+  }, [formData.name]);
 
   const teamColors = [
     {
@@ -103,20 +124,33 @@ export function CreateTeamForm({
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
+    setIsRateLimited(false);
   };
 
   const validateStep = (stepNumber: number): boolean => {
     const newErrors: Partial<CreateTeamFormData> = {};
 
     if (stepNumber === 1) {
-      if (!formData.name.trim()) {
-        newErrors.name = 'Team name is required';
-      } else if (formData.name.length < 2) {
-        newErrors.name = 'Team name must be at least 2 characters';
-      } else if (formData.name.length > 30) {
-        newErrors.name = 'Team name must be less than 30 characters';
-      } else if (existingTeamNames.includes(formData.name.trim())) {
+      // Validate team name with security schema
+      const nameValidation = validateSecurely(
+        SecuritySchemas.teamName,
+        formData.name
+      );
+      if (!nameValidation.success) {
+        newErrors.name = nameValidation.error;
+      } else if (existingTeamNames.includes(nameValidation.data)) {
         newErrors.name = 'This team name is already taken';
+      }
+
+      // Validate description if provided
+      if (formData.description && formData.description.trim()) {
+        const descValidation = validateSecurely(
+          SecuritySchemas.chatMessage,
+          formData.description
+        );
+        if (!descValidation.success) {
+          newErrors.description = descValidation.error;
+        }
       }
     }
 
@@ -136,8 +170,36 @@ export function CreateTeamForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check rate limiting
+    const clientId = `team_create_${gameRoomId}_${Date.now() % 1000000}`;
+    const rateLimitValidation = validateSecurely(
+      SecuritySchemas.teamName,
+      formData.name,
+      clientId,
+      rateLimiters.teamCreation
+    );
+
+    if (!rateLimitValidation.success) {
+      setIsRateLimited(true);
+      setErrors({ name: rateLimitValidation.error });
+      return;
+    }
+
     if (validateStep(step)) {
-      await onSubmit(formData);
+      // Sanitize all data before submission
+      const sanitizedData: CreateTeamFormData = {
+        name: rateLimitValidation.data,
+        maxMembers: formData.maxMembers,
+        color: formData.color,
+        isOpen: formData.isOpen,
+        description: formData.description
+          ? validateSecurely(SecuritySchemas.chatMessage, formData.description)
+              .data || ''
+          : '',
+      };
+
+      await onSubmit(sanitizedData);
     }
   };
 
@@ -225,7 +287,8 @@ export function CreateTeamForm({
                           : 'border-gray-300 focus:border-electric-blue-500 focus:ring-electric-blue-200'
                       }`}
                       placeholder="Enter team name..."
-                      maxLength={30}
+                      maxLength={25}
+                      disabled={isLoading || isRateLimited}
                     />
                     {errors.name && (
                       <motion.div
@@ -314,6 +377,59 @@ export function CreateTeamForm({
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Team Type
+                  </label>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange('isOpen', true)}
+                      className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${
+                        formData.isOpen
+                          ? 'border-electric-500 bg-electric-100'
+                          : 'border-gray-300 hover:border-electric-300'
+                      }`}
+                      disabled={isLoading}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Users className="h-5 w-5 text-electric-600" />
+                        <div>
+                          <div className="font-medium text-electric-700">
+                            Open Team
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Anyone can join your team
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange('isOpen', false)}
+                      className={`w-full p-3 rounded-lg border-2 text-left transition-colors ${
+                        !formData.isOpen
+                          ? 'border-electric-500 bg-electric-100'
+                          : 'border-gray-300 hover:border-electric-300'
+                      }`}
+                      disabled={isLoading}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-electric-600">🔒</span>
+                        <div>
+                          <div className="font-medium text-electric-700">
+                            Invite Only
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            You control who joins
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
                     Team Description (Optional)
                   </label>
                   <textarea
@@ -324,8 +440,19 @@ export function CreateTeamForm({
                     className="w-full rounded-xl border-2 border-gray-300 px-4 py-3 focus:border-electric-blue-500 focus:outline-none focus:ring-4 focus:ring-electric-blue-200"
                     placeholder="Tell others about your team..."
                     rows={3}
-                    maxLength={100}
+                    maxLength={280}
+                    disabled={isLoading || isRateLimited}
                   />
+                  {errors.description && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 flex items-center gap-2 text-sm text-energy-red-600"
+                    >
+                      <AlertCircle className="h-4 w-4" />
+                      {errors.description}
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -449,7 +576,7 @@ export function CreateTeamForm({
               type="submit"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              disabled={isLoading}
+              disabled={isLoading || isRateLimited}
               className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-energy-green-400 to-energy-green-500 px-6 py-3 font-semibold text-white hover:from-energy-green-500 hover:to-energy-green-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (

@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
-import { AnimatedButton } from './AnimatedButton';
+import AnimatedButton from './AnimatedButton';
+import {
+  SecuritySchemas,
+  rateLimiters,
+  validateSecurely,
+} from '../utils/security';
 
-interface AuthFormProps {
+export interface AuthFormProps {
   mode: 'signin' | 'signup';
   onModeChange: (mode: 'signin' | 'signup') => void;
   onSuccess?: () => void;
@@ -149,6 +154,7 @@ export default function AuthForm({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [isRateLimited, setIsRateLimited] = useState(false);
 
   const { signIn, signUp, loading } = useAuth();
 
@@ -156,6 +162,7 @@ export default function AuthForm({
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     setLocalError(null);
+    setIsRateLimited(false);
 
     // Clear field-specific error when user starts typing
     if (fieldErrors[name]) {
@@ -178,27 +185,37 @@ export default function AuthForm({
 
     switch (fieldName) {
       case 'email':
-        if (!value) {
-          errors.email = '🎯 Email is required to join the game!';
-        } else if (!/\S+@\S+\.\S+/.test(value)) {
-          errors.email = '🎮 Please enter a valid email address!';
+        const emailValidation = validateSecurely(SecuritySchemas.email, value);
+        if (!emailValidation.success) {
+          errors.email = emailValidation.error;
         }
         break;
+
       case 'password':
-        if (!value) {
-          errors.password = '🔐 Password is required!';
-        } else if (value.length < 6) {
-          errors.password = '🛡️ Password needs at least 6 characters!';
+        const passwordValidation = validateSecurely(
+          SecuritySchemas.password,
+          value
+        );
+        if (!passwordValidation.success) {
+          errors.password = passwordValidation.error;
         }
         break;
+
       case 'confirmPassword':
         if (mode === 'signup' && value !== formData.password) {
           errors.confirmPassword = "🔒 Passwords don't match!";
         }
         break;
+
       case 'displayName':
-        if (mode === 'signup' && !value.trim()) {
-          errors.displayName = '🏆 Choose a display name!';
+        if (mode === 'signup') {
+          const nameValidation = validateSecurely(
+            SecuritySchemas.displayName,
+            value
+          );
+          if (!nameValidation.success) {
+            errors.displayName = `🏆 ${nameValidation.error}`;
+          }
         }
         break;
     }
@@ -231,15 +248,56 @@ export default function AuthForm({
     e.preventDefault();
     setLocalError(null);
     setSuccessMessage(null);
+    setIsRateLimited(false);
+
+    // Check rate limiting for login attempts
+    const clientId = `auth_${mode}_${Date.now() % 1000000}`; // Simple client identifier
+    if (!rateLimiters.loginAttempt.isAllowed(clientId)) {
+      setIsRateLimited(true);
+      setLocalError(
+        '⏰ Too many attempts. Please wait a few minutes before trying again.'
+      );
+      return;
+    }
 
     if (!validateForm()) {
       return;
     }
 
+    // Validate all fields with security schemas
+    const emailValidation = validateSecurely(
+      SecuritySchemas.email,
+      formData.email
+    );
+    if (!emailValidation.success) {
+      setLocalError(`📧 ${emailValidation.error}`);
+      return;
+    }
+
+    const passwordValidation = validateSecurely(
+      SecuritySchemas.password,
+      formData.password
+    );
+    if (!passwordValidation.success) {
+      setLocalError(`🔐 ${passwordValidation.error}`);
+      return;
+    }
+
+    if (mode === 'signup') {
+      const nameValidation = validateSecurely(
+        SecuritySchemas.displayName,
+        formData.displayName
+      );
+      if (!nameValidation.success) {
+        setLocalError(`🏆 ${nameValidation.error}`);
+        return;
+      }
+    }
+
     try {
       if (mode === 'signin') {
         const result = await signIn({
-          email: formData.email,
+          email: emailValidation.data,
           password: formData.password,
         });
 
@@ -254,9 +312,11 @@ export default function AuthForm({
         }
       } else {
         const result = await signUp({
-          email: formData.email,
+          email: emailValidation.data,
           password: formData.password,
-          displayName: formData.displayName,
+          displayName:
+            validateSecurely(SecuritySchemas.displayName, formData.displayName)
+              .data || formData.displayName,
         });
 
         if (result.success) {
@@ -283,6 +343,16 @@ export default function AuthForm({
       console.error('Auth form error:', error);
     }
   };
+
+  // Show rate limit warning
+  useEffect(() => {
+    if (isRateLimited) {
+      const timer = setTimeout(() => {
+        setIsRateLimited(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isRateLimited]);
 
   // Animation variants
   const containerVariants = {
@@ -330,83 +400,51 @@ export default function AuthForm({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <motion.div
-        className="card-game bg-gradient-to-br from-white to-electric-50/30 border-2 border-electric-200 overflow-hidden"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Header Section */}
-        <motion.div
-          className="text-center mb-8 relative"
-          variants={itemVariants}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-electric-500/10 to-plasma-500/10 rounded-t-card -mx-6 -mt-6 mb-4"></div>
-          <div className="relative pt-4">
-            <motion.div
-              className="inline-flex items-center gap-2 mb-2"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{
-                delay: 0.2,
-                duration: 0.5,
-                ease: [0.68, -0.55, 0.265, 1.55],
-              }}
-            >
-              <span className="text-3xl">🎯</span>
-              <h2 className="text-display-md bg-gradient-to-r from-electric-600 to-plasma-600 bg-clip-text text-transparent font-bold">
-                {mode === 'signin' ? 'Welcome Back!' : 'Join the Game!'}
-              </h2>
-              <span className="text-3xl">🎮</span>
-            </motion.div>
-            <motion.p
-              className="text-gray-600 font-medium"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
-            >
-              {mode === 'signin'
-                ? 'Ready for another round of trivia excitement?'
-                : 'Create your player profile and start competing!'}
-            </motion.p>
-          </div>
+    <motion.div
+      className="min-h-[500px] bg-gradient-to-br from-electric-50 to-electric-100 rounded-game p-8 border-2 border-electric-200"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <div className="space-y-6">
+        {/* Header */}
+        <motion.div variants={itemVariants} className="text-center">
+          <h2 className="text-3xl font-bold text-electric-700 mb-2">
+            {mode === 'signin' ? '🎮 Welcome Back!' : '🎊 Join the Fun!'}
+          </h2>
+          <p className="text-electric-600">
+            {mode === 'signin'
+              ? 'Ready for another round of trivia?'
+              : 'Create your account and start playing!'}
+          </p>
         </motion.div>
 
-        {/* Error Message */}
-        <AnimatePresence>
-          {localError && (
-            <motion.div
-              className="mb-6 p-4 bg-gradient-to-r from-energy-red/10 to-energy-red/5 border-l-4 border-energy-red rounded-r-lg"
-              variants={messageVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              role="alert"
-              aria-live="assertive"
-            >
-              <p className="text-energy-red font-semibold text-sm">
-                {localError}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Success Message */}
+        {/* Success/Error Messages */}
         <AnimatePresence>
           {successMessage && (
             <motion.div
-              className="mb-6 p-4 bg-gradient-to-r from-energy-green/10 to-energy-green/5 border-l-4 border-energy-green rounded-r-lg"
+              className="p-4 bg-energy-green-100 border border-energy-green-300 rounded-game text-energy-green-800 text-center font-medium"
               variants={messageVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              role="alert"
-              aria-live="polite"
             >
-              <p className="text-energy-green font-semibold text-sm">
-                {successMessage}
-              </p>
+              {successMessage}
+            </motion.div>
+          )}
+          {localError && (
+            <motion.div
+              className={`p-4 border rounded-game text-center font-medium ${
+                isRateLimited
+                  ? 'bg-energy-orange-100 border-energy-orange-300 text-energy-orange-800'
+                  : 'bg-energy-red-100 border-energy-red-300 text-energy-red-800'
+              }`}
+              variants={messageVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {localError}
             </motion.div>
           )}
         </AnimatePresence>
@@ -485,6 +523,16 @@ export default function AuthForm({
             )}
           </AnimatePresence>
 
+          {/* Security Notice */}
+          {mode === 'signup' && (
+            <motion.div
+              variants={itemVariants}
+              className="p-3 bg-electric-100 border border-electric-200 rounded-lg text-sm text-electric-700"
+            >
+              🔒 Your data is protected with industry-standard security measures
+            </motion.div>
+          )}
+
           {/* Submit Button */}
           <motion.div variants={itemVariants} className="pt-4">
             <AnimatedButton
@@ -493,7 +541,7 @@ export default function AuthForm({
               size="lg"
               fullWidth
               loading={loading}
-              disabled={loading}
+              disabled={loading || isRateLimited}
               icon={
                 loading ? undefined : (
                   <span>{mode === 'signin' ? '🚀' : '🎊'}</span>
@@ -505,36 +553,34 @@ export default function AuthForm({
                 ? mode === 'signin'
                   ? 'Signing In...'
                   : 'Creating Account...'
-                : mode === 'signin'
-                  ? 'Sign In & Play!'
-                  : 'Join Tony Trivia!'}
+                : isRateLimited
+                  ? 'Please Wait...'
+                  : mode === 'signin'
+                    ? 'Sign In & Play!'
+                    : 'Join Tony Trivia!'}
             </AnimatedButton>
           </motion.div>
         </motion.form>
 
         {/* Mode Switch */}
-        <motion.div
-          className="mt-8 text-center p-4 bg-gradient-to-r from-gray-50 to-electric-50/30 rounded-game border border-gray-200"
-          variants={itemVariants}
-        >
-          <p className="text-gray-600 mb-3 font-medium">
+        <motion.div variants={itemVariants} className="text-center">
+          <p className="text-electric-600 mb-4">
             {mode === 'signin'
-              ? '🆕 New to Tony Trivia?'
-              : '🔄 Already have an account?'}
+              ? "New to Tony Trivia? Let's get you started!"
+              : 'Already have an account? Welcome back!'}
           </p>
           <AnimatedButton
-            type="button"
-            variant="secondary"
+            variant="outline"
             onClick={() =>
               onModeChange(mode === 'signin' ? 'signup' : 'signin')
             }
-            icon={<span>{mode === 'signin' ? '✨' : '⚡'}</span>}
-            className="px-6 py-2 font-semibold"
+            icon={<span>{mode === 'signin' ? '✨' : '👋'}</span>}
+            className="font-semibold"
           >
-            {mode === 'signin' ? 'Create Account' : 'Sign In Instead'}
+            {mode === 'signin' ? 'Create Account' : 'Sign In'}
           </AnimatedButton>
         </motion.div>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   );
 }

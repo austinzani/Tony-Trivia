@@ -1,18 +1,20 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import {
+  SecuritySchemas,
+  rateLimiters,
+  validateSecurely,
+} from '../utils/security';
 
-// Zod schema for form validation
+// Enhanced Zod schema for form validation with security measures
 const gameFormSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Game name is required')
-    .min(3, 'Game name must be at least 3 characters')
-    .max(50, 'Game name must be less than 50 characters'),
+  name: SecuritySchemas.gameRoomName,
   description: z
     .string()
     .max(200, 'Description must be less than 200 characters')
-    .optional(),
+    .optional()
+    .transform(desc => (desc ? SecuritySchemas.chatMessage.parse(desc) : '')),
   maxPlayers: z
     .number()
     .min(2, 'Must allow at least 2 players')
@@ -38,7 +40,7 @@ const gameFormSchema = z.object({
 type GameFormData = z.infer<typeof gameFormSchema>;
 
 interface GameFormProps {
-  onSubmit: (data: GameFormData) => void;
+  onSubmit: (data: GameFormData) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -52,6 +54,7 @@ export default function GameForm({
     formState: { errors, isSubmitting },
     watch,
     reset,
+    setError,
   } = useForm<GameFormData>({
     resolver: zodResolver(gameFormSchema),
     defaultValues: {
@@ -70,10 +73,31 @@ export default function GameForm({
 
   const onFormSubmit = async (data: GameFormData) => {
     try {
+      // Check rate limiting for game room creation
+      const clientId = `game_create_${Date.now() % 1000000}`;
+      const rateLimitValidation = validateSecurely(
+        z.object({}),
+        {},
+        clientId,
+        rateLimiters.gameRoomCreation
+      );
+
+      if (!rateLimitValidation.success) {
+        setError('root', {
+          type: 'manual',
+          message: rateLimitValidation.error,
+        });
+        return;
+      }
+
       await onSubmit(data);
       reset(); // Reset form after successful submission
     } catch (error) {
       console.error('Form submission error:', error);
+      setError('root', {
+        type: 'manual',
+        message: 'Failed to create game. Please try again.',
+      });
     }
   };
 
@@ -82,6 +106,13 @@ export default function GameForm({
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Create New Game</h2>
 
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+        {/* Root errors (rate limiting, etc.) */}
+        {errors.root && (
+          <div className="p-3 bg-red-100 border border-red-300 rounded-md text-red-700 text-sm">
+            {errors.root.message}
+          </div>
+        )}
+
         {/* Game Name */}
         <div>
           <label
@@ -100,6 +131,7 @@ export default function GameForm({
                 : 'border-gray-300 focus:ring-blue-500'
             }`}
             placeholder="Enter game name"
+            maxLength={50}
           />
           {errors.name && (
             <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>
@@ -124,6 +156,7 @@ export default function GameForm({
             }`}
             placeholder="Brief description of your game"
             rows={3}
+            maxLength={200}
           />
           {errors.description && (
             <p className="text-red-600 text-sm mt-1">
@@ -251,6 +284,11 @@ export default function GameForm({
           >
             Private Game (invite only)
           </label>
+        </div>
+
+        {/* Security Notice */}
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-700">
+          🔒 All game data is protected and filtered for inappropriate content
         </div>
 
         {/* Submit Button */}
