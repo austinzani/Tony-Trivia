@@ -12,6 +12,11 @@ import Host from './pages/Host';
 // Import auth components
 import ProtectedRoute from './components/ProtectedRoute';
 
+// Import error boundary, connection status, and error display
+import ErrorBoundary from './components/ErrorBoundary';
+import ConnectionStatus from './components/ConnectionStatus';
+import ErrorDisplay from './components/ErrorDisplay';
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,8 +72,12 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+        <ConnectionStatus />
+        <ErrorDisplay position="top-right" maxErrors={3} />
+      </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>
 );
