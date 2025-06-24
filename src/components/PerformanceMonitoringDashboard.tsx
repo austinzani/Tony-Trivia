@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Activity,
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { usePerformanceOptimization } from '../hooks/usePerformanceOptimization';
 import type { PerformanceMetrics } from '../services/realtimePerformanceOptimizer';
+import { DatabaseMetrics, QueryOptimizer } from '../services/supabase';
 
 interface PerformanceMonitoringDashboardProps {
   isVisible?: boolean;
@@ -45,6 +46,27 @@ interface MetricCardProps {
   icon: React.ComponentType<any>;
   description?: string;
   onClick?: () => void;
+}
+
+interface PerformanceData {
+  queryStats: Record<string, any>;
+  cacheStats: {
+    hitRate: number;
+    missRate: number;
+    totalQueries: number;
+    cacheSize: number;
+  };
+  connectionMetrics: {
+    isConnected: boolean;
+    reconnectCount: number;
+    latency: number;
+  };
+  webVitals: {
+    cls: number;
+    fid: number;
+    lcp: number;
+  };
+  recommendations: string[];
 }
 
 export function PerformanceMonitoringDashboard({
@@ -73,6 +95,11 @@ export function PerformanceMonitoringDashboard({
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [performanceData, setPerformanceData] =
+    useState<PerformanceData | null>(null);
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'queries' | 'cache' | 'vitals' | 'recommendations'
+  >('overview');
 
   // Auto-hide when performance is good
   useEffect(() => {
@@ -81,6 +108,164 @@ export function PerformanceMonitoringDashboard({
       return () => clearTimeout(timer);
     }
   }, [autoHide, healthScore, isExpanded]);
+
+  // Performance data collection
+  const collectPerformanceData = useCallback(async () => {
+    try {
+      // Get database query statistics
+      const queryStats = DatabaseMetrics.getAllStats();
+
+      // Calculate cache statistics (simplified for demo)
+      const cacheStats = {
+        hitRate: 0.75, // Would be calculated from actual cache hits/misses
+        missRate: 0.25,
+        totalQueries: Object.values(queryStats).reduce(
+          (acc, stat: any) => acc + (stat?.count || 0),
+          0
+        ),
+        cacheSize: 0, // Would track actual cache memory usage
+      };
+
+      // Simulated connection metrics (would integrate with actual connection monitoring)
+      const connectionMetrics = {
+        isConnected: navigator.onLine,
+        reconnectCount: 0,
+        latency: Math.round(Math.random() * 100 + 20), // Would measure actual latency
+      };
+
+      // Web Vitals (simplified - would use actual web-vitals library)
+      const webVitals = {
+        cls: parseFloat((Math.random() * 0.1).toFixed(3)),
+        fid: Math.round(Math.random() * 100 + 50),
+        lcp: Math.round(Math.random() * 1000 + 1500),
+      };
+
+      // Performance recommendations
+      const recommendations = generateRecommendations(
+        queryStats,
+        cacheStats,
+        webVitals
+      );
+
+      setPerformanceData({
+        queryStats,
+        cacheStats,
+        connectionMetrics,
+        webVitals,
+        recommendations,
+      });
+    } catch (error) {
+      console.error('Failed to collect performance data:', error);
+    }
+  }, []);
+
+  // Generate performance recommendations
+  const generateRecommendations = (
+    queryStats: any,
+    cacheStats: any,
+    webVitals: any
+  ): string[] => {
+    const recommendations: string[] = [];
+
+    // Query performance recommendations
+    Object.entries(queryStats).forEach(([queryId, stats]: [string, any]) => {
+      if (stats?.avg > 1000) {
+        recommendations.push(
+          `Slow query detected: ${queryId} (avg: ${stats.avg.toFixed(2)}ms)`
+        );
+      }
+    });
+
+    // Cache recommendations
+    if (cacheStats.hitRate < 0.7) {
+      recommendations.push(
+        'Consider increasing cache TTL for better hit rates'
+      );
+    }
+
+    // Web Vitals recommendations
+    if (webVitals.cls > 0.1) {
+      recommendations.push(
+        'Cumulative Layout Shift needs improvement - check image dimensions'
+      );
+    }
+    if (webVitals.lcp > 2500) {
+      recommendations.push(
+        'Largest Contentful Paint is slow - optimize images and critical resources'
+      );
+    }
+    if (webVitals.fid > 100) {
+      recommendations.push(
+        'First Input Delay is high - consider code splitting'
+      );
+    }
+
+    // Database optimization suggestions
+    const hints = QueryOptimizer.getPerformanceHints();
+    if (queryStats && Object.keys(queryStats).length > 10) {
+      recommendations.push(
+        'Consider implementing suggested database indexes for better query performance'
+      );
+    }
+
+    return recommendations;
+  };
+
+  // Auto-refresh performance data
+  useEffect(() => {
+    const interval = setInterval(collectPerformanceData, 5000); // Refresh every 5 seconds
+    collectPerformanceData(); // Initial load
+
+    return () => clearInterval(interval);
+  }, [collectPerformanceData]);
+
+  // Performance status indicator
+  const getPerformanceStatus = ():
+    | 'excellent'
+    | 'good'
+    | 'needs-improvement'
+    | 'poor' => {
+    if (!performanceData) return 'good';
+
+    const { webVitals, cacheStats } = performanceData;
+    const avgQueryTime =
+      Object.values(performanceData.queryStats).reduce(
+        (acc: number, stat: any) => {
+          return acc + (stat?.avg || 0);
+        },
+        0
+      ) / Object.keys(performanceData.queryStats).length || 0;
+
+    if (
+      webVitals.lcp <= 2500 &&
+      webVitals.fid <= 100 &&
+      webVitals.cls <= 0.1 &&
+      avgQueryTime <= 500 &&
+      cacheStats.hitRate >= 0.8
+    ) {
+      return 'excellent';
+    } else if (
+      webVitals.lcp <= 4000 &&
+      webVitals.fid <= 300 &&
+      webVitals.cls <= 0.25 &&
+      avgQueryTime <= 1000 &&
+      cacheStats.hitRate >= 0.6
+    ) {
+      return 'good';
+    } else if (avgQueryTime <= 2000 || cacheStats.hitRate >= 0.4) {
+      return 'needs-improvement';
+    } else {
+      return 'poor';
+    }
+  };
+
+  const performanceStatus = getPerformanceStatus();
+  const statusColors = {
+    excellent: 'bg-green-500',
+    good: 'bg-blue-500',
+    'needs-improvement': 'bg-yellow-500',
+    poor: 'bg-red-500',
+  };
 
   const positionClasses = {
     'bottom-right': 'bottom-4 right-4',

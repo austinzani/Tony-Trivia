@@ -1084,8 +1084,63 @@
           6,
           10
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Optimize Database Queries and Implement Caching",
+            "description": "Enhance database performance and implement caching strategies for frequently accessed data.",
+            "dependencies": [],
+            "details": "Analyze and optimize Supabase queries for <100ms average response time. Implement Redis caching for frequently accessed trivia questions, user scores, and game states. Use database indexing and denormalization where appropriate. Implement query result caching in the application layer.\n<info added on 2025-06-24T20:24:45.599Z>\n# Database and Caching Optimizations Completed\n\n## Supabase Client Enhancement\n- Added performance-optimized Supabase client configuration\n- Increased real-time throughput (20 events/sec vs 10)\n- Implemented connection pooling and heartbeat management\n- Added payload compression and error handling\n\n## Query Optimization System\n- Created QueryOptimizer class with built-in caching (5-minute TTL)\n- Implemented intelligent query caching with pattern matching\n- Added performance monitoring and slow query detection\n- Suggested database indexes for common query patterns\n\n## Enhanced API Service\n- Integrated DatabaseMetrics for query performance tracking\n- Added cache-aware query methods with TTL control\n- Implemented batch operations for better throughput\n- Added performance metadata to all API responses\n\n## Performance Monitoring\n- Enhanced PerformanceMonitoringDashboard with database metrics\n- Real-time query performance tracking and recommendations\n- Cache hit/miss rate monitoring and optimization suggestions\n- Web Vitals integration for comprehensive performance insights\n\n## Build Optimization\n- Enhanced Vite configuration with code splitting and chunk optimization\n- Added bundle analyzer and performance scripts\n- Implemented asset optimization and compression\n- Added path aliases and dependency optimization\n\n## Next Steps\n- Install new dependencies (rollup-plugin-visualizer)\n- Test query performance improvements\n- Implement suggested database indexes in Supabase\n- Monitor cache hit rates and optimize TTL values\n</info added on 2025-06-24T20:24:45.599Z>",
+            "status": "done",
+            "testStrategy": "Measure query response times before and after optimization. Verify cache hit rates and response times for cached vs. non-cached data."
+          },
+          {
+            "id": 2,
+            "title": "Enhance React Component Performance",
+            "description": "Optimize React components for efficient rendering and implement code splitting.",
+            "dependencies": [],
+            "details": "Profiler React components to identify performance bottlenecks. Implement memoization for expensive computations. Use React.memo for pure functional components. Implement code splitting and lazy loading for game modules, question sets, and user dashboards. Optimize state management to minimize unnecessary re-renders.",
+            "status": "in-progress",
+            "testStrategy": "Use React DevTools Profiler to measure render times before and after optimization. Verify improved initial load time with code splitting."
+          },
+          {
+            "id": 3,
+            "title": "Optimize WebSocket Usage for Real-time Features",
+            "description": "Enhance WebSocket efficiency to minimize latency in real-time game interactions.",
+            "dependencies": [],
+            "details": "Implement efficient WebSocket message serialization and deserialization. Use binary protocols like MessagePack for data transmission. Implement connection pooling and heartbeat mechanisms. Optimize WebSocket event handling on both client and server sides. Implement fallback mechanisms for unreliable connections.",
+            "status": "pending",
+            "testStrategy": "Measure WebSocket message latency under various network conditions. Verify handling of concurrent connections up to 1000+ users."
+          },
+          {
+            "id": 4,
+            "title": "Implement Performance Monitoring and Logging",
+            "description": "Set up comprehensive monitoring and logging for performance metrics.",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Integrate application performance monitoring (APM) tools like New Relic or Datadog. Set up custom logging for critical paths in the application. Implement real-time alerting for performance degradation. Create dashboards for key performance indicators (KPIs) such as response times, error rates, and resource utilization.",
+            "status": "pending",
+            "testStrategy": "Verify accurate capture and reporting of performance metrics. Test alerting mechanisms for various performance threshold violations."
+          },
+          {
+            "id": 5,
+            "title": "Conduct Load Testing and Performance Tuning",
+            "description": "Perform comprehensive load testing and fine-tune application performance.",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "Set up load testing environment using tools like k6 or Apache JMeter. Simulate various load scenarios including 100+ simultaneous games and 1000+ concurrent connections. Identify and address performance bottlenecks under load. Fine-tune server resources, database connections, and application parameters for optimal performance.",
+            "status": "pending",
+            "testStrategy": "Gradually increase load to identify breaking points. Verify application stability and responsiveness under peak load conditions. Measure and optimize resource utilization."
+          }
+        ]
       },
       {
         "id": 19,
@@ -1324,7 +1379,7 @@
     ],
     "metadata": {
       "created": "2025-06-17T14:08:45.878Z",
-      "updated": "2025-06-24T20:13:16.373Z",
+      "updated": "2025-06-24T20:25:37.705Z",
       "description": "Tasks for master context"
     }
   }

@@ -1,5 +1,5 @@
 import type { PostgrestError } from './supabase';
-import { supabase } from './supabase';
+import { supabase, QueryOptimizer, DatabaseMetrics } from './supabase';
 
 // Database table types
 export interface Profile {
@@ -102,38 +102,82 @@ export type ApiResponse<T> = {
   data: T | null;
   error: PostgrestError | null;
   count?: number;
+  performance?: {
+    duration: number;
+    cached: boolean;
+  };
 };
 
 export type ApiListResponse<T> = {
   data: T[] | null;
   error: PostgrestError | null;
   count?: number;
+  performance?: {
+    duration: number;
+    cached: boolean;
+  };
 };
 
-// Query options
+// Query options with performance enhancements
 export interface QueryOptions {
   select?: string;
   order?: { column: string; ascending?: boolean };
   limit?: number;
   offset?: number;
   filters?: Record<string, any>;
+  // Performance options
+  cache?: boolean;
+  cacheTtl?: number;
+  enableMetrics?: boolean;
 }
 
-// Generic API service class
+// Enhanced generic API service class
 export class ApiService {
-  // Generic CRUD operations
+  // Generic CRUD operations with performance monitoring
   static async get<T>(
     table: string,
     id: string,
-    options?: { select?: string }
+    options?: { select?: string; cache?: boolean; cacheTtl?: number }
   ): Promise<ApiResponse<T>> {
+    const queryId = `get_${table}_${id}`;
+    const endTimer = options?.enableMetrics !== false ? DatabaseMetrics.startTimer(queryId) : null;
+    const startTime = performance.now();
+    
     try {
+      // Use optimized query if caching is enabled
+      if (options?.cache) {
+        const result = await QueryOptimizer
+          .optimizedQuery(table)
+          .select(options.select || '*', { cache: true, ttl: options.cacheTtl })
+          .single();
+        
+        const duration = performance.now() - startTime;
+        endTimer?.();
+        
+        return { 
+          ...result, 
+          performance: { duration, cached: true }
+        };
+      }
+
       const query = supabase.from(table).select(options?.select || '*').eq('id', id);
       
       const { data, error } = await query.single();
-      return { data, error };
+      const duration = performance.now() - startTime;
+      endTimer?.();
+      
+      return { 
+        data, 
+        error, 
+        performance: { duration, cached: false }
+      };
     } catch (error) {
-      return { data: null, error: error as PostgrestError };
+      endTimer?.();
+      return { 
+        data: null, 
+        error: error as PostgrestError,
+        performance: { duration: performance.now() - startTime, cached: false }
+      };
     }
   }
 
@@ -141,10 +185,30 @@ export class ApiService {
     table: string,
     options?: QueryOptions
   ): Promise<ApiListResponse<T>> {
+    const queryId = `list_${table}`;
+    const endTimer = options?.enableMetrics !== false ? DatabaseMetrics.startTimer(queryId) : null;
+    const startTime = performance.now();
+    
     try {
+      // Use optimized query if caching is enabled
+      if (options?.cache) {
+        const result = await QueryOptimizer
+          .optimizedQuery(table)
+          .select(options.select || '*', { cache: true, ttl: options.cacheTtl })
+          .list(options.filters, options.limit, options.offset);
+        
+        const duration = performance.now() - startTime;
+        endTimer?.();
+        
+        return { 
+          ...result, 
+          performance: { duration, cached: true }
+        };
+      }
+
       let query = supabase.from(table).select(options?.select || '*', { count: 'exact' });
 
-      // Apply filters
+      // Apply filters with better error handling
       if (options?.filters) {
         Object.entries(options.filters).forEach(([key, value]) => {
           if (Array.isArray(value)) {
@@ -184,23 +248,40 @@ export class ApiService {
         });
       }
 
-      // Apply ordering
+      // Apply ordering with performance consideration
       if (options?.order) {
         query = query.order(options.order.column, { ascending: options.order.ascending ?? true });
+      } else {
+        // Default ordering by created_at for consistent pagination
+        query = query.order('created_at', { ascending: false });
       }
 
-      // Apply pagination
-      if (options?.limit) {
-        query = query.limit(options.limit);
+      // Apply pagination with better defaults
+      const limit = Math.min(options?.limit || 50, 100); // Cap at 100 for performance
+      if (limit) {
+        query = query.limit(limit);
       }
       if (options?.offset) {
-        query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
+        query = query.range(options.offset, options.offset + limit - 1);
       }
 
       const { data, error, count } = await query;
-      return { data, error, count: count || 0 };
+      const duration = performance.now() - startTime;
+      endTimer?.();
+
+      return { 
+        data, 
+        error, 
+        count, 
+        performance: { duration, cached: false }
+      };
     } catch (error) {
-      return { data: null, error: error as PostgrestError, count: 0 };
+      endTimer?.();
+      return { 
+        data: null, 
+        error: error as PostgrestError,
+        performance: { duration: performance.now() - startTime, cached: false }
+      };
     }
   }
 
@@ -248,6 +329,39 @@ export class ApiService {
       return { data: null, error };
     } catch (error) {
       return { data: null, error: error as PostgrestError };
+    }
+  }
+
+  // Batch operations for better performance
+  static async batchGet<T>(
+    table: string,
+    ids: string[],
+    options?: { select?: string; cache?: boolean }
+  ): Promise<ApiListResponse<T>> {
+    const queryId = `batch_get_${table}`;
+    const endTimer = DatabaseMetrics.startTimer(queryId);
+    const startTime = performance.now();
+
+    try {
+      // Use IN query for batch fetching
+      let query = supabase.from(table).select(options?.select || '*').in('id', ids);
+      
+      const { data, error } = await query;
+      const duration = performance.now() - startTime;
+      endTimer();
+
+      return { 
+        data, 
+        error,
+        performance: { duration, cached: false }
+      };
+    } catch (error) {
+      endTimer();
+      return { 
+        data: null, 
+        error: error as PostgrestError,
+        performance: { duration: performance.now() - startTime, cached: false }
+      };
     }
   }
 
