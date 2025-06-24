@@ -19,6 +19,7 @@ import {
   Gamepad2,
   Target,
   Zap,
+  FileText,
 } from 'lucide-react';
 import { useGameController } from '../../hooks/useGameController';
 import { useNotifications } from '../../hooks/useNotifications';
@@ -26,6 +27,10 @@ import { GameFlowControls } from './GameFlowControls';
 import { AnswerManagementInterface } from './AnswerManagementInterface';
 import { ScoreManagementInterface } from './ScoreManagementInterface';
 import { NotificationSystem, NotificationBell } from './NotificationSystem';
+import { QuestionManagementInterface } from './QuestionManagementInterface';
+import { AdvancedScoringControls } from './AdvancedScoringControls';
+import { AdvancedTimerControls } from './AdvancedTimerControls';
+import { HostAnalyticsDashboard } from './HostAnalyticsDashboard';
 
 interface HostControlsLayoutProps {
   gameId: string;
@@ -34,8 +39,11 @@ interface HostControlsLayoutProps {
 
 type HostTabType =
   | 'game-flow'
+  | 'question-management'
   | 'answer-management'
   | 'score-management'
+  | 'timer-controls'
+  | 'analytics'
   | 'leaderboard'
   | 'notifications'
   | 'settings';
@@ -57,6 +65,13 @@ const hostTabs: TabConfig[] = [
     description: 'Control game progression and flow',
   },
   {
+    id: 'question-management',
+    label: 'Questions',
+    icon: FileText,
+    color: 'plasma',
+    description: 'Manage and edit questions on-the-fly',
+  },
+  {
     id: 'answer-management',
     label: 'Answers',
     icon: CheckCircle,
@@ -65,10 +80,24 @@ const hostTabs: TabConfig[] = [
   },
   {
     id: 'score-management',
-    label: 'Scoring',
+    label: 'Advanced Scoring',
     icon: Target,
     color: 'energy-orange',
-    description: 'Manage scores and point allocations',
+    description: 'Advanced scoring with bonuses and penalties',
+  },
+  {
+    id: 'timer-controls',
+    label: 'Timer',
+    icon: Clock,
+    color: 'energy-yellow',
+    description: 'Advanced timer controls for timed rounds',
+  },
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    icon: BarChart3,
+    color: 'electric',
+    description: 'Real-time game analytics and insights',
   },
   {
     id: 'leaderboard',
@@ -99,11 +128,140 @@ export function HostControlsLayout({
 }: HostControlsLayoutProps) {
   const [activeTab, setActiveTab] = useState<HostTabType>('game-flow');
   const [isMinimized, setIsMinimized] = useState(false);
+  const [currentQuestionSetId, setCurrentQuestionSetId] = useState<string>('set-1');
 
   const { state, isInitialized, isActive, isPaused, currentPhase, error } =
     useGameController(gameId);
 
   const { unreadCount, hasNewNotifications } = useNotifications(gameId);
+
+  // Mock data for new components
+  const mockQuestionSets = [
+    {
+      id: 'set-1',
+      name: 'General Knowledge Round 1',
+      description: 'A mix of various topics',
+      questions: [
+        {
+          id: '1',
+          text: 'What is the capital of France?',
+          answer: 'Paris',
+          category: 'Geography',
+          difficulty: 'easy' as const,
+          points: 10,
+          timeLimit: 30
+        },
+        {
+          id: '2',
+          text: 'Who painted the Mona Lisa?',
+          answer: 'Leonardo da Vinci',
+          category: 'Art',
+          difficulty: 'medium' as const,
+          points: 15,
+          timeLimit: 45
+        }
+      ],
+      categories: ['Geography', 'Art', 'Science', 'History'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
+
+  const mockTeams = [
+    { id: '1', name: 'Team Alpha', score: 85, bonusPoints: 10, penalties: 5, streakCount: 3 },
+    { id: '2', name: 'Team Beta', score: 70, bonusPoints: 5, penalties: 0, streakCount: 1 },
+    { id: '3', name: 'Team Gamma', score: 90, bonusPoints: 15, penalties: 10, streakCount: 4 },
+    { id: '4', name: 'Team Delta', score: 60, bonusPoints: 0, penalties: 15, streakCount: 0 }
+  ];
+
+  const mockGameStats = {
+    totalQuestions: 20,
+    questionsAnswered: 12,
+    averageResponseTime: 18.5,
+    totalTeams: 4,
+    activePlayers: 16,
+    correctAnswerRate: 72.5,
+    averageScore: 76.25,
+    highestScore: 90,
+    lowestScore: 60
+  };
+
+  const mockTeamPerformances = [
+    {
+      teamId: '1',
+      teamName: 'Team Alpha',
+      score: 85,
+      correctAnswers: 15,
+      incorrectAnswers: 5,
+      avgResponseTime: 16.2,
+      streakBest: 5,
+      rank: 2,
+      trend: 'up' as const
+    },
+    {
+      teamId: '2',
+      teamName: 'Team Beta',
+      score: 70,
+      correctAnswers: 12,
+      incorrectAnswers: 8,
+      avgResponseTime: 22.1,
+      streakBest: 3,
+      rank: 3,
+      trend: 'stable' as const
+    },
+    {
+      teamId: '3',
+      teamName: 'Team Gamma',
+      score: 90,
+      correctAnswers: 17,
+      incorrectAnswers: 3,
+      avgResponseTime: 14.8,
+      streakBest: 7,
+      rank: 1,
+      trend: 'up' as const
+    },
+    {
+      teamId: '4',
+      teamName: 'Team Delta',
+      score: 60,
+      correctAnswers: 10,
+      incorrectAnswers: 10,
+      avgResponseTime: 25.3,
+      streakBest: 2,
+      rank: 4,
+      trend: 'down' as const
+    }
+  ];
+
+  const mockQuestionAnalytics = [
+    {
+      questionId: '1',
+      questionText: 'What is the capital of France?',
+      category: 'Geography',
+      difficulty: 'easy',
+      correctRate: 95,
+      avgResponseTime: 8.2,
+      totalAttempts: 20
+    },
+    {
+      questionId: '2',
+      questionText: 'Who painted the Mona Lisa?',
+      category: 'Art',
+      difficulty: 'medium',
+      correctRate: 75,
+      avgResponseTime: 15.3,
+      totalAttempts: 20
+    },
+    {
+      questionId: '3',
+      questionText: 'What is the chemical symbol for gold?',
+      category: 'Science',
+      difficulty: 'easy',
+      correctRate: 85,
+      avgResponseTime: 10.1,
+      totalAttempts: 20
+    }
+  ];
 
   // Auto-focus on answer management when answers come in
   useEffect(() => {
@@ -287,22 +445,79 @@ export function HostControlsLayout({
                       <AnswerManagementInterface
                         gameId={gameId}
                         currentQuestionId={
-                          gameState?.currentQuestion?.question.id
+                          state?.currentQuestion?.question.id
                         }
                         currentRoundId={
-                          gameState?.rounds?.[gameState.currentRound - 1]?.id
+                          state?.rounds?.[state.currentRound - 1]?.id
                         }
                       />
                     )}
 
-                    {activeTab === 'score-management' && (
-                      <ScoreManagementInterface
-                        gameId={gameId}
-                        onScoreChanged={adjustment => {
-                          console.log('Score adjustment made:', adjustment);
+                    {activeTab === 'question-management' && (
+                      <QuestionManagementInterface
+                        questionSets={mockQuestionSets}
+                        currentSetId={currentQuestionSetId}
+                        onQuestionSetChange={setCurrentQuestionSetId}
+                        onQuestionAdd={async (question) => {
+                          console.log('Adding question:', question);
                         }}
-                        onError={error => {
-                          console.error('Score management error:', error);
+                        onQuestionEdit={async (question) => {
+                          console.log('Editing question:', question);
+                        }}
+                        onQuestionDelete={async (questionId) => {
+                          console.log('Deleting question:', questionId);
+                        }}
+                        onQuestionSetCreate={async (set) => {
+                          console.log('Creating question set:', set);
+                        }}
+                        onQuestionSetImport={async (file) => {
+                          console.log('Importing question set:', file);
+                        }}
+                        onQuestionSetExport={(setId) => {
+                          console.log('Exporting question set:', setId);
+                        }}
+                      />
+                    )}
+
+                    {activeTab === 'score-management' && (
+                      <AdvancedScoringControls
+                        teams={mockTeams}
+                        onScoreUpdate={(teamId, adjustment, reason) => {
+                          console.log('Score update:', { teamId, adjustment, reason });
+                        }}
+                        onBonusApply={(teamId, bonus) => {
+                          console.log('Bonus applied:', { teamId, bonus });
+                        }}
+                        onPenaltyApply={(teamId, penalty) => {
+                          console.log('Penalty applied:', { teamId, penalty });
+                        }}
+                        currentQuestionValue={10}
+                      />
+                    )}
+
+                    {activeTab === 'timer-controls' && (
+                      <AdvancedTimerControls
+                        onTimeUp={() => {
+                          console.log('Time is up!');
+                        }}
+                        onTimeUpdate={(timeRemaining) => {
+                          console.log('Time remaining:', timeRemaining);
+                        }}
+                        onTimerStateChange={(isRunning) => {
+                          console.log('Timer running:', isRunning);
+                        }}
+                        defaultDuration={60}
+                        soundEnabled={true}
+                      />
+                    )}
+
+                    {activeTab === 'analytics' && (
+                      <HostAnalyticsDashboard
+                        gameStats={mockGameStats}
+                        teamPerformances={mockTeamPerformances}
+                        questionAnalytics={mockQuestionAnalytics}
+                        onExportReport={() => {
+                          console.log('Exporting analytics report');
                         }}
                       />
                     )}
@@ -329,8 +544,11 @@ export function HostControlsLayout({
                     )}
 
                     {activeTab !== 'game-flow' &&
+                      activeTab !== 'question-management' &&
                       activeTab !== 'answer-management' &&
                       activeTab !== 'score-management' &&
+                      activeTab !== 'timer-controls' &&
+                      activeTab !== 'analytics' &&
                       activeTab !== 'notifications' && (
                         <div className="bg-white p-4 rounded-lg border-2 border-dashed border-gray-300">
                           <p className="text-gray-500 text-center">

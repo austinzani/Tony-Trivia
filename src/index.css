@@ -2,6 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom animations for striped progress bars */
+@keyframes slide {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 2rem 0;
+  }
+}
+
+/* Chat animations */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1; 
+  }
+  50% { 
+    opacity: 0.5; 
+  }
+}
+
 @layer base {
   :root {
     /* Electric Blues - Primary Brand */
@@ -153,6 +195,81 @@
   /* Legacy card for compatibility */
   .card {
     @apply card-game;
+  }
+
+  /* Chat Component Styles */
+  .chat-minimized {
+    @apply cursor-pointer;
+  }
+
+  .chat-expanded {
+    @apply flex flex-col;
+  }
+
+  /* Chat scrollbar styling */
+  .chat-messages::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .chat-messages::-webkit-scrollbar-thumb {
+    background: var(--color-electric-300);
+    border-radius: 3px;
+  }
+
+  .chat-messages::-webkit-scrollbar-thumb:hover {
+    background: var(--color-electric-400);
+  }
+
+  /* Mobile responsive chat */
+  @media (max-width: 640px) {
+    .chat-window {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: 100% !important;
+      border-radius: 1rem 1rem 0 0 !important;
+      z-index: 50;
+    }
+    
+    .chat-minimized {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      width: auto !important;
+      max-width: 200px !important;
+    }
+  }
+
+  /* Accessibility focus styles */
+  .chat-input-container input:focus {
+    outline: 2px solid var(--color-electric-500);
+    outline-offset: 2px;
+  }
+
+  .emoji-button:focus {
+    outline: 2px solid var(--color-electric-500);
+    outline-offset: 2px;
+  }
+
+  .minimize-button:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .chat-message {
+      border: 2px solid currentColor !important;
+    }
+    
+    .chat-header {
+      border: 2px solid white !important;
+    }
   }
 
   /* Game-Specific Elements */

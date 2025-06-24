@@ -1,0 +1,275 @@
+/* Mobile-specific utility classes for Tony Trivia */
+
+/* Touch-friendly tap targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile-optimized spacing */
+@media (max-width: 640px) {
+  .mobile-padding {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .mobile-margin {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+}
+
+/* Safe area padding for notched devices */
+.safe-padding-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.safe-padding-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-padding-left {
+  padding-left: env(safe-area-inset-left, 0);
+}
+
+.safe-padding-right {
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+/* Mobile-optimized text sizes */
+@media (max-width: 640px) {
+  .mobile-text-display-xl {
+    font-size: 2.5rem; /* Reduced from 3.5rem */
+  }
+  
+  .mobile-text-display-lg {
+    font-size: 2rem; /* Reduced from 2.5rem */
+  }
+  
+  .mobile-text-display-md {
+    font-size: 1.5rem; /* Reduced from 2rem */
+  }
+}
+
+/* Mobile-friendly card layouts */
+@media (max-width: 640px) {
+  .mobile-card {
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .mobile-card-compact {
+    padding: 0.75rem;
+  }
+}
+
+/* Touch gesture feedback */
+.touch-feedback {
+  -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+  touch-action: manipulation;
+}
+
+/* Prevent double-tap zoom on interactive elements */
+button,
+a,
+input,
+select,
+textarea,
+.interactive {
+  touch-action: manipulation;
+}
+
+/* Mobile-optimized scrolling */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Horizontal scroll container for mobile */
+.mobile-scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.3) transparent;
+}
+
+.mobile-scroll-x::-webkit-scrollbar {
+  height: 6px;
+}
+
+.mobile-scroll-x::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mobile-scroll-x::-webkit-scrollbar-thumb {
+  background-color: rgba(59, 130, 246, 0.3);
+  border-radius: 3px;
+}
+
+/* Mobile keyboard optimization */
+.mobile-input-container {
+  position: relative;
+  z-index: 10;
+}
+
+/* Prevent viewport jump when keyboard appears */
+@media (max-width: 640px) {
+  .mobile-fixed-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+  }
+}
+
+/* Mobile-optimized animations */
+@media (prefers-reduced-motion: no-preference) and (max-width: 640px) {
+  .mobile-animate-in {
+    animation: mobileSlideIn 0.3s ease-out;
+  }
+  
+  .mobile-animate-out {
+    animation: mobileSlideOut 0.3s ease-in;
+  }
+}
+
+@keyframes mobileSlideIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes mobileSlideOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/* Mobile navigation patterns */
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 40;
+}
+
+/* Mobile modal optimization */
+@media (max-width: 640px) {
+  .mobile-modal {
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .mobile-modal-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .mobile-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Mobile-friendly loading states */
+.mobile-skeleton {
+  min-height: 44px;
+  border-radius: 0.375rem;
+}
+
+/* Responsive grid for mobile */
+@media (max-width: 640px) {
+  .mobile-grid-1 {
+    grid-template-columns: 1fr;
+  }
+  
+  .mobile-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* Mobile-optimized buttons */
+@media (max-width: 640px) {
+  .mobile-button-full {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .mobile-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .mobile-button-group-horizontal {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .mobile-button-group-horizontal > * {
+    flex: 1;
+  }
+}
+
+/* Mobile list optimization */
+.mobile-list-item {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.mobile-list-item:active {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Mobile form optimization */
+@media (max-width: 640px) {
+  .mobile-form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .mobile-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+  
+  .mobile-label {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Responsive typography for mobile */
+@media (max-width: 640px) {
+  .mobile-heading-responsive {
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
+  }
+  
+  .mobile-body-responsive {
+    font-size: clamp(0.875rem, 4vw, 1rem);
+  }
+}

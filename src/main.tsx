@@ -3,11 +3,14 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './index.css';
+import './styles/mobile.css';
 
 // Import pages
 import Home from './pages/Home';
 import Game from './pages/Game';
 import Host from './pages/Host';
+import MobileDemo from './pages/MobileDemo';
+import HostDemo from './pages/HostDemo';
 
 // Import auth components
 import ProtectedRoute from './components/ProtectedRoute';
@@ -67,6 +70,14 @@ const router = createBrowserRouter([
         </div>
       </div>
     ),
+  },
+  {
+    path: '/mobile-demo',
+    element: <MobileDemo />,
+  },
+  {
+    path: '/host-demo',
+    element: <HostDemo />,
   },
 ]);
 

@@ -100,9 +100,31 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+// Chat message types
+export interface ChatMessage {
+  id: string;
+  game_room_id: string;
+  user_id: string;
+  team_id?: string;
+  message: string;
+  message_type: 'text' | 'emoji' | 'system' | 'game_event';
+  created_at: string;
+  updated_at: string;
+  is_deleted: boolean;
+  // Client-side enriched data
+  user?: {
+    display_name: string;
+    avatar_url?: string;
+  };
+  team?: {
+    name: string;
+    color?: string;
+  };
+}
+
 // Real-time event types
 export interface GameEvent {
-  type: 'game_started' | 'game_ended' | 'question_started' | 'question_ended' | 'team_joined' | 'team_left';
+  type: 'game_started' | 'game_ended' | 'question_started' | 'question_ended' | 'team_joined' | 'team_left' | 'chat_message';
   room_id: string;
   data: any;
   timestamp: string;

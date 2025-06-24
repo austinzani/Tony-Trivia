@@ -24,6 +24,7 @@ import { TeamStatusTracker } from './TeamStatusTracker';
 import { TeamRealtimeSync } from './TeamRealtimeSync';
 import { ConnectionStatus } from './ConnectionStatus';
 import { RealtimeStatus } from './RealtimeStatus';
+import { ChatWindow } from './chat';
 import { useGameState } from '../hooks/useGameState';
 import { useAuth } from '../hooks/useAuth';
 import { useTeamPresence } from '../hooks/useTeamPresence';
@@ -663,7 +664,7 @@ function StatusTab({
   );
 }
 
-// Chat Tab Component (Placeholder)
+// Chat Tab Component
 function ChatTab({
   teamId,
   gameRoomId,
@@ -671,6 +672,8 @@ function ChatTab({
   teamId: string;
   gameRoomId: string;
 }) {
+  const { user } = useAuth();
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -678,17 +681,12 @@ function ChatTab({
       exit={{ opacity: 0, y: -20 }}
       className="space-y-4"
     >
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-center">
-          <MessageSquare className="w-5 h-5 text-blue-400 mr-3" />
-          <div>
-            <h3 className="text-sm font-medium text-blue-800">Team Chat</h3>
-            <p className="text-sm text-blue-700 mt-1">
-              Real-time team communication coming soon! For now, use the Live
-              Status tab to see team member activity.
-            </p>
-          </div>
-        </div>
+      <div className="flex justify-center">
+        <ChatWindow 
+          gameRoomId={gameRoomId} 
+          teamId={teamId}
+          className="w-full max-w-2xl"
+        />
       </div>
     </motion.div>
   );

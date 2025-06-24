@@ -153,10 +153,10 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
 
     return (
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
           Choose your answer:
         </h3>
-        <div className="grid gap-3">
+        <div className="grid gap-2 sm:gap-3">
           {question.options.map((option, index) => {
             const optionLetter = String.fromCharCode(65 + index); // A, B, C, D
             const isUserAnswer = userAnswer === option;
@@ -168,33 +168,33 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
               option !== question.correctAnswer;
 
             let optionClasses =
-              'flex items-center p-4 border-2 rounded-lg transition-all duration-200 ';
+              'flex items-center p-3 sm:p-4 border-2 rounded-game transition-all duration-200 touch-feedback min-h-[44px] ';
 
             if (isCorrectAnswer) {
-              optionClasses += 'border-green-500 bg-green-50 text-green-800';
+              optionClasses += 'border-victory bg-green-50 text-green-800';
             } else if (isWrongAnswer) {
-              optionClasses += 'border-red-500 bg-red-50 text-red-800';
+              optionClasses += 'border-energy-red bg-red-50 text-red-800';
             } else if (isUserAnswer && !showCorrectAnswer) {
-              optionClasses += 'border-blue-500 bg-blue-50 text-blue-800';
+              optionClasses += 'border-electric-500 bg-blue-50 text-blue-800';
             } else {
               optionClasses +=
-                'border-gray-200 bg-white text-gray-700 hover:border-gray-300';
+                'border-gray-200 bg-white text-gray-700 hover:border-gray-300 active:bg-gray-50';
             }
 
             return (
               <div key={index} className={optionClasses}>
                 <div className="flex items-center w-full">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full border-2 border-current flex items-center justify-center mr-4 font-semibold">
+                  <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-current flex items-center justify-center mr-3 sm:mr-4 font-semibold text-sm sm:text-base">
                     {optionLetter}
                   </div>
-                  <span className="flex-1 text-left">{option}</span>
+                  <span className="flex-1 text-left text-sm sm:text-base">{option}</span>
                   {showCorrectAnswer && (
-                    <div className="flex-shrink-0 ml-4">
+                    <div className="flex-shrink-0 ml-3 sm:ml-4">
                       {isCorrectAnswer && (
-                        <CheckCircle className="w-6 h-6 text-green-600" />
+                        <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-victory" />
                       )}
                       {isWrongAnswer && (
-                        <XCircle className="w-6 h-6 text-red-600" />
+                        <XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-energy-red" />
                       )}
                     </div>
                   )}
@@ -209,20 +209,20 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
 
   const renderQuestionMetadata = () => {
     return (
-      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-6">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
         {question.category && (
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
+          <span className="px-2 sm:px-3 py-1 bg-electric-100 text-electric-800 rounded-full">
             {question.category}
           </span>
         )}
         {question.difficulty && (
           <span
-            className={`px-3 py-1 rounded-full ${
+            className={`px-2 sm:px-3 py-1 rounded-full ${
               question.difficulty === 'easy'
-                ? 'bg-green-100 text-green-800'
+                ? 'bg-victory/10 text-victory'
                 : question.difficulty === 'medium'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-red-100 text-red-800'
+                  ? 'bg-pending/10 text-pending'
+                  : 'bg-defeat/10 text-defeat'
             }`}
           >
             {question.difficulty.charAt(0).toUpperCase() +
@@ -230,17 +230,17 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
           </span>
         )}
         {question.points && (
-          <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full">
-            {question.points} {question.points === 1 ? 'point' : 'points'}
+          <span className="px-2 sm:px-3 py-1 bg-plasma-100 text-plasma-800 rounded-full">
+            {question.points} {question.points === 1 ? 'pt' : 'pts'}
           </span>
         )}
         {timeRemaining !== undefined && (
-          <div className="flex items-center space-x-1">
-            <Clock className="w-4 h-4" />
+          <div className="flex items-center space-x-1 ml-auto">
+            <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
             <span
-              className={
-                timeRemaining <= 10 ? 'text-red-600 font-semibold' : ''
-              }
+              className={`font-semibold ${
+                timeRemaining <= 10 ? 'text-energy-red animate-pulse' : ''
+              }`}
             >
               {timeRemaining}s
             </span>
@@ -292,28 +292,28 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg p-6 ${className}`}>
+    <div className={`bg-white rounded-card shadow-game p-4 sm:p-6 ${className}`}>
       {/* Question Metadata */}
       {renderQuestionMetadata()}
 
       {/* Question Text */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <TextRenderer
           text={question.text}
-          className="text-xl font-medium text-gray-900 mb-4"
+          className="text-lg sm:text-xl font-medium text-gray-900 mb-3 sm:mb-4"
           allowHTML={false}
         />
       </div>
 
       {/* Media Content */}
       {question.mediaUrl && (
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           {renderMediaContent()}
           {state.mediaError && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mt-3 sm:mt-4 p-3 bg-red-50 border border-energy-red/20 rounded-game">
               <div className="flex items-center">
-                <AlertTriangle className="w-5 h-5 text-red-500 mr-2" />
-                <span className="text-red-700">{state.mediaError}</span>
+                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-energy-red mr-2 flex-shrink-0" />
+                <span className="text-energy-red text-sm sm:text-base">{state.mediaError}</span>
               </div>
             </div>
           )}
@@ -331,10 +331,10 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
 
       {/* Loading State for Media */}
       {state.isMediaLoading && (
-        <div className="mt-4 text-center text-gray-600">
+        <div className="mt-3 sm:mt-4 text-center text-gray-600">
           <div className="inline-flex items-center">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-            Loading media content...
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-electric-600 mr-2"></div>
+            <span className="text-sm sm:text-base">Loading media content...</span>
           </div>
         </div>
       )}
