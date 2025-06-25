@@ -1537,8 +1537,63 @@
           6,
           14
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design and implement database schema for custom question sets",
+            "description": "Create the database schema to store custom question sets, including tables for sets, questions, and their relationships.",
+            "dependencies": [],
+            "details": "Create database migrations for: 1) question_sets table with fields for id, host_id, title, description, created_at, updated_at, is_public; 2) questions table with fields for id, question_set_id, text, type (multiple choice, true/false, etc.), options (JSON), correct_answer, points; 3) Ensure proper foreign key relationships and indexes for performance.",
+            "status": "done",
+            "testStrategy": "Write unit tests for the models and their relationships. Test CRUD operations and constraints."
+          },
+          {
+            "id": 2,
+            "title": "Implement UI for creating and editing question sets",
+            "description": "Develop the user interface components that allow hosts to create new question sets and edit existing ones.",
+            "dependencies": [],
+            "details": "Create React components for: 1) Question set list view; 2) Create/edit form with fields for title, description; 3) Question editor with support for different question types; 4) Drag-and-drop reordering of questions; 5) Preview functionality. Implement form validation and error handling.",
+            "status": "done",
+            "testStrategy": "Write component tests using React Testing Library. Test form validation, submission, and error states."
+          },
+          {
+            "id": 3,
+            "title": "Implement tagging system for organizing questions",
+            "description": "Create a tagging system that allows hosts to categorize and organize their question sets for easier management.",
+            "dependencies": [],
+            "details": "1) Create tags table with id, name, color fields; 2) Create question_set_tags junction table for many-to-many relationship; 3) Implement API endpoints for CRUD operations on tags; 4) Add tag selection UI to question set editor; 5) Implement tag filtering in the question set list view.",
+            "status": "done",
+            "testStrategy": "Test tag creation, assignment, and filtering functionality through integration tests."
+          },
+          {
+            "id": 4,
+            "title": "Add import/export functionality for question sets",
+            "description": "Enable hosts to import and export question sets in standard formats (JSON, CSV) for backup or sharing purposes.",
+            "dependencies": [],
+            "details": "1) Design JSON schema for question set export format; 2) Implement export endpoint that generates downloadable files; 3) Create import functionality that validates and processes uploaded files; 4) Add error handling for malformed imports; 5) Implement UI components for import/export actions.",
+            "status": "done",
+            "testStrategy": "Test with various file formats and edge cases. Ensure exported files can be successfully re-imported."
+          },
+          {
+            "id": 5,
+            "title": "Implement search and filter functionality for question sets",
+            "description": "Create search and filter capabilities to help hosts find specific question sets in their library.",
+            "dependencies": [],
+            "details": "1) Add server-side search functionality with pagination; 2) Implement filters for tags, date created, popularity; 3) Create UI components for search bar and filter controls; 4) Add sort options (newest, alphabetical, etc.); 5) Ensure responsive design for all viewport sizes.",
+            "status": "done",
+            "testStrategy": "Test search accuracy, filter combinations, and pagination through integration tests."
+          },
+          {
+            "id": 6,
+            "title": "Add sharing functionality between hosts",
+            "description": "Enable hosts to share their question sets with other hosts, with appropriate permissions and visibility controls.",
+            "dependencies": [],
+            "details": "1) Add is_public and visibility_level fields to question_sets table; 2) Create shared_question_sets table to track sharing between specific hosts; 3) Implement permission system (view-only, edit, duplicate); 4) Add UI for sharing dialog with user search; 5) Create notifications for shared question sets; 6) Implement duplicate functionality to create personal copies.",
+            "status": "done",
+            "testStrategy": "Test sharing flows, permissions enforcement, and notification delivery through integration tests."
+          }
+        ]
       },
       {
         "id": 22,
@@ -1900,7 +1955,7 @@
     ],
     "metadata": {
       "created": "2025-06-17T14:08:45.878Z",
-      "updated": "2025-06-25T02:09:49.825Z",
+      "updated": "2025-06-25T03:05:19.649Z",
       "description": "Tasks for master context"
     }
   }

@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import reactLogo from '../assets/react.svg';
-import viteLogo from '/vite.svg';
 import UserStatus from '../components/UserStatus';
 import RouterTest from '../components/RouterTest';
 import AnimatedButton from '../components/AnimatedButton';
@@ -34,28 +32,6 @@ export default function Home() {
             <EnvDemo />
 
             <div className="bg-white p-4 sm:p-6 rounded-card shadow-game mb-6 sm:mb-8">
-              <div className="flex justify-center mb-4 sm:mb-6">
-                <a
-                  href="https://vitejs.dev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="touch-feedback"
-                >
-                  <img src={viteLogo} className="h-12 sm:h-16 mx-3 sm:mx-4" alt="Vite logo" />
-                </a>
-                <a
-                  href="https://react.dev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="touch-feedback"
-                >
-                  <img
-                    src={reactLogo}
-                    className="h-12 sm:h-16 mx-3 sm:mx-4 animate-spin"
-                    alt="React logo"
-                  />
-                </a>
-              </div>
 
               <div className="text-center mb-4 sm:mb-6">
                 <MobileButton 
@@ -102,6 +78,11 @@ export default function Home() {
                 <Link to="/scheduled-games" className="block">
                   <MobileButton variant="primary" size="md" fullWidth>
                     📅 Scheduled Games
+                  </MobileButton>
+                </Link>
+                <Link to="/question-sets-demo" className="block">
+                  <MobileButton variant="primary" size="md" fullWidth>
+                    📝 Custom Question Sets Demo
                   </MobileButton>
                 </Link>
                 <Link to="/mobile-demo" className="block">

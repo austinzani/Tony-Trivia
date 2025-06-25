@@ -17,6 +17,7 @@ import TournamentList from './pages/TournamentList';
 import CreateTournamentForm from './components/tournament/CreateTournamentForm';
 import TournamentManagement from './components/tournament/TournamentManagement';
 import TournamentDemo from './pages/TournamentDemo';
+import { QuestionSetsDemo } from './pages/QuestionSetsDemo';
 
 // Import auth components
 import ProtectedRoute from './components/ProtectedRoute';
@@ -124,6 +125,10 @@ const router = createBrowserRouter([
   {
     path: '/tournament-demo',
     element: <TournamentDemo />,
+  },
+  {
+    path: '/question-sets-demo',
+    element: <QuestionSetsDemo />,
   },
 ]);
 

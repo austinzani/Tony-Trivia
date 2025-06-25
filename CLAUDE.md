@@ -81,4 +81,9 @@ Must configure in `.env`:
 - Always run `npm run type-check` and `npm run lint` before committing
 
 ## Development Best Practices
-- Always make sure we import types with the proper type annotation
+- Always use `import type` for type-only imports from types files
+- UI components use default exports: `import Button from '../ui/host/Button'`
+- For components with sub-exports: `import Card, { CardHeader, CardContent } from '../ui/host/Card'`
+- Icons are named exports: `import { Plus, Search } from 'lucide-react'`
+- Use `type LucideIcon` for icon type annotations
+- Services use named exports: `import { ServiceName } from '../services/serviceName'`
