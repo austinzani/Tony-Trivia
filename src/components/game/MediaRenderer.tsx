@@ -15,6 +15,8 @@ export interface MediaRendererProps {
   className?: string;
   autoPlay?: boolean;
   controls?: boolean;
+  transcript?: string; // For audio/video accessibility
+  captions?: string; // For video accessibility
   onLoad?: () => void;
   onError?: (error: string) => void;
   onPlay?: () => void;
@@ -85,6 +87,8 @@ export const ImageRenderer: React.FC<MediaRendererProps> = ({
         onLoad={handleLoad}
         onError={handleError}
         loading="lazy"
+        role="img"
+        aria-label={alt}
       />
     </div>
   );
@@ -95,6 +99,7 @@ export const AudioRenderer: React.FC<MediaRendererProps> = ({
   url,
   className = '',
   autoPlay = false,
+  transcript,
   onLoad,
   onError,
   onPlay,
@@ -213,6 +218,38 @@ export const AudioRenderer: React.FC<MediaRendererProps> = ({
     setState(prev => ({ ...prev, currentTime: 0 }));
   };
 
+  // Keyboard navigation support
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      switch (e.key) {
+        case ' ':
+        case 'Enter':
+          e.preventDefault();
+          togglePlay();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          audio.currentTime = Math.max(0, audio.currentTime - 5);
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+          break;
+        case 'm':
+        case 'M':
+          e.preventDefault();
+          toggleMute();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [state.isPlaying]);
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -233,6 +270,8 @@ export const AudioRenderer: React.FC<MediaRendererProps> = ({
   return (
     <div
       className={`bg-white border border-gray-200 rounded-lg p-4 shadow-sm ${className}`}
+      role="region"
+      aria-label="Audio player"
     >
       <audio
         ref={audioRef}
@@ -240,6 +279,7 @@ export const AudioRenderer: React.FC<MediaRendererProps> = ({
         preload="metadata"
         autoPlay={autoPlay}
         className="hidden"
+        aria-label="Audio content"
       />
 
       {state.isLoading ? (
@@ -298,7 +338,29 @@ export const AudioRenderer: React.FC<MediaRendererProps> = ({
               onChange={handleSeek}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
               aria-label="Audio progress"
+              aria-valuemin="0"
+              aria-valuemax={state.duration || 0}
+              aria-valuenow={state.currentTime}
+              aria-valuetext={`${formatTime(state.currentTime)} of ${formatTime(state.duration)}`}
             />
+          </div>
+
+          {/* Transcript for accessibility */}
+          {transcript && (
+            <details className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <summary className="font-semibold text-gray-700 cursor-pointer hover:text-gray-900">
+                Audio Transcript
+              </summary>
+              <div className="mt-2 text-gray-600 whitespace-pre-wrap">{transcript}</div>
+            </details>
+          )}
+
+          {/* Keyboard shortcuts hint */}
+          <div className="mt-3 text-xs text-gray-500">
+            <span className="sr-only">Keyboard shortcuts: </span>
+            <span aria-hidden="true">
+              Keyboard: Space (play/pause) • ← → (seek) • M (mute)
+            </span>
           </div>
         </div>
       )}
@@ -312,6 +374,8 @@ export const VideoRenderer: React.FC<MediaRendererProps> = ({
   className = '',
   autoPlay = false,
   controls = true,
+  captions,
+  transcript,
   onLoad,
   onError,
   onPlay,
@@ -445,7 +509,18 @@ export const VideoRenderer: React.FC<MediaRendererProps> = ({
         autoPlay={autoPlay}
         preload="metadata"
         onDoubleClick={toggleFullscreen}
-      />
+        aria-label="Video content"
+      >
+        {captions && (
+          <track
+            kind="captions"
+            src={captions}
+            srcLang="en"
+            label="English captions"
+            default
+          />
+        )}
+      </video>
 
       {!controls && !state.isLoading && (
         <div className="absolute bottom-4 right-4">
@@ -463,6 +538,16 @@ export const VideoRenderer: React.FC<MediaRendererProps> = ({
             </svg>
           </button>
         </div>
+      )}
+
+      {/* Transcript for accessibility */}
+      {transcript && (
+        <details className="mt-4 p-3 bg-gray-50 rounded-lg">
+          <summary className="font-semibold text-gray-700 cursor-pointer hover:text-gray-900">
+            Video Transcript
+          </summary>
+          <div className="mt-2 text-gray-600 whitespace-pre-wrap">{transcript}</div>
+        </details>
       )}
     </div>
   );

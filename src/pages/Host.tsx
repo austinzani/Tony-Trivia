@@ -18,6 +18,7 @@ import PageTransition from '../components/PageTransition';
 import AnimatedButton from '../components/AnimatedButton';
 import HostControlsLayout from '../components/host/HostControlsLayout';
 import { useAuth } from '../hooks/useAuth';
+import { MobileButton, MobileCard } from '../components/ui';
 
 export default function Host() {
   const [searchParams] = useSearchParams();
@@ -57,17 +58,18 @@ export default function Host() {
   if (currentGameId) {
     return (
       <PageTransition>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-          <div className="container mx-auto px-4 py-6">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 safe-padding-top safe-padding-bottom">
+          <div className="container mx-auto mobile-padding py-4 sm:py-6">
             {/* Exit Host Mode Button */}
             <div className="mb-6">
-              <button
+              <MobileButton
                 onClick={handleExitHostMode}
-                className="flex items-center space-x-2 px-4 py-2 bg-white text-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all border border-gray-200"
+                variant="secondary"
+                size="md"
+                icon={ArrowLeft}
               >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Exit Host Mode</span>
-              </button>
+                Exit Host Mode
+              </MobileButton>
             </div>
 
             {/* Host Controls Interface */}
@@ -84,8 +86,8 @@ export default function Host() {
   // Show the host dashboard/setup interface
   return (
     <PageTransition>
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 safe-padding-top safe-padding-bottom">
+        <div className="container mx-auto mobile-padding py-4 sm:py-6 lg:py-8">
           {/* Header */}
           <motion.header
             initial={{ opacity: 0, y: -20 }}
@@ -97,10 +99,10 @@ export default function Host() {
                 <Monitor className="w-8 h-8" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
               Host Dashboard
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto px-4">
               {isAuthenticated
                 ? `Welcome back, ${user?.displayName || 'Host'}! Create or manage your trivia games.`
                 : 'Create exciting trivia games and manage your sessions with powerful host controls.'}
@@ -112,7 +114,7 @@ export default function Host() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8"
           >
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
               <div className="flex items-center">

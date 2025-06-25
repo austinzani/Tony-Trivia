@@ -5,6 +5,7 @@ import { z } from 'zod';
 import GameList from '../components/GameList';
 import PageTransition from '../components/PageTransition';
 import AnimatedButton from '../components/AnimatedButton';
+import { MobileButton, MobileInput, MobileCard } from '../components/ui';
 
 // Zod schema for join game form
 const joinGameSchema = z.object({
@@ -58,115 +59,86 @@ export default function Game() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100">
-        <div className="container mx-auto px-4 py-8">
-          <header className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-green-900 mb-2">
+      <div className="min-h-screen bg-gradient-to-br from-electric-50 to-plasma-50 safe-padding-top safe-padding-bottom">
+        <div className="container mx-auto mobile-padding py-4 sm:py-6 lg:py-8">
+          <header className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-electric-900 mb-2">
               🎮 Join Game
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-base sm:text-lg text-gray-600 px-4">
               Enter a game code to join a trivia session
             </p>
           </header>
 
-          <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             {/* Join Game Form */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            <MobileCard className="p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
                 Join with Game Code
               </h2>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
-                  <label
-                    htmlFor="gameCode"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Game Code *
-                  </label>
-                  <input
+                  <MobileInput
                     id="gameCode"
                     type="text"
                     placeholder="ABC123"
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                      errors.gameCode ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    label="Game Code *"
+                    error={!!errors.gameCode}
+                    errorMessage={errors.gameCode?.message}
                     {...register('gameCode')}
                   />
-                  {errors.gameCode && (
-                    <p className="text-red-600 text-sm mt-1">
-                      {errors.gameCode.message}
-                    </p>
-                  )}
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="playerName"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Your Name *
-                  </label>
-                  <input
+                  <MobileInput
                     id="playerName"
                     type="text"
                     placeholder="John Doe"
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                      errors.playerName ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    label="Your Name *"
+                    error={!!errors.playerName}
+                    errorMessage={errors.playerName?.message}
                     {...register('playerName')}
                   />
-                  {errors.playerName && (
-                    <p className="text-red-600 text-sm mt-1">
-                      {errors.playerName.message}
-                    </p>
-                  )}
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="teamName"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Team Name (Optional)
-                  </label>
-                  <input
+                  <MobileInput
                     id="teamName"
                     type="text"
                     placeholder="The Quiz Masters"
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                      errors.teamName ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    label="Team Name (Optional)"
+                    error={!!errors.teamName}
+                    errorMessage={errors.teamName?.message}
                     {...register('teamName')}
                   />
-                  {errors.teamName && (
-                    <p className="text-red-600 text-sm mt-1">
-                      {errors.teamName.message}
-                    </p>
-                  )}
                 </div>
 
-                <div className="flex space-x-3">
-                  <button
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <MobileButton
                     type="submit"
                     disabled={isSubmitting}
-                    className={`flex-1 px-6 py-3 rounded-lg font-medium transition-colors ${
-                      isSubmitting
-                        ? 'bg-gray-400 cursor-not-allowed text-gray-200'
-                        : 'bg-green-600 hover:bg-green-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500'
-                    }`}
+                    variant="primary"
+                    size="lg"
+                    fullWidth
+                    className="sm:flex-1"
+                    loading={isSubmitting}
                   >
                     {isSubmitting ? 'Joining...' : 'Join Game'}
-                  </button>
+                  </MobileButton>
 
-                  <Link to="/">
-                    <AnimatedButton variant="secondary">
+                  <Link to="/" className="sm:flex-1">
+                    <MobileButton
+                      variant="secondary"
+                      size="lg"
+                      fullWidth
+                    >
                       Back to Home
-                    </AnimatedButton>
+                    </MobileButton>
                   </Link>
                 </div>
               </form>
-            </div>
+            </MobileCard>
 
             {/* Available Games List */}
             <div>

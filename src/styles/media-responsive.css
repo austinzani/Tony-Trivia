@@ -1,0 +1,250 @@
+/* Responsive Media Styles for Tony Trivia */
+
+/* Base media component styles */
+.media-container {
+  @apply w-full max-w-2xl mx-auto;
+}
+
+/* Image responsive styles */
+.media-image {
+  @apply w-full h-auto rounded-lg shadow-md;
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+/* Audio player responsive styles */
+.audio-player {
+  @apply w-full;
+}
+
+.audio-controls {
+  @apply flex items-center gap-2 sm:gap-4;
+}
+
+.audio-button {
+  @apply w-10 h-10 sm:w-12 sm:h-12;
+  min-width: 44px; /* Minimum touch target size */
+  min-height: 44px;
+}
+
+.audio-progress {
+  @apply w-full h-2;
+  -webkit-appearance: none;
+  appearance: none;
+  background: theme('colors.gray.200');
+  border-radius: theme('borderRadius.lg');
+  outline: none;
+}
+
+.audio-progress::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: theme('colors.electric.500');
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.audio-progress::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: theme('colors.electric.600');
+}
+
+.audio-progress::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: theme('colors.electric.500');
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.audio-progress::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  background: theme('colors.electric.600');
+}
+
+/* Video player responsive styles */
+.video-container {
+  @apply relative w-full;
+  aspect-ratio: 16 / 9;
+}
+
+.video-player {
+  @apply absolute inset-0 w-full h-full rounded-lg;
+}
+
+/* Transcript and caption styles */
+.media-transcript {
+  @apply mt-4 p-3 bg-gray-50 rounded-lg;
+}
+
+.media-transcript summary {
+  @apply font-semibold text-gray-700 cursor-pointer;
+  @apply hover:text-gray-900 transition-colors;
+  user-select: none;
+}
+
+.media-transcript[open] summary {
+  @apply mb-2;
+}
+
+.media-transcript-content {
+  @apply text-gray-600 whitespace-pre-wrap;
+  @apply text-sm sm:text-base;
+}
+
+/* Loading states */
+.media-loading {
+  @apply flex items-center justify-center;
+  @apply bg-gray-100 rounded-lg;
+  min-height: 200px;
+}
+
+.media-loading-spinner {
+  @apply animate-spin rounded-full h-8 w-8;
+  @apply border-b-2 border-electric-600;
+}
+
+/* Error states */
+.media-error {
+  @apply flex items-center justify-center;
+  @apply p-6 bg-red-50 border border-red-200 rounded-lg;
+}
+
+.media-error-icon {
+  @apply w-6 h-6 text-red-500 mr-2;
+}
+
+.media-error-text {
+  @apply text-red-700;
+}
+
+/* Accessibility hints */
+.media-keyboard-hints {
+  @apply mt-3 text-xs text-gray-500;
+  @apply hidden sm:block;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 640px) {
+  .media-container {
+    @apply px-4;
+  }
+
+  .audio-controls {
+    @apply flex-wrap;
+  }
+
+  .audio-time-display {
+    @apply w-full text-center mt-2;
+    @apply text-sm;
+  }
+
+  .media-transcript {
+    @apply p-2;
+  }
+
+  .media-transcript-content {
+    @apply text-sm;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .media-container {
+    @apply max-w-xl;
+  }
+}
+
+/* Desktop adjustments */
+@media (min-width: 1025px) {
+  .media-container {
+    @apply max-w-3xl;
+  }
+
+  .media-image {
+    max-height: 70vh;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .audio-progress {
+    @apply border border-gray-900;
+  }
+
+  .media-transcript {
+    @apply border border-gray-900;
+  }
+
+  .audio-button {
+    @apply border-2 border-current;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .audio-progress::-webkit-slider-thumb:hover,
+  .audio-progress::-moz-range-thumb:hover {
+    transform: none;
+  }
+
+  .media-loading-spinner {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* Print styles */
+@media print {
+  .audio-controls,
+  .video-controls,
+  .media-keyboard-hints {
+    display: none;
+  }
+
+  .media-transcript {
+    @apply border border-gray-400;
+  }
+
+  .media-transcript[open] {
+    @apply mb-4;
+  }
+
+  .media-transcript summary::after {
+    content: " (See transcript below)";
+  }
+}
+
+/* Focus styles for accessibility */
+.media-focusable:focus {
+  @apply outline-none ring-2 ring-electric-500 ring-offset-2;
+}
+
+.media-focusable:focus:not(:focus-visible) {
+  @apply ring-0 ring-offset-0;
+}
+
+/* Touch-friendly styles */
+@media (pointer: coarse) {
+  .audio-button,
+  .video-button {
+    @apply p-3;
+  }
+
+  .audio-progress {
+    @apply h-3;
+  }
+
+  .audio-progress::-webkit-slider-thumb,
+  .audio-progress::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+  }
+}

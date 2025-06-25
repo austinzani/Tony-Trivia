@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { MobileCard, MobileButton } from './ui';
 import {
   Gamepad2,
   Users,
@@ -125,18 +126,18 @@ export default function GameList({
     return (
       <div className={`space-y-4 ${className}`}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
             {showHostOptions ? 'Available Games to Host' : 'Active Games'}
           </h3>
           <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full" />
         </div>
 
         {[1, 2, 3].map(i => (
-          <div key={i} className="bg-gray-100 rounded-lg p-4 animate-pulse">
+          <div key={i} className="bg-gray-100 rounded-lg p-3 sm:p-4 animate-pulse">
             <div className="flex items-center justify-between">
               <div className="space-y-2">
-                <div className="h-4 bg-gray-300 rounded w-32" />
-                <div className="h-3 bg-gray-300 rounded w-24" />
+                <div className="h-4 bg-gray-300 rounded w-24 sm:w-32" />
+                <div className="h-3 bg-gray-300 rounded w-20 sm:w-24" />
               </div>
               <div className="h-8 w-16 bg-gray-300 rounded" />
             </div>
@@ -147,9 +148,9 @@ export default function GameList({
   }
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-3 sm:space-y-4 ${className}`}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
           {showHostOptions ? 'Available Games to Host' : 'Active Games'}
         </h3>
         <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
@@ -162,10 +163,10 @@ export default function GameList({
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Gamepad2 className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
             No Active Games
           </h3>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 text-xs sm:text-sm">
             {showHostOptions
               ? 'Create a new game to start hosting!'
               : 'Check back later for active games to join.'}
@@ -180,7 +181,7 @@ export default function GameList({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               className={`
-                bg-white rounded-lg border border-gray-200 p-4 transition-all duration-200
+                bg-white rounded-lg border border-gray-200 p-3 sm:p-4 transition-all duration-200
                 ${
                   showHostOptions
                     ? 'hover:border-blue-300 hover:shadow-md cursor-pointer group'
@@ -189,14 +190,14 @@ export default function GameList({
               `}
               onClick={() => handleGameClick(game)}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <h4 className="font-semibold text-gray-900">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
                         {game.name}
                       </h4>
-                      <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">
+                      <span className="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded">
                         {game.id}
                       </span>
                     </div>

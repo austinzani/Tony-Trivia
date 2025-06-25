@@ -29,7 +29,11 @@ const MobileNav: React.FC<MobileNavProps> = ({
   };
 
   return (
-    <nav className={`mobile-nav safe-padding-bottom bg-white ${className}`}>
+    <nav 
+      className={`mobile-nav safe-padding-bottom bg-white ${className}`}
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <div className="flex items-center justify-around h-16">
         {items.map((item) => {
           const isActive = activeId === item.id;
@@ -47,6 +51,9 @@ const MobileNav: React.FC<MobileNavProps> = ({
                 ${isActive ? 'text-electric-600' : 'text-gray-500'}
               `}
               whileTap={{ scale: 0.95 }}
+              role="tab"
+              aria-selected={isActive}
+              aria-label={item.label}
             >
               {/* Active indicator */}
               <AnimatePresence>

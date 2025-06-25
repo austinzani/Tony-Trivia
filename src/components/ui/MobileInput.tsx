@@ -1,134 +1,72 @@
 import React, { forwardRef } from 'react';
-import { LucideIcon, AlertCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface MobileInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  error?: string;
-  hint?: string;
-  icon?: LucideIcon;
-  iconPosition?: 'left' | 'right';
+  error?: boolean;
+  errorMessage?: string;
+  icon?: React.ReactNode;
   fullWidth?: boolean;
-  variant?: 'default' | 'game';
 }
 
-const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(({
-  label,
-  error,
-  hint,
-  icon: Icon,
-  iconPosition = 'left',
-  fullWidth = true,
-  variant = 'default',
-  className = '',
-  disabled,
-  ...props
-}, ref) => {
-  const hasError = !!error;
-  
-  const getVariantClasses = () => {
-    switch (variant) {
-      case 'game':
-        return `
-          border-2 border-electric-200
-          focus:border-electric-500 focus:ring-4 focus:ring-electric-500/20
-          bg-gradient-to-r from-white to-blue-50/30
-        `;
-      default:
-        return `
-          border border-gray-300
-          focus:border-electric-500 focus:ring-4 focus:ring-electric-500/20
-          bg-white
-        `;
-    }
-  };
+const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
+  ({ label, error, errorMessage, icon, fullWidth = true, className = '', ...props }, ref) => {
+    const inputClasses = `
+      w-full px-4 py-3 text-base
+      bg-white
+      border-2 rounded-game
+      ${error ? 'border-energy-red' : 'border-gray-200'}
+      focus:outline-none focus:ring-4
+      ${error ? 'focus:ring-energy-red/20 focus:border-energy-red' : 'focus:ring-electric-500/20 focus:border-electric-500'}
+      placeholder:text-gray-400
+      transition-all duration-200
+      ${icon ? 'pl-12' : ''}
+      ${className}
+    `;
 
-  const getErrorClasses = () => {
-    if (hasError) {
-      return 'border-energy-red focus:border-energy-red focus:ring-energy-red/20';
-    }
-    return '';
-  };
-
-  return (
-    <div className={`mobile-form-group ${fullWidth ? 'w-full' : ''} ${className}`}>
-      {/* Label */}
-      {label && (
-        <label className="mobile-label block font-medium text-gray-700 mb-2">
-          {label}
-        </label>
-      )}
-
-      {/* Input Container */}
-      <div className="relative">
-        {/* Left Icon */}
-        {Icon && iconPosition === 'left' && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-            <Icon className="w-5 h-5" />
-          </div>
+    return (
+      <div className={`${fullWidth ? 'w-full' : ''}`}>
+        {label && (
+          <label 
+            htmlFor={props.id || props.name}
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {label}
+          </label>
         )}
-
-        {/* Input */}
-        <input
-          ref={ref}
-          {...props}
-          disabled={disabled}
-          className={`
-            mobile-input w-full
-            ${getVariantClasses()}
-            ${getErrorClasses()}
-            ${Icon && iconPosition === 'left' ? 'pl-10' : ''}
-            ${Icon && iconPosition === 'right' ? 'pr-10' : ''}
-            ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-50' : ''}
-            rounded-game
-            font-medium
-            transition-all duration-200
-            focus:outline-none
-            touch-feedback
-          `}
-        />
-
-        {/* Right Icon */}
-        {Icon && iconPosition === 'right' && !hasError && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-            <Icon className="w-5 h-5" />
-          </div>
-        )}
-
-        {/* Error Icon */}
-        {hasError && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-energy-red pointer-events-none">
-            <AlertCircle className="w-5 h-5" />
-          </div>
-        )}
-      </div>
-
-      {/* Error/Hint Message */}
-      <AnimatePresence mode="wait">
-        {error && (
+        
+        <div className="relative">
+          {icon && (
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+              {icon}
+            </div>
+          )}
+          
+          <motion.input
+            ref={ref}
+            className={inputClasses}
+            whileFocus={{ scale: 1.01 }}
+            aria-invalid={error}
+            aria-describedby={error && errorMessage ? `${props.id || props.name}-error` : undefined}
+            {...props}
+          />
+        </div>
+        
+        {error && errorMessage && (
           <motion.p
-            initial={{ opacity: 0, y: -5 }}
+            id={`${props.id || props.name}-error`}
+            role="alert"
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
             className="mt-2 text-sm text-energy-red font-medium"
           >
-            {error}
+            {errorMessage}
           </motion.p>
         )}
-        {hint && !error && (
-          <motion.p
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            className="mt-2 text-sm text-gray-500"
-          >
-            {hint}
-          </motion.p>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-});
+      </div>
+    );
+  }
+);
 
 MobileInput.displayName = 'MobileInput';
 

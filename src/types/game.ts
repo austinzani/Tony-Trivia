@@ -43,11 +43,15 @@ export interface Question {
   alternativeAnswers?: string[];
   mediaUrl?: string;
   mediaType?: 'image' | 'audio' | 'video';
+  altText?: string; // Alternative text for images (accessibility)
+  transcript?: string; // Transcript for audio/video content (accessibility)
+  captions?: string; // Captions for video content (accessibility)
   timeLimit?: number; // in seconds
   points?: PointValue; // for pre-assigned point questions
   explanation?: string;
   source?: string;
   tags?: string[];
+  options?: string[]; // For multiple-choice questions
   createdAt: string;
   updatedAt: string;
 }

@@ -124,16 +124,28 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
         return (
           <ImageRenderer
             {...mediaProps}
-            alt={`Question ${question.id} image`}
+            alt={question.altText || `Question ${question.id} image`}
           />
         );
 
       case 'audio':
-        return <AudioRenderer {...mediaProps} autoPlay={false} />;
+        return (
+          <AudioRenderer
+            {...mediaProps}
+            autoPlay={false}
+            transcript={question.transcript}
+          />
+        );
 
       case 'video':
         return (
-          <VideoRenderer {...mediaProps} autoPlay={false} controls={true} />
+          <VideoRenderer
+            {...mediaProps}
+            autoPlay={false}
+            controls={true}
+            transcript={question.transcript}
+            captions={question.captions}
+          />
         );
 
       default:

@@ -76,6 +76,8 @@ const MobileButton: React.FC<MobileButtonProps> = ({
       `}
       whileTap={!isDisabled ? { scale: 0.95 } : {}}
       whileHover={!isDisabled ? { scale: 1.02 } : {}}
+      aria-disabled={isDisabled}
+      aria-busy={loading}
     >
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center">
