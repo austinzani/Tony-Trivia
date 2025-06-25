@@ -1,16 +1,19 @@
 import React from 'react';
 import { ChatMessage } from '../../types/database';
+import { ChatReactions } from '../social/ChatReactions';
 
 interface ChatMessageItemProps {
   message: ChatMessage;
   isOwnMessage: boolean;
   isHost: boolean;
+  enableReactions?: boolean;
 }
 
 export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   message,
   isOwnMessage,
-  isHost
+  isHost,
+  enableReactions = false
 }) => {
   const getMessageStyle = () => {
     switch (message.message_type) {
@@ -148,6 +151,24 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
             hour: '2-digit', 
             minute: '2-digit' 
           })}
+        </div>
+      )}
+      
+      {/* Reactions */}
+      {enableReactions && message.message_type === 'text' && (
+        <div 
+          className="message-reactions"
+          style={{
+            marginTop: 'var(--space-xs)',
+            display: 'flex',
+            justifyContent: isOwnMessage ? 'flex-end' : 'flex-start',
+          }}
+        >
+          <ChatReactions
+            messageId={message.id}
+            gameRoomId={message.game_room_id}
+            teamId={message.team_id}
+          />
         </div>
       )}
     </div>

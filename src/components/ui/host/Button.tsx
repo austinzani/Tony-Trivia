@@ -1,9 +1,10 @@
 import React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
-import { LucideIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ComponentProps } from 'react';
+import { type LucideIcon } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 
-export interface ButtonProps extends Omit<HTMLMotionProps<"button">, 'size' | 'variant'> {
+export interface ButtonProps extends Omit<ComponentProps<typeof motion.button>, 'size' | 'variant'> {
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'ghost';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   icon?: LucideIcon;

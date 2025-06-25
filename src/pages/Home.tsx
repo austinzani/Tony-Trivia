@@ -98,11 +98,18 @@ export default function Home() {
               <p className="text-gray-600 text-center text-sm sm:text-base mb-4">
                 Ready to start your trivia adventure?
               </p>
-              <Link to="/mobile-demo" className="block">
-                <MobileButton variant="secondary" size="md" fullWidth>
-                  View Mobile Components Demo
-                </MobileButton>
-              </Link>
+              <div className="space-y-3">
+                <Link to="/scheduled-games" className="block">
+                  <MobileButton variant="primary" size="md" fullWidth>
+                    📅 Scheduled Games
+                  </MobileButton>
+                </Link>
+                <Link to="/mobile-demo" className="block">
+                  <MobileButton variant="secondary" size="md" fullWidth>
+                    View Mobile Components Demo
+                  </MobileButton>
+                </Link>
+              </div>
             </div>
           </div>
         </div>

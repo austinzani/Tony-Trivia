@@ -13,7 +13,7 @@ import {
   Copy
 } from 'lucide-react';
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, Modal, Table, TableHeader, TableBody, TableRow, TableCell } from '../ui/host';
-import { QuestionEditor, QuickEditModal, Question } from './QuestionEditor';
+import { QuestionEditor, QuickEditModal, type Question } from './QuestionEditor';
 import { cn } from '../../utils/cn';
 
 interface QuestionSet {

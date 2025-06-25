@@ -1,9 +1,10 @@
 import React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
-import { LucideIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ComponentProps } from 'react';
+import { type LucideIcon } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 
-export interface BadgeProps extends HTMLMotionProps<"span"> {
+export interface BadgeProps extends ComponentProps<typeof motion.span> {
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'new' | 'victory';
   size?: 'sm' | 'md' | 'lg';
   icon?: LucideIcon;

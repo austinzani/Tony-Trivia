@@ -128,4 +128,168 @@ export interface GameEvent {
   room_id: string;
   data: any;
   timestamp: string;
+}
+
+// Scheduled Games types
+export interface ScheduledGame {
+  id: string;
+  host_id: string;
+  room_id?: string;
+  title: string;
+  description?: string;
+  scheduled_for: string;
+  duration_minutes: number;
+  max_players: number;
+  settings: GameSettings;
+  recurring_pattern?: 'none' | 'daily' | 'weekly' | 'monthly';
+  recurring_end_date?: string;
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  reminder_sent: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ScheduledGameParticipant {
+  id: string;
+  scheduled_game_id: string;
+  user_id: string;
+  rsvp_status: 'invited' | 'accepted' | 'declined' | 'tentative';
+  team_preference?: string;
+  notified_at?: string;
+  responded_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ScheduledGameReminder {
+  id: string;
+  scheduled_game_id: string;
+  reminder_type: 'email' | 'push' | 'in_app';
+  time_before_minutes: number;
+  sent_at?: string;
+  created_at: string;
+}
+
+// Tournament types
+export interface Tournament {
+  id: string;
+  host_id: string;
+  room_id?: string;
+  name: string;
+  description?: string;
+  format: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss';
+  status: 'draft' | 'registration_open' | 'in_progress' | 'completed' | 'cancelled';
+  max_teams: number;
+  min_teams: number;
+  current_round: number;
+  total_rounds?: number;
+  start_date?: string;
+  end_date?: string;
+  settings: TournamentSettings;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TournamentSettings {
+  points_per_win?: number;
+  points_per_draw?: number;
+  points_per_loss?: number;
+  tiebreaker_rules?: string[];
+  match_settings?: {
+    rounds_per_match?: number;
+    time_per_round?: number;
+    categories?: string[];
+  };
+  advancement_rules?: {
+    teams_per_group?: number;
+    teams_advancing?: number;
+  };
+}
+
+export interface TournamentParticipant {
+  id: string;
+  tournament_id: string;
+  team_id: string;
+  seed?: number;
+  status: 'registered' | 'checked_in' | 'active' | 'eliminated' | 'withdrawn';
+  final_position?: number;
+  stats: TournamentParticipantStats;
+  registered_at: string;
+  eliminated_at?: string;
+  // Client-side enriched data
+  team?: Team;
+}
+
+export interface TournamentParticipantStats {
+  matches_played: number;
+  matches_won: number;
+  matches_lost: number;
+  points_scored: number;
+  points_conceded: number;
+  highest_score?: number;
+  lowest_score?: number;
+}
+
+export interface TournamentMatch {
+  id: string;
+  tournament_id: string;
+  round: number;
+  match_number: number;
+  bracket_position?: string;
+  team1_id?: string;
+  team2_id?: string;
+  winner_id?: string;
+  loser_id?: string;
+  team1_score: number;
+  team2_score: number;
+  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled' | 'bye';
+  game_room_id?: string;
+  scheduled_time?: string;
+  started_at?: string;
+  completed_at?: string;
+  match_data: any;
+  created_at: string;
+  updated_at: string;
+  // Client-side enriched data
+  team1?: TournamentParticipant;
+  team2?: TournamentParticipant;
+}
+
+export interface TournamentRound {
+  id: string;
+  tournament_id: string;
+  round_number: number;
+  name?: string;
+  status: 'upcoming' | 'in_progress' | 'completed';
+  started_at?: string;
+  completed_at?: string;
+  created_at: string;
+}
+
+export interface TournamentStanding {
+  id: string;
+  tournament_id: string;
+  participant_id: string;
+  position: number;
+  matches_played: number;
+  matches_won: number;
+  matches_lost: number;
+  matches_drawn: number;
+  points_for: number;
+  points_against: number;
+  points_difference: number;
+  tournament_points: number;
+  tiebreaker_score: number;
+  updated_at: string;
+  // Client-side enriched data
+  participant?: TournamentParticipant;
+}
+
+export interface TournamentHistory {
+  id: string;
+  tournament_id: string;
+  participant_id?: string;
+  event_type: string;
+  event_data: any;
+  created_at: string;
 } 

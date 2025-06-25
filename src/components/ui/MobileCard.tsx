@@ -1,7 +1,8 @@
 import React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { ComponentProps } from 'react';
 
-interface MobileCardProps extends HTMLMotionProps<"div"> {
+interface MobileCardProps extends ComponentProps<typeof motion.div> {
   children: React.ReactNode;
   variant?: 'default' | 'game' | 'team' | 'elevated';
   padding?: 'none' | 'sm' | 'md' | 'lg';

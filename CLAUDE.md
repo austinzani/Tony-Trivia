@@ -79,3 +79,6 @@ Must configure in `.env`:
 - Business logic belongs in custom hooks under `src/hooks/`
 - Supabase queries/mutations in `src/services/`
 - Always run `npm run type-check` and `npm run lint` before committing
+
+## Development Best Practices
+- Always make sure we import types with the proper type annotation

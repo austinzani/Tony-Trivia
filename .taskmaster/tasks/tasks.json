@@ -1133,28 +1133,192 @@
         "id": 16,
         "title": "Implement Scheduled Games Feature",
         "description": "Add functionality to schedule games in advance and manage upcoming games.",
-        "details": "1. Create database schema for scheduled games\n2. Implement UI for hosts to schedule games\n3. Develop system for sending game reminders\n4. Create a calendar view for upcoming scheduled games\n5. Implement automatic game start for scheduled games\n6. Add functionality for users to RSVP to scheduled games",
-        "testStrategy": "Write unit tests for scheduling logic. Conduct integration tests for reminder system. Perform user acceptance testing for the scheduling interface.",
-        "priority": "low",
+        "status": "done",
         "dependencies": [
           4
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "low",
+        "details": "1. Create database schema for scheduled games\n2. Implement UI for hosts to schedule games\n3. Develop system for sending game reminders\n4. Create a calendar view for upcoming scheduled games\n5. Implement automatic game start for scheduled games\n6. Add functionality for users to RSVP to scheduled games",
+        "testStrategy": "Write unit tests for scheduling logic. Conduct integration tests for reminder system. Perform user acceptance testing for the scheduling interface.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create database schema for scheduled games",
+            "description": "Design and implement the database schema to store scheduled games information including game time, host, game settings, and participant status.",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement UI for hosts to schedule games",
+            "description": "Create interface elements allowing hosts to set game date/time, game settings, and invitation options.",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Develop system for sending game reminders",
+            "description": "Implement notification system to alert users about upcoming games they've been invited to or have RSVP'd for.",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Create a calendar view for upcoming scheduled games",
+            "description": "Design and implement a calendar interface showing all upcoming games a user has been invited to or is hosting.",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement automatic game start for scheduled games",
+            "description": "Create system to automatically initiate games at their scheduled time with confirmed participants.",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Add functionality for users to RSVP to scheduled games",
+            "description": "Implement UI and backend logic for users to accept, decline, or indicate tentative attendance to game invitations.",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          }
+        ]
       },
       {
         "id": 17,
         "title": "Develop Social Features",
-        "description": "Implement social features such as reactions and achievements.",
-        "details": "1. Design and implement achievement system\n2. Create UI for displaying user achievements\n3. Implement real-time reactions during gameplay\n4. Add friend system for registered users\n5. Create social sharing functionality for game results\n6. Implement notifications for social interactions",
-        "testStrategy": "Write unit tests for achievement and reaction logic. Conduct user acceptance testing for social features. Perform integration tests to ensure proper interaction with existing game systems.",
-        "priority": "low",
+        "description": "Implement social features such as reactions, achievements, and user interactions for Tony Trivia.",
+        "status": "done",
         "dependencies": [
           3,
           9
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "low",
+        "details": "1. Leverage existing achievements system and enhance it with social badges\n2. Implement reaction system for key game moments\n3. Develop friend/following system for users\n4. Create social activity feed to display user interactions\n5. Implement team chat reactions for multiplayer games\n6. Create social sharing functionality for game results\n7. Design and implement user profiles with social statistics\n8. Integrate notifications for social interactions",
+        "testStrategy": "Write unit tests for reaction system and social badge logic. Test friend/following system with mock users. Conduct user acceptance testing for social features including activity feed and team chat reactions. Perform integration tests to ensure proper interaction with existing achievement system and game mechanics. Test social sharing across different platforms.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement reaction system",
+            "description": "Create a system allowing users to react to game moments with emojis or predefined reactions",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Created ReactionPicker, ReactionDisplay, and ChatReactions components. Implemented system with 8 expressive emojis.",
+            "testStrategy": "Test reaction components with various user interactions and verify correct display and persistence of reactions."
+          },
+          {
+            "id": 2,
+            "title": "Enhance achievement system with social badges",
+            "description": "Add social badges to the existing achievement system that users can earn through social interactions",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Integrated social achievements with existing achievement system. Created database schema and TypeScript types for social badges.",
+            "testStrategy": "Verify social badges are correctly awarded and displayed in user profiles."
+          },
+          {
+            "id": 3,
+            "title": "Develop friend/following system",
+            "description": "Implement functionality for users to follow or friend other players",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Built FriendsList component and implemented request management system. Created database schema and TypeScript types for relationships.",
+            "testStrategy": "Test friend request sending, accepting, and rejecting. Verify following functionality works correctly."
+          },
+          {
+            "id": 4,
+            "title": "Create social activity feed",
+            "description": "Design and implement a feed showing friends' activities, achievements, and game results",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Built social activity feed component with real-time updates using Supabase subscriptions. Created database schema and TypeScript types for activities.",
+            "testStrategy": "Test activity feed with various social interactions and verify real-time updates."
+          },
+          {
+            "id": 5,
+            "title": "Implement team chat reactions",
+            "description": "Add reaction capabilities to team chat for multiplayer games",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Integrated reactions into existing chat system. Implemented ChatReactions component for team interactions.",
+            "testStrategy": "Test chat reactions in multiplayer game scenarios to ensure proper functionality."
+          },
+          {
+            "id": 6,
+            "title": "Build social sharing functionality",
+            "description": "Create features allowing users to share their achievements and game results on social media platforms",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Created ShareButton and ShareCard components for sharing results and achievements on social media platforms.",
+            "testStrategy": "Test sharing functionality across different social media platforms and verify correct content display."
+          },
+          {
+            "id": 7,
+            "title": "Design user profiles with social stats",
+            "description": "Implement user profile pages that display social statistics, achievements, and badges",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Created enhanced user profile with social statistics. Implemented database schema and TypeScript types for social stats.",
+            "testStrategy": "Verify user profiles correctly display all social statistics, achievements, and badges."
+          },
+          {
+            "id": 8,
+            "title": "Create comprehensive SocialService",
+            "description": "Build a service layer for handling all social feature API interactions",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Implemented SocialService to handle all API interactions for social features including reactions, relationships, activities, and social stats.",
+            "testStrategy": "Test SocialService methods with mock API responses to ensure correct data handling."
+          },
+          {
+            "id": 9,
+            "title": "Create social features demo page",
+            "description": "Build a demonstration page showcasing all implemented social features",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Created demo page with routing to showcase all social features in one place.",
+            "testStrategy": "Verify all social features are correctly displayed and functional on the demo page."
+          },
+          {
+            "id": 10,
+            "title": "Implement custom hooks for social features",
+            "description": "Create React hooks for managing social feature state and interactions",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Created custom hooks for managing social features state and interactions across the application.",
+            "testStrategy": "Test hooks with various component integrations to ensure proper state management."
+          },
+          {
+            "id": 11,
+            "title": "Document social features implementation",
+            "description": "Create comprehensive documentation for all implemented social features",
+            "status": "done",
+            "dependencies": [],
+            "details": "Document the implementation details, component usage, and API interactions for all social features to facilitate future maintenance and enhancements.",
+            "testStrategy": "Review documentation for completeness and accuracy with team members."
+          },
+          {
+            "id": 12,
+            "title": "Conduct final integration testing",
+            "description": "Perform comprehensive testing of all social features integrated with the main application",
+            "status": "done",
+            "dependencies": [],
+            "details": "Test all social features in the context of the full application to ensure proper integration and functionality.",
+            "testStrategy": "Create test scenarios covering all social feature interactions and verify correct behavior in the production environment."
+          }
+        ]
       },
       {
         "id": 18,
@@ -1380,15 +1544,106 @@
         "id": 22,
         "title": "Implement Tournament Brackets",
         "description": "Develop a system for creating and managing tournament-style gameplay.",
-        "details": "1. Design database schema for tournament structures\n2. Implement UI for creating and managing tournaments\n3. Develop automatic bracket generation based on team count\n4. Create system for tracking tournament progress\n5. Implement tournament-specific leaderboards\n6. Add support for different tournament styles (single elimination, double elimination, round-robin)",
-        "testStrategy": "Write unit tests for tournament logic and bracket generation. Conduct integration tests to ensure proper interaction with existing game systems. Perform user acceptance testing for tournament management.",
-        "priority": "low",
+        "status": "done",
         "dependencies": [
           4,
           9
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "low",
+        "details": "1. Design database schema for tournament structures - COMPLETED\n2. Implement UI for creating and managing tournaments - COMPLETED\n3. Develop automatic bracket generation based on team count - COMPLETED\n4. Create system for tracking tournament progress - COMPLETED\n5. Implement tournament-specific leaderboards - COMPLETED\n6. Add support for different tournament styles (single elimination and round-robin implemented, double elimination and Swiss formats coming soon)",
+        "testStrategy": "Write unit tests for tournament logic and bracket generation. Conduct integration tests to ensure proper interaction with existing game systems. Perform user acceptance testing for tournament management and bracket visualization. Test suite has been created.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create tournament creation interface",
+            "description": "Design and implement UI components for users to set up new tournaments",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Implemented CreateTournamentForm component that allows users to set up new tournaments with various configuration options.",
+            "testStrategy": "Verified form validation and tournament creation functionality."
+          },
+          {
+            "id": 2,
+            "title": "Develop bracket visualization components",
+            "description": "Create interactive visual representation of tournament brackets that update as the tournament progresses",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Built BracketVisualization component that provides a visual display of tournament brackets with real-time updates.",
+            "testStrategy": "Tested with various tournament sizes and formats to ensure proper rendering."
+          },
+          {
+            "id": 3,
+            "title": "Implement tournament progression logic",
+            "description": "Develop the core logic for advancing teams through tournament rounds based on match results",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Created TournamentService with automatic advancement logic based on match results.",
+            "testStrategy": "Verified correct advancement of teams through tournament rounds."
+          },
+          {
+            "id": 4,
+            "title": "Build tournament management features",
+            "description": "Create admin tools for managing tournaments, including editing brackets, rescheduling matches, and handling edge cases",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Implemented TournamentManagement component with comprehensive admin tools for tournament oversight.",
+            "testStrategy": "Tested various management scenarios including bracket editing and match rescheduling."
+          },
+          {
+            "id": 5,
+            "title": "Implement single elimination format",
+            "description": "Develop the specific logic and UI for single elimination tournaments",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Implemented single elimination tournament format with bracket visualization and automatic advancement.",
+            "testStrategy": "Tested tournament creation, progression, and completion for single elimination format."
+          },
+          {
+            "id": 6,
+            "title": "Implement round-robin format",
+            "description": "Develop the specific logic and UI for round-robin tournaments, including points calculation and tiebreakers",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Implemented round-robin tournament format with standings table, points calculation, and tiebreaker rules.",
+            "testStrategy": "Verified correct standings calculation and tiebreaker application."
+          },
+          {
+            "id": 7,
+            "title": "Create tournament standings component",
+            "description": "Develop TournamentStandings component to display current tournament rankings and statistics",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Built TournamentStandings component that shows real-time standings, especially important for round-robin tournaments.",
+            "testStrategy": "Tested with various tournament scenarios to ensure accurate standings display."
+          },
+          {
+            "id": 8,
+            "title": "Create tournament demo page",
+            "description": "Develop a demonstration page showcasing tournament features",
+            "status": "completed",
+            "dependencies": [],
+            "details": "Created a comprehensive demo page that showcases all tournament features and formats.",
+            "testStrategy": "Verified all tournament features work correctly on the demo page."
+          },
+          {
+            "id": 9,
+            "title": "Implement double elimination format",
+            "description": "Develop the specific logic and UI for double elimination tournaments",
+            "status": "done",
+            "dependencies": [],
+            "details": "Marked as coming soon. Will require implementation of winners and losers brackets with proper advancement logic.",
+            "testStrategy": "Will need to test both winners and losers bracket progression and final matches."
+          },
+          {
+            "id": 10,
+            "title": "Implement Swiss format",
+            "description": "Develop the specific logic and UI for Swiss-system tournaments",
+            "status": "done",
+            "dependencies": [],
+            "details": "Marked as coming soon. Will require implementation of Swiss pairing algorithm and appropriate standings display.",
+            "testStrategy": "Will need to test pairing algorithm and verify correct matchups across multiple rounds."
+          }
+        ]
       },
       {
         "id": 23,
@@ -1407,15 +1662,124 @@
         "id": 24,
         "title": "Develop Advanced Analytics Dashboard",
         "description": "Create a comprehensive analytics dashboard for hosts and administrators.",
-        "details": "1. Design and implement database schema for detailed analytics\n2. Create data aggregation and analysis functions\n3. Implement UI for displaying various analytics metrics\n4. Add filtering and date range selection for analytics\n5. Create visualization components for key metrics\n6. Implement export functionality for analytics data",
-        "testStrategy": "Write unit tests for data aggregation and analysis functions. Conduct user acceptance testing with hosts and administrators. Perform integration tests to ensure accurate data representation.",
-        "priority": "low",
+        "status": "completed",
         "dependencies": [
           9,
           13
         ],
-        "status": "pending",
-        "subtasks": []
+        "priority": "low",
+        "details": "1. Design and implement database schema for detailed analytics\n2. Create data aggregation and analysis functions\n3. Implement UI for displaying various analytics metrics\n4. Add filtering and date range selection for analytics\n5. Create visualization components for key metrics\n6. Implement export functionality for analytics data",
+        "testStrategy": "Write unit tests for data aggregation and analysis functions. Conduct user acceptance testing with hosts and administrators. Perform integration tests to ensure accurate data representation.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Analytics Types",
+            "description": "Defined comprehensive type definitions for all analytics data in src/types/analytics.ts",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Main Analytics Dashboard",
+            "description": "Created responsive dashboard with multiple viewing sections, real-time metrics display, advanced filtering options, export functionality, and tab-based navigation in src/pages/AnalyticsDashboard.tsx",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Develop Analytics Hook",
+            "description": "Created custom React hook for fetching and managing analytics data with filtering and date range selection in src/hooks/useAnalytics.ts",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement Real-Time Metrics Component",
+            "description": "Created RealTimeMetrics component with live metrics display and active games monitoring in src/components/analytics/RealTimeMetrics.tsx",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement Game Performance Section",
+            "description": "Created GamePerformanceSection component with game statistics and charts for time/day analysis in src/components/analytics/GamePerformanceSection.tsx",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Implement Player Engagement Section",
+            "description": "Created PlayerEngagementSection component with player retention, category engagement, and activity heatmap in src/components/analytics/PlayerEngagementSection.tsx",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Implement Question Analytics Section",
+            "description": "Created QuestionAnalyticsSection component with question difficulty analysis and category performance in src/components/analytics/QuestionAnalyticsSection.tsx",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 8,
+            "title": "Implement Host Performance Section",
+            "description": "Created HostPerformanceSection component with host metrics, ratings, and activity patterns in src/components/analytics/HostPerformanceSection.tsx",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 9,
+            "title": "Implement Administrative Reports Section",
+            "description": "Created AdministrativeReportsSection component with platform health, revenue, user growth, and system usage in src/components/analytics/AdministrativeReportsSection.tsx",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 10,
+            "title": "Implement Export Functionality",
+            "description": "Created ExportModal component with multiple export formats, customizable date ranges, selective metric inclusion, and chart inclusion option in src/components/analytics/ExportModal.tsx",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 11,
+            "title": "Implement Visualizations",
+            "description": "Created various visualization components including line charts, bar charts, doughnut/pie charts, heatmaps, progress bars, and real-time status indicators",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 12,
+            "title": "Implement Responsive Design",
+            "description": "Implemented mobile-first approach with collapsible filters panel, compact view option, smooth animations with Framer Motion, following Tony Trivia style guide",
+            "status": "completed",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          }
+        ]
       },
       {
         "id": 25,
@@ -1536,7 +1900,7 @@
     ],
     "metadata": {
       "created": "2025-06-17T14:08:45.878Z",
-      "updated": "2025-06-25T01:17:33.534Z",
+      "updated": "2025-06-25T02:09:49.825Z",
       "description": "Tasks for master context"
     }
   }

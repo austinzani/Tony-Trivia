@@ -11,6 +11,12 @@ import Game from './pages/Game';
 import Host from './pages/Host';
 import MobileDemo from './pages/MobileDemo';
 import HostDemo from './pages/HostDemo';
+import { ScheduledGamesDemo } from './pages/ScheduledGamesDemo';
+import { SocialFeaturesDemo } from './pages/SocialFeaturesDemo';
+import TournamentList from './pages/TournamentList';
+import CreateTournamentForm from './components/tournament/CreateTournamentForm';
+import TournamentManagement from './components/tournament/TournamentManagement';
+import TournamentDemo from './pages/TournamentDemo';
 
 // Import auth components
 import ProtectedRoute from './components/ProtectedRoute';
@@ -78,6 +84,46 @@ const router = createBrowserRouter([
   {
     path: '/host-demo',
     element: <HostDemo />,
+  },
+  {
+    path: '/scheduled-games',
+    element: (
+      <ProtectedRoute>
+        <ScheduledGamesDemo />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/social-demo',
+    element: <SocialFeaturesDemo />,
+  },
+  {
+    path: '/tournaments',
+    element: (
+      <ProtectedRoute>
+        <TournamentList />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/tournament/create',
+    element: (
+      <ProtectedRoute>
+        <CreateTournamentForm />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/tournament/:tournamentId',
+    element: (
+      <ProtectedRoute>
+        <TournamentManagement />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/tournament-demo',
+    element: <TournamentDemo />,
   },
 ]);
 

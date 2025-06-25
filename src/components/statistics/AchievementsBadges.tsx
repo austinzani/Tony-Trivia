@@ -15,7 +15,8 @@ import {
   Shield,
   Sparkles,
   Lock,
-  Info
+  Info,
+  Calendar
 } from 'lucide-react';
 import { statisticsService, type UserStatistics } from '../../services/statisticsService';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import MobileNav from './MobileNav';
-import { LucideIcon } from 'lucide-react';
+import { type LucideIcon } from 'lucide-react';
 
 interface MobileLayoutProps {
   children: React.ReactNode;

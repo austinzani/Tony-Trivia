@@ -1,8 +1,9 @@
 import React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { ComponentProps } from 'react';
 import { cn } from '../../../utils/cn';
 
-export interface CardProps extends HTMLMotionProps<"div"> {
+export interface CardProps extends ComponentProps<typeof motion.div> {
   variant?: 'default' | 'game' | 'team' | 'elevated' | 'gradient';
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   hover?: boolean;

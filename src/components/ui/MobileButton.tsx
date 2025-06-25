@@ -1,8 +1,9 @@
 import React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
-import { LucideIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ComponentProps } from 'react';
+import { type LucideIcon } from 'lucide-react';
 
-interface MobileButtonProps extends Omit<HTMLMotionProps<"button">, 'children'> {
+interface MobileButtonProps extends Omit<ComponentProps<typeof motion.button>, 'children'> {
   children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'danger' | 'success';
   size?: 'sm' | 'md' | 'lg' | 'full';
